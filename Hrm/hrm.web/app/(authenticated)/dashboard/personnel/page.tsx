@@ -1,21 +1,21 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { 
-  Box, 
-  Typography, 
-  Paper, 
-  Button, 
-  TextField, 
-  InputAdornment, 
+import {
+  Box,
+  Typography,
+  Paper,
+  Button,
+  TextField,
+  InputAdornment,
   Chip,
   IconButton,
   Tooltip,
   Stack
 } from "@mui/material";
-import { 
-  Add as AddIcon, 
-  Search as SearchIcon, 
+import {
+  Add as AddIcon,
+  Search as SearchIcon,
   FileDownload as ExportIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
@@ -59,7 +59,7 @@ export default function PersonnelPage() {
     fetchUsers();
   }, []);
 
-  const filteredUsers = users.filter(user => 
+  const filteredUsers = users.filter(user =>
     user.fullName.toLowerCase().includes(searchText.toLowerCase()) ||
     user.username.toLowerCase().includes(searchText.toLowerCase()) ||
     user.email.toLowerCase().includes(searchText.toLowerCase())
@@ -81,9 +81,10 @@ export default function PersonnelPage() {
   };
 
   const columns: GridColDef[] = [
-    { 
-      field: "fullName", 
-      headerName: t("table.columns.fullName"), 
+    { field: "username", headerName: t("table.columns.username"), flex: 1 },
+    {
+      field: "fullName",
+      headerName: t("table.columns.fullName"),
       flex: 1.5,
       renderCell: (params: GridRenderCellParams) => (
         <Typography sx={{ fontWeight: 600, fontSize: "0.875rem" }}>
@@ -91,28 +92,27 @@ export default function PersonnelPage() {
         </Typography>
       )
     },
-    { field: "username", headerName: t("table.columns.username"), flex: 1 },
     { field: "email", headerName: t("table.columns.email"), flex: 1.5 },
-    { 
-      field: "role", 
-      headerName: t("table.columns.role"), 
+    {
+      field: "role",
+      headerName: t("table.columns.role"),
       flex: 1,
       renderCell: (params: GridRenderCellParams) => (
-        <Chip 
-          label={tr(params.value as string)} 
-          size="small" 
+        <Chip
+          label={tr(params.value as string)}
+          size="small"
           variant="outlined"
           sx={{ fontWeight: 700, borderRadius: 1.5 }}
         />
       )
     },
-    { 
-      field: "isActive", 
-      headerName: t("table.columns.status"), 
+    {
+      field: "isActive",
+      headerName: t("table.columns.status"),
       flex: 1,
       renderCell: (params: GridRenderCellParams) => (
-        <Chip 
-          label={params.value ? t("table.status.active") : t("table.status.inactive")} 
+        <Chip
+          label={params.value ? t("table.status.active") : t("table.status.inactive")}
           color={params.value ? "success" : "default"}
           size="small"
           sx={{ fontWeight: 700, borderRadius: 1.5 }}
@@ -159,16 +159,16 @@ export default function PersonnelPage() {
           </Typography>
         </Box>
         <Stack direction="row" spacing={2}>
-          <Button 
-            variant="outlined" 
+          <Button
+            variant="outlined"
             startIcon={<ExportIcon />}
             onClick={handleExportExcel}
             sx={{ borderRadius: 2.5, px: 2 }}
           >
             {t("table.export_excel")}
           </Button>
-          <Button 
-            variant="contained" 
+          <Button
+            variant="contained"
             startIcon={<AddIcon />}
             sx={{ borderRadius: 2.5, px: 3, boxShadow: "0 4px 12px rgba(79, 70, 229, 0.4)" }}
           >
@@ -204,10 +204,10 @@ export default function PersonnelPage() {
       </Paper>
 
       {/* Data Table */}
-      <Paper sx={{ 
-        height: 600, 
-        width: "100%", 
-        borderRadius: 4, 
+      <Paper sx={{
+        height: 600,
+        width: "100%",
+        borderRadius: 4,
         overflow: "hidden",
         boxShadow: "0 4px 20px rgba(0,0,0,0.05)",
         border: "1px solid #e2e8f0"
