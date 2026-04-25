@@ -9,5 +9,6 @@ namespace Hrm.Domain.Entities
         public string FullName { get; set; } = string.Empty;
         public string Role { get; set; } = "Employee"; // Admin, Attendance, Personnel, Manager, Employee
         public bool IsActive { get; set; } = true;
+        public decimal BaseSalary { get; set; } = 0;
     }
 }

@@ -21,6 +21,7 @@ import {
   Assignment as AssignmentIcon,
   Settings as SettingsIcon,
   AdminPanelSettings as AdminIcon,
+  Paid as PaidIcon,
 } from "@mui/icons-material";
 import { useRouter, usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -84,6 +85,13 @@ export default function Sidebar() {
       icon: <AdminIcon />,
       path: "/dashboard/users",
       roles: ["Admin", "Personnel"],
+    },
+    {
+      key: "payroll",
+      text: "Bảng lương",
+      icon: <PaidIcon />,
+      path: "/dashboard/payroll",
+      roles: ["Admin", "Manager", "Personnel"],
     },
     {
       key: "admin",
