@@ -7,6 +7,7 @@ export default {
     leave: "Nghỉ phép",
     admin: "Quản trị hệ thống",
     users: "Tài khoản",
+    org_chart: "Sơ đồ tổ chức",
   },
   navbar: {
     title: "Hệ thống Quản trị HRM",
@@ -32,5 +33,6 @@ export default {
     users: "Tài khoản",
     profile: "Hồ sơ",
     settings: "Cài đặt",
+    "org-chart": "Sơ đồ tổ chức",
   }
 };

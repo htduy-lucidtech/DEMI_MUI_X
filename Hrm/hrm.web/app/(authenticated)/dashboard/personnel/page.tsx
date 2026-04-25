@@ -25,6 +25,7 @@ import {
 import { DataGrid, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 import { useTranslations } from "next-intl";
 import api from "@/lib/api";
+import * as XLSX from 'xlsx';
 
 interface User {
   id: number;
@@ -63,6 +64,21 @@ export default function PersonnelPage() {
     user.username.toLowerCase().includes(searchText.toLowerCase()) ||
     user.email.toLowerCase().includes(searchText.toLowerCase())
   );
+
+  const handleExportExcel = () => {
+    const dataToExport = filteredUsers.map(u => ({
+      [t("table.columns.fullName")]: u.fullName,
+      [t("table.columns.username")]: u.username,
+      [t("table.columns.email")]: u.email,
+      [t("table.columns.role")]: tr(u.role),
+      [t("table.columns.status")]: u.isActive ? t("table.status.active") : t("table.status.inactive")
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Personnel");
+    XLSX.writeFile(workbook, `HRM_Personnel_${new Date().toISOString().split('T')[0]}.xlsx`);
+  };
 
   const columns: GridColDef[] = [
     { 
@@ -146,6 +162,7 @@ export default function PersonnelPage() {
           <Button 
             variant="outlined" 
             startIcon={<ExportIcon />}
+            onClick={handleExportExcel}
             sx={{ borderRadius: 2.5, px: 2 }}
           >
             {t("table.export_excel")}

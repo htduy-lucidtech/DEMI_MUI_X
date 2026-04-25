@@ -92,6 +92,13 @@ export default function Sidebar() {
       path: "/dashboard/admin",
       roles: ["Admin"],
     },
+    {
+      key: "org-chart",
+      text: t("org_chart"),
+      icon: <BusinessIcon />,
+      path: "/dashboard/org-chart",
+      roles: ["Admin", "Manager", "Personnel", "Attendance", "Employee"],
+    },
   ];
 
   const filteredItems = activeRole 

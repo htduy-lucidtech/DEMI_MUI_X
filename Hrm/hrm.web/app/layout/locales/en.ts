@@ -7,6 +7,7 @@ export default {
     leave: "Leave Request",
     admin: "System Admin",
     users: "Accounts",
+    org_chart: "Org Chart",
   },
   navbar: {
     title: "HRM Management System",
@@ -32,5 +33,6 @@ export default {
     users: "Accounts",
     profile: "Profile",
     settings: "Settings",
+    "org-chart": "Org Chart",
   }
 };
