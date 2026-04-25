@@ -24,6 +24,8 @@ import usersVi from "./app/(authenticated)/dashboard/users/locales/vi";
 import usersEn from "./app/(authenticated)/dashboard/users/locales/en";
 import profileVi from "./app/(authenticated)/profile/locales/vi";
 import profileEn from "./app/(authenticated)/profile/locales/en";
+import orgChartVi from "./app/(authenticated)/dashboard/org-chart/locales/vi";
+import orgChartEn from "./app/(authenticated)/dashboard/org-chart/locales/en";
 
 const messagesMap = {
   vi: {
@@ -38,6 +40,7 @@ const messagesMap = {
     Settings: settingsVi,
     Users: usersVi,
     Profile: profileVi,
+    OrgChart: orgChartVi,
   },
   en: {
     Login: loginEn,
@@ -51,6 +54,7 @@ const messagesMap = {
     Settings: settingsEn,
     Users: usersEn,
     Profile: profileEn,
+    OrgChart: orgChartEn,
   }
 };
 

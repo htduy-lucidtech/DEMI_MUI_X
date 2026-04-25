@@ -32,7 +32,7 @@ namespace Hrm.Api.Controllers
                 .Take(5)
                 .Select(a => new {
                     id = a.Id,
-                    user = a.User.FullName,
+                    user = a.User != null ? a.User.FullName : "N/A",
                     action = "Check-in",
                     time = a.CheckInTime.ToString("hh:mm tt"),
                     status = "success"

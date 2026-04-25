@@ -8,6 +8,7 @@ namespace Hrm.Infrastructure.Data {
         // Các bảng tương ứng với 5 Tab
         public DbSet<User> Users { get; set; }           // Admin tạo tài khoản tại đây
         public DbSet<Attendance> Attendances { get; set; } // Nhân viên Check-in tại đây
+        public DbSet<LeaveRequest> LeaveRequests { get; set; }
         public DbSet<Department> Departments { get; set; } // Quản lý phòng ban
     }
 }

@@ -245,3 +245,4 @@ i18n sẽ lòng vào từng fodel trong page theo cấu trúc: login/locales/vi.
 | 4.2  | Sơ đồ tổ chức với React Flow                    | Sơ đồ interactive                    |
 | 4.3  | Thông báo realtime (SignalR hoặc polling)        | Inbox cập nhật tự động               |
 | 4.4  | Testing + Fix bug + Tối ưu performance          | Hệ thống ổn định                     |
+| 4.5  | Tối ưu UX (Loading state)                       | Hiệu ứng tải trang tránh treo giao diện |
