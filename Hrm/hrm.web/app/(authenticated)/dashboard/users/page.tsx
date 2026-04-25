@@ -44,17 +44,13 @@ import {
 } from "@mui/icons-material";
 import { useTranslations } from "next-intl";
 import { useAuth, Role } from "@/app/context/AuthContext";
-import { apiFetch } from "@/lib/api";
-
-interface UserData {
-  id?: number;
-  username: string;
-  fullName: string;
-  role: Role;
-  email: string;
-  password?: string;
-  isActive: boolean;
-}
+/**
+ * Tại sao sử dụng userService? 
+ * - Gom nhóm logic gọi API vào một nơi để dễ quản lý.
+ * - Tránh lặp lại cấu hình Axios/Fetch trong từng Component.
+ * - Dễ dàng thêm logging hoặc xử lý lỗi tập trung.
+ */
+import { userService, User as UserData } from "@/services/user.service";
 
 export default function UsersPage() {
   const t = useTranslations("Users");
@@ -78,8 +74,8 @@ export default function UsersPage() {
 
   const fetchUsers = async () => {
     try {
-      const data = await apiFetch("/users");
-      setUsers(data);
+      const data = await userService.getAll();
+      setUsers(data as UserData[]);
     } catch (error) {
       console.error("Failed to fetch users", error);
     }
@@ -111,12 +107,11 @@ export default function UsersPage() {
 
   const handleSubmit = async () => {
     try {
-      const method = isEdit ? "PUT" : "POST";
-      const url = isEdit ? `/users/${formData.id}` : "/users";
-      await apiFetch(url, {
-        method,
-        body: JSON.stringify(formData),
-      });
+      if (isEdit && formData.id !== undefined) {
+        await userService.update(formData.id, formData);
+      } else {
+        await userService.create(formData);
+      }
       fetchUsers();
       handleClose();
     } catch (error) {
@@ -127,7 +122,7 @@ export default function UsersPage() {
   const handleDelete = async (id: number) => {
     if (window.confirm(t("delete_confirm"))) {
       try {
-        await apiFetch(`/users/${id}`, { method: "DELETE" });
+        await userService.delete(id);
         fetchUsers();
       } catch (error) {
         alert("Failed to delete user");
@@ -137,8 +132,11 @@ export default function UsersPage() {
 
   const handleToggleActive = async (id: number) => {
     try {
-      await apiFetch(`/users/${id}/toggle-active`, { method: "PATCH" });
-      fetchUsers();
+      const user = users.find(u => u.id === id);
+      if (user) {
+        await userService.update(id, { isActive: !user.isActive });
+        fetchUsers();
+      }
     } catch (error) {
       alert("Failed to toggle status");
     }

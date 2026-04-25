@@ -216,6 +216,7 @@ i18n sẽ lòng vào từng fodel trong page theo cấu trúc: login/locales/vi.
 | 1.5  | Khởi tạo Frontend: Next.js 15 + MUI + next-intl  | Trang trắng chạy được               |
 | 1.6  | Trang Login + gọi API + lưu token + redirect     | Login hoạt động end-to-end           |
 | 1.7  | Thiết lập Swagger (UI + JWT Auth support)        | API documentation chuyên nghiệp      |
+| 1.8  | Chuẩn hóa API Service Layer (Gom nhóm gọi API)   | Dễ quản lý, bảo trì và thêm logic    |
 
 ### Giai đoạn 2: Layout & Phân quyền
 

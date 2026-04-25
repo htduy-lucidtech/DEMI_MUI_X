@@ -17,10 +17,10 @@ import {
 } from "@mui/material";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { apiFetch } from "@/lib/api";
 import { useAuth } from "@/app/context/AuthContext";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import { authService } from "@/services/auth.service";
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -38,24 +38,15 @@ export default function LoginPage() {
     setError("");
 
     try {
-      const data = await apiFetch("/auth/login", {
-        method: "POST",
-        body: JSON.stringify({ username, password }),
-      });
-
-      const token = data.token || data.Token;
-      const user = data.user || data.User;
-
-      if (!token) {
-        throw new Error(t("login_failed"));
-      }
-
-      // Sử dụng hàm login từ context để đồng bộ hóa role và state
-      login(token, user);
+      const data = await authService.login({ username, password });
+      
+      // authService đã xử lý lưu token vào Cookies/LocalStorage
+      // Chúng ta gọi login(context) để cập nhật state toàn cục
+      login(data.token, data.user);
 
       router.push("/dashboard");
     } catch (err: any) {
-      setError(err.message || t("login_failed"));
+      setError(err.response?.data?.message || err.message || t("login_failed"));
     } finally {
       setIsLoading(false);
     }

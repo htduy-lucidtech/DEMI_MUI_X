@@ -28,7 +28,7 @@ import {
   CheckCircle as CheckCircleIcon,
 } from "@mui/icons-material";
 import { useTranslations } from "next-intl";
-import api from "@/lib/api";
+import { dashboardService } from "@/services/dashboard.service";
 
 export default function DashboardPage() {
   const t = useTranslations("Dashboard");
@@ -38,8 +38,8 @@ export default function DashboardPage() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const response = await api.get("/Dashboard/stats");
-        setStatsData(response.data);
+        const data = await dashboardService.getStats();
+        setStatsData(data);
       } catch (error) {
         console.error("Failed to fetch dashboard stats:", error);
       } finally {
@@ -105,8 +105,13 @@ export default function DashboardPage() {
             {t("welcome")}
           </Typography>
         </Box>
-        <Button variant="contained" size="large" sx={{ borderRadius: 3, px: 4 }}>
-          Xuất báo cáo
+        <Button 
+          variant="contained" 
+          size="large" 
+          sx={{ borderRadius: 3, px: 4 }}
+          onClick={() => dashboardService.testNotification()}
+        >
+          Test Thông báo
         </Button>
       </Box>
 

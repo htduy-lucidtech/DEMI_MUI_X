@@ -57,6 +57,10 @@ Hrm/
     │   └── login/               # [MODULE] Đăng nhập
     │       ├── locales/
     │       └── page.tsx
+    ├── services/                # API Service Layer
+    │   ├── auth.service.ts
+    │   ├── user.service.ts
+    │   └── dashboard.service.ts
     ├── lib/                     # Utilities
     │   └── api.ts               # Axios config
     ├── i18n.ts                  # i18n Config

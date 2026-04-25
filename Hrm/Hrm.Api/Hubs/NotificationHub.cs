@@ -1,0 +1,12 @@
+using Microsoft.AspNetCore.SignalR;
+
+namespace Hrm.Api.Hubs
+{
+    public class NotificationHub : Hub
+    {
+        public async Task SendNotification(string user, string message)
+        {
+            await Clients.All.SendAsync("ReceiveNotification", user, message);
+        }
+    }
+}

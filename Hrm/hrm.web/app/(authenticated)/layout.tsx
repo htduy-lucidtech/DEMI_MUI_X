@@ -8,7 +8,9 @@ import { usePathname, useRouter } from "next/navigation";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import { useTranslations } from "next-intl";
 import { useAuth } from "@/app/context/AuthContext";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import * as signalR from "@microsoft/signalr";
+import { Snackbar, Alert } from "@mui/material";
 
 export default function AuthenticatedLayout({
   children,
@@ -20,6 +22,28 @@ export default function AuthenticatedLayout({
   const { isAuthenticated, isLoading } = useAuth();
   const t = useTranslations("Layout.breadcrumbs");
   const pathArray = pathname.split("/").filter((x) => x);
+  
+  const [notification, setNotification] = useState<{ open: boolean; message: string; user: string } | null>(null);
+
+  useEffect(() => {
+    const connection = new signalR.HubConnectionBuilder()
+      .withUrl(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5181/api'}`.replace('/api', '') + "/notificationHub")
+      .withAutomaticReconnect()
+      .build();
+
+    connection.start()
+      .then(() => {
+        console.log("Connected to SignalR Hub");
+        connection.on("ReceiveNotification", (user, message) => {
+          setNotification({ open: true, user, message });
+        });
+      })
+      .catch(err => console.error("SignalR Connection Error: ", err));
+
+    return () => {
+      connection.stop();
+    };
+  }, []);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -80,6 +104,17 @@ export default function AuthenticatedLayout({
 
         {children}
       </Box>
+
+      <Snackbar 
+        open={notification?.open} 
+        autoHideDuration={6000} 
+        onClose={() => setNotification(prev => prev ? { ...prev, open: false } : null)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <Alert severity="info" sx={{ width: '100%', borderRadius: 2, fontWeight: 700 }}>
+          {notification?.user}: {notification?.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

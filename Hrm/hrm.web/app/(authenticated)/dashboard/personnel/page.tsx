@@ -24,17 +24,8 @@ import {
 } from "@mui/icons-material";
 import { DataGrid, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 import { useTranslations } from "next-intl";
-import api from "@/lib/api";
+import { userService, User } from "@/services/user.service";
 import * as XLSX from 'xlsx';
-
-interface User {
-  id: number;
-  fullName: string;
-  username: string;
-  email: string;
-  role: string;
-  isActive: boolean;
-}
 
 export default function PersonnelPage() {
   const t = useTranslations("Personnel");
@@ -46,8 +37,8 @@ export default function PersonnelPage() {
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const response = await api.get("/Users");
-      setUsers(response.data);
+      const data = await userService.getAll();
+      setUsers(data);
     } catch (error) {
       console.error("Failed to fetch users:", error);
     } finally {

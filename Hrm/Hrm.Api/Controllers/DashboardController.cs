@@ -1,6 +1,7 @@
 using Hrm.Infrastructure.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.SignalR;
 
 namespace Hrm.Api.Controllers
 {
@@ -47,6 +48,12 @@ namespace Hrm.Api.Controllers
                 leaveRequests = 3,
                 recentActivities
             });
+        }
+        [HttpGet("test-notification")]
+        public async Task<IActionResult> TestNotification([FromServices] IHubContext<Hrm.Api.Hubs.NotificationHub> hubContext)
+        {
+            await hubContext.Clients.All.SendAsync("ReceiveNotification", "Hệ thống", "Chào mừng bạn đến với HRM Pro! Đây là thông báo realtime.");
+            return Ok(new { message = "Notification sent" });
         }
     }
 }
