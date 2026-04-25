@@ -19,7 +19,7 @@ namespace Hrm.Api.Controllers
         [HttpGet("stats")]
         public async Task<IActionResult> GetStats()
         {
-            var totalEmployees = await _context.Users.CountAsync();
+            var totalEmployees = await _context.Employees.CountAsync();
             var activeEmployees = await _context.Users.CountAsync(u => u.IsActive);
             
             var today = DateTime.UtcNow.Date;
@@ -28,11 +28,12 @@ namespace Hrm.Api.Controllers
 
             var recentActivities = await _context.Attendances
                 .Include(a => a.User)
+                    .ThenInclude(u => u!.Employee)
                 .OrderByDescending(a => a.CheckInTime)
                 .Take(5)
                 .Select(a => new {
                     id = a.Id,
-                    user = a.User != null ? a.User.FullName : "N/A",
+                    user = (a.User != null && a.User.Employee != null) ? a.User.Employee.FullName : (a.User != null ? a.User.Username : "N/A"),
                     action = "Check-in",
                     time = a.CheckInTime.ToString("hh:mm tt"),
                     status = "success"
@@ -49,6 +50,7 @@ namespace Hrm.Api.Controllers
                 recentActivities
             });
         }
+        
         [HttpGet("test-notification")]
         public async Task<IActionResult> TestNotification([FromServices] IHubContext<Hrm.Api.Hubs.NotificationHub> hubContext)
         {

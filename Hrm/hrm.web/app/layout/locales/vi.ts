@@ -34,5 +34,15 @@ export default {
     profile: "Hồ sơ",
     settings: "Cài đặt",
     "org-chart": "Sơ đồ tổ chức",
+  },
+  common: {
+    noData: "Chưa có dữ liệu hiển thị",
+    noDataSub: "Hãy thử thay đổi bộ lọc hoặc thêm mới bản ghi.",
+    loading: "Đang tải dữ liệu...",
+    save: "Lưu",
+    cancel: "Hủy",
+    delete: "Xóa",
+    edit: "Sửa",
+    view: "Xem"
   }
 };

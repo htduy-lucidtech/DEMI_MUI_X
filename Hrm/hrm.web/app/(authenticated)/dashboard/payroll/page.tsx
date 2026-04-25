@@ -20,8 +20,11 @@ import {
 import { DataGrid, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 import { payrollService, PayrollRecord } from "@/services/payroll.service";
 import * as XLSX from "xlsx";
+import CustomNoRowsOverlay from "@/app/components/CustomNoRowsOverlay";
+import { useTranslations } from "next-intl";
 
 export default function PayrollPage() {
+  const t = useTranslations("Payroll");
   const [records, setRecords] = useState<PayrollRecord[]>([]);
   const [loading, setLoading] = useState(false);
   const [month, setMonth] = useState(new Date().getMonth() + 1);
@@ -33,7 +36,7 @@ export default function PayrollPage() {
       const data = await payrollService.calculate(month, year);
       setRecords(data);
     } catch (error) {
-      alert("Failed to calculate payroll");
+      alert(t("failedToCalculate"));
     } finally {
       setLoading(false);
     }
@@ -71,8 +74,8 @@ export default function PayrollPage() {
     <Box>
       <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Box>
-          <Typography variant="h4" sx={{ fontWeight: 800 }}>Bảng lương</Typography>
-          <Typography variant="body2" color="text.secondary">Tính lương tự động dựa trên ngày công thực tế</Typography>
+          <Typography variant="h4" sx={{ fontWeight: 800 }}>{t("title")}</Typography>
+          <Typography variant="body2" color="text.secondary">{t("subtitle")}</Typography>
         </Box>
       </Box>
 
@@ -81,19 +84,19 @@ export default function PayrollPage() {
           <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
             <TextField
               select
-              label="Tháng"
+              label={t("month")}
               size="small"
               sx={{ width: 120 }}
               value={month}
               onChange={(e) => setMonth(Number(e.target.value))}
             >
               {[...Array(12)].map((_, i) => (
-                <MenuItem key={i + 1} value={i + 1}>Tháng {i + 1}</MenuItem>
+                <MenuItem key={i + 1} value={i + 1}>{t("month")} {i + 1}</MenuItem>
               ))}
             </TextField>
             <TextField
               select
-              label="Năm"
+              label={t("year")}
               size="small"
               sx={{ width: 120 }}
               value={year}
@@ -104,10 +107,10 @@ export default function PayrollPage() {
               ))}
             </TextField>
             <Button variant="contained" startIcon={<CalcIcon />} onClick={handleCalculate} disabled={loading}>
-              {loading ? "Đang tính..." : "Tính lương"}
+              {loading ? t("calculating") : t("calculate")}
             </Button>
             <Button variant="outlined" startIcon={<DownloadIcon />} onClick={handleExport} disabled={records.length === 0}>
-              Xuất Excel
+              {t("export")}
             </Button>
           </Stack>
         </CardContent>
@@ -120,6 +123,9 @@ export default function PayrollPage() {
           columns={columns}
           loading={loading}
           disableRowSelectionOnClick
+          slots={{
+            noRowsOverlay: CustomNoRowsOverlay,
+          }}
           sx={{ border: 'none' }}
         />
       </Paper>

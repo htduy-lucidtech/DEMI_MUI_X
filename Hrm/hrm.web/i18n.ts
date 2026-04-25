@@ -26,6 +26,10 @@ import profileVi from "./app/(authenticated)/profile/locales/vi";
 import profileEn from "./app/(authenticated)/profile/locales/en";
 import orgChartVi from "./app/(authenticated)/dashboard/org-chart/locales/vi";
 import orgChartEn from "./app/(authenticated)/dashboard/org-chart/locales/en";
+import payrollVi from "./app/(authenticated)/dashboard/payroll/locales/vi";
+import payrollEn from "./app/(authenticated)/dashboard/payroll/locales/en";
+import recruitmentVi from "./app/(authenticated)/dashboard/recruitment/locales/vi";
+import recruitmentEn from "./app/(authenticated)/dashboard/recruitment/locales/en";
 
 const messagesMap = {
   vi: {
@@ -41,6 +45,8 @@ const messagesMap = {
     Users: usersVi,
     Profile: profileVi,
     OrgChart: orgChartVi,
+    Payroll: payrollVi,
+    Recruitment: recruitmentVi,
   },
   en: {
     Login: loginEn,
@@ -55,6 +61,8 @@ const messagesMap = {
     Users: usersEn,
     Profile: profileEn,
     OrgChart: orgChartEn,
+    Payroll: payrollEn,
+    Recruitment: recruitmentEn,
   }
 };
 

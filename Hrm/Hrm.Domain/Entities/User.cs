@@ -4,11 +4,13 @@ namespace Hrm.Domain.Entities
     {
         public int Id { get; set; }
         public string Username { get; set; } = string.Empty;
-        public string Password { get; set; } = string.Empty; // In a real app, use password hashing
+        public string Password { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
-        public string FullName { get; set; } = string.Empty;
-        public string Role { get; set; } = "Employee"; // Admin, Attendance, Personnel, Manager, Employee
+        public string Role { get; set; } = "Employee";
         public bool IsActive { get; set; } = true;
-        public decimal BaseSalary { get; set; } = 0;
+
+        // Link to Personnel
+        public int EmployeeId { get; set; }
+        public Employee? Employee { get; set; }
     }
 }

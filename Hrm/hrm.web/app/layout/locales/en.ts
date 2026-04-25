@@ -34,5 +34,15 @@ export default {
     profile: "Profile",
     settings: "Settings",
     "org-chart": "Org Chart",
+  },
+  common: {
+    noData: "No data to display",
+    noDataSub: "Try changing the filter or add a new record.",
+    loading: "Loading data...",
+    save: "Save",
+    cancel: "Cancel",
+    delete: "Delete",
+    edit: "Edit",
+    view: "View"
   }
 };

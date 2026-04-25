@@ -3,6 +3,7 @@ import api from "@/lib/api";
 export interface LeaveRequest {
   id?: number;
   userId: number;
+  fullName?: string;
   user?: { fullName: string };
   leaveType: string;
   startDate: string;

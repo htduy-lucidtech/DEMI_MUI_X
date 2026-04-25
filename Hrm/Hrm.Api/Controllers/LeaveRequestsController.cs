@@ -18,21 +18,48 @@ namespace Hrm.Api.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<LeaveRequest>>> GetLeaveRequests()
+        public async Task<IActionResult> GetLeaveRequests()
         {
-            return await _context.LeaveRequests
+            var data = await _context.LeaveRequests
                 .Include(l => l.User)
+                    .ThenInclude(u => u!.Employee)
                 .OrderByDescending(l => l.CreatedAt)
+                .Select(l => new {
+                    l.Id,
+                    l.UserId,
+                    l.LeaveType,
+                    l.StartDate,
+                    l.EndDate,
+                    l.Reason,
+                    l.Status,
+                    l.CreatedAt,
+                    FullName = (l.User != null && l.User.Employee != null) ? l.User.Employee.FullName : (l.User != null ? l.User.Username : "N/A")
+                })
                 .ToListAsync();
+            return Ok(data);
         }
 
         [HttpGet("user/{userId}")]
-        public async Task<ActionResult<IEnumerable<LeaveRequest>>> GetUserLeaveRequests(int userId)
+        public async Task<IActionResult> GetUserLeaveRequests(int userId)
         {
-            return await _context.LeaveRequests
+            var data = await _context.LeaveRequests
+                .Include(l => l.User)
+                    .ThenInclude(u => u!.Employee)
                 .Where(l => l.UserId == userId)
                 .OrderByDescending(l => l.CreatedAt)
+                .Select(l => new {
+                    l.Id,
+                    l.UserId,
+                    l.LeaveType,
+                    l.StartDate,
+                    l.EndDate,
+                    l.Reason,
+                    l.Status,
+                    l.CreatedAt,
+                    FullName = (l.User != null && l.User.Employee != null) ? l.User.Employee.FullName : (l.User != null ? l.User.Username : "N/A")
+                })
                 .ToListAsync();
+            return Ok(data);
         }
 
         [HttpPost]

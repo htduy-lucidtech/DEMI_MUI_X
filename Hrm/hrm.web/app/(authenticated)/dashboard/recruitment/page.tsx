@@ -26,8 +26,11 @@ import {
 } from "@mui/icons-material";
 import { DataGrid, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 import { recruitmentService, JobPosting, Candidate } from "@/services/recruitment.service";
+import CustomNoRowsOverlay from "@/app/components/CustomNoRowsOverlay";
+import { useTranslations } from "next-intl";
 
 export default function RecruitmentPage() {
+  const t = useTranslations("Recruitment");
   const [tab, setTab] = useState(0);
   const [jobs, setJobs] = useState<JobPosting[]>([]);
   const [candidates, setCandidates] = useState<Candidate[]>([]);
@@ -84,45 +87,46 @@ export default function RecruitmentPage() {
   };
 
   const jobColumns: GridColDef[] = [
-    { field: "title", headerName: "Tiêu đề", flex: 1 },
-    { field: "department", headerName: "Phòng ban", width: 150 },
-    { field: "location", headerName: "Địa điểm", width: 120 },
+    { field: "title", headerName: t("columns.title"), flex: 1 },
+    { field: "department", headerName: t("columns.dept"), width: 150 },
+    { field: "location", headerName: t("columns.loc"), width: 120 },
     { 
       field: "status", 
-      headerName: "Trạng thái", 
+      headerName: t("columns.status"), 
       width: 120,
-      renderCell: (params) => (
+      renderCell: (params: GridRenderCellParams) => (
         <Chip 
-          label={params.value} 
+          label={t(`data.status.${params.value}`)} 
           color={params.value === "Open" ? "success" : "default"} 
           size="small" 
+          variant="outlined"
         />
       )
     },
     { 
       field: "expiryDate", 
-      headerName: "Hạn cuối", 
+      headerName: t("columns.expiry"), 
       width: 150,
       valueFormatter: (value) => new Date(value).toLocaleDateString("vi-VN")
     },
   ];
 
   const candidateColumns: GridColDef<Candidate>[] = [
-    { field: "fullName", headerName: "Ứng viên", flex: 1 },
-    { field: "email", headerName: "Email", width: 200 },
+    { field: "fullName", headerName: t("columns.fullName"), flex: 1 },
+    { field: "email", headerName: t("columns.email"), width: 200 },
     { 
       field: "jobPosting", 
-      headerName: "Vị trí", 
+      headerName: t("columns.position"), 
       width: 180,
       valueGetter: (value: any) => value?.title 
     },
     { 
       field: "status", 
-      headerName: "Trạng thái", 
+      headerName: t("columns.status"), 
       width: 150,
-      renderCell: (params) => (
+      renderCell: (params: GridRenderCellParams) => (
         <Chip 
-          label={params.value} 
+          label={t(`data.status.${params.value}`)} 
           color={
             params.value === "Hired" ? "success" : 
             params.value === "Interviewing" ? "warning" : 
@@ -134,7 +138,7 @@ export default function RecruitmentPage() {
     },
     {
       field: "actions",
-      headerName: "Thao tác",
+      headerName: t("columns.actions"),
       width: 150,
       renderCell: (params: GridRenderCellParams<Candidate>) => (
         <Stack direction="row" spacing={1}>
@@ -153,22 +157,22 @@ export default function RecruitmentPage() {
     <Box>
       <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Box>
-          <Typography variant="h4" sx={{ fontWeight: 800 }}>Tuyển dụng</Typography>
-          <Typography variant="body2" color="text.secondary">Quản lý tin tuyển dụng và hồ sơ ứng viên</Typography>
+          <Typography variant="h4" sx={{ fontWeight: 800 }}>{t("title")}</Typography>
+          <Typography variant="body2" color="text.secondary">{t("subtitle")}</Typography>
         </Box>
         <Button 
           variant="contained" 
           startIcon={<AddIcon />} 
           onClick={() => setOpenJobDialog(true)}
         >
-          Đăng tin mới
+          {t("postNew")}
         </Button>
       </Box>
 
       <Paper sx={{ mb: 3, borderRadius: 4, overflow: 'hidden', border: '1px solid #e2e8f0' }}>
         <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ borderBottom: 1, borderColor: 'divider' }}>
-          <Tab label="Tin tuyển dụng" />
-          <Tab label="Ứng viên" />
+          <Tab label={t("tabs.jobs")} />
+          <Tab label={t("tabs.candidates")} />
         </Tabs>
         <Box sx={{ height: 500, width: '100%' }}>
           <DataGrid
@@ -176,6 +180,9 @@ export default function RecruitmentPage() {
             columns={tab === 0 ? jobColumns : candidateColumns}
             loading={loading}
             disableRowSelectionOnClick
+            slots={{
+              noRowsOverlay: CustomNoRowsOverlay,
+            }}
             sx={{ border: 'none' }}
           />
         </Box>
@@ -183,47 +190,47 @@ export default function RecruitmentPage() {
 
       {/* Dialog Đăng tin */}
       <Dialog open={openJobDialog} onClose={() => setOpenJobDialog(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Đăng tin tuyển dụng mới</DialogTitle>
+        <DialogTitle>{t("dialog.title")}</DialogTitle>
         <DialogContent>
           <Grid container spacing={2} sx={{ mt: 1 }}>
             <Grid size={12}>
               <TextField 
-                fullWidth label="Tiêu đề" 
+                fullWidth label={t("dialog.jobTitle")} 
                 value={newJob.title} 
                 onChange={(e) => setNewJob({...newJob, title: e.target.value})}
               />
             </Grid>
             <Grid size={6}>
               <TextField 
-                fullWidth label="Phòng ban" 
+                fullWidth label={t("dialog.department")} 
                 value={newJob.department} 
                 onChange={(e) => setNewJob({...newJob, department: e.target.value})}
               />
             </Grid>
             <Grid size={6}>
               <TextField 
-                fullWidth label="Địa điểm" 
+                fullWidth label={t("dialog.location")} 
                 value={newJob.location} 
                 onChange={(e) => setNewJob({...newJob, location: e.target.value})}
               />
             </Grid>
             <Grid size={6}>
               <TextField 
-                fullWidth label="Lương tối thiểu" type="number"
+                fullWidth label={t("dialog.minSalary")} type="number"
                 value={newJob.minSalary} 
                 onChange={(e) => setNewJob({...newJob, minSalary: Number(e.target.value)})}
               />
             </Grid>
             <Grid size={6}>
               <TextField 
-                fullWidth label="Lương tối đa" type="number"
+                fullWidth label={t("dialog.maxSalary")} type="number"
                 value={newJob.maxSalary} 
                 onChange={(e) => setNewJob({...newJob, maxSalary: Number(e.target.value)})}
               />
             </Grid>
             <Grid size={12}>
               <TextField 
-                fullWidth label="Hạn cuối" type="date"
+                fullWidth label={t("dialog.expiryDate")} type="date"
                 slotProps={{ inputLabel: { shrink: true } }}
                 value={newJob.expiryDate} 
                 onChange={(e) => setNewJob({...newJob, expiryDate: e.target.value})}
@@ -231,7 +238,7 @@ export default function RecruitmentPage() {
             </Grid>
             <Grid size={12}>
               <TextField 
-                fullWidth label="Mô tả công việc" multiline rows={4}
+                fullWidth label={t("dialog.description")} multiline rows={4}
                 value={newJob.description} 
                 onChange={(e) => setNewJob({...newJob, description: e.target.value})}
               />
@@ -239,8 +246,8 @@ export default function RecruitmentPage() {
           </Grid>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenJobDialog(false)}>Hủy</Button>
-          <Button variant="contained" onClick={handleCreateJob}>Đăng tin</Button>
+          <Button onClick={() => setOpenJobDialog(false)}>{t("dialog.cancel")}</Button>
+          <Button variant="contained" onClick={handleCreateJob}>{t("dialog.submit")}</Button>
         </DialogActions>
       </Dialog>
     </Box>

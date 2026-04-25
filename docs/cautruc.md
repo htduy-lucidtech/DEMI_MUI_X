@@ -10,7 +10,10 @@ Hrm/
 │   │   ├── AttendanceController.cs
 │   │   ├── AuthController.cs
 │   │   ├── DashboardController.cs
-│   │   └── UsersController.cs
+│   │   ├── UsersController.cs
+│   │   ├── LeaveRequestsController.cs
+│   │   ├── PayrollController.cs
+│   │   └── RecruitmentController.cs
 │   ├── Data/                    # Seed data
 │   │   └── DbInitializer.cs
 │   ├── Properties/              # Launch settings
@@ -21,7 +24,9 @@ Hrm/
 │   ├── Entities/                # Database Models
 │   │   ├── Attendance.cs
 │   │   ├── Department.cs
+│   │   ├── Employee.cs
 │   │   ├── LeaveRequest.cs
+│   │   ├── Recruitment.cs
 │   │   └── User.cs
 │   └── Enums/                   # Types
 │       ├── LeaveStatus.cs
@@ -41,13 +46,14 @@ Hrm/
     │   ├── (authenticated)/     # Protected Routes
     │   │   ├── dashboard/       # Dashboard Modules
     │   │   │   ├── personnel/   # [MODULE] Nhân sự
-    │   │   │   │   ├── locales/ # Ngôn ngữ module
-    │   │   │   │   └── page.tsx
     │   │   │   ├── attendance/  # [MODULE] Chấm công
-    │   │   │   │   ├── locales/
-    │   │   │   │   └── page.tsx
-    │   │   │   └── ...          # (Các module khác tương tự)
-    │   │   └── layout.tsx       # Auth Layout (Sidebar/Navbar)
+    │   │   │   ├── leave/       # [MODULE] Nghỉ phép (Workflow)
+    │   │   │   ├── payroll/     # [MODULE] Bảng lương (Auto calc)
+    │   │   │   ├── recruitment/ # [MODULE] Tuyển dụng
+    │   │   │   ├── org-chart/   # [MODULE] Sơ đồ tổ chức
+    │   │   │   └── ...
+    │   │   ├── layout.tsx       # Auth Layout (Sidebar/Navbar)
+    │   │   └── loading.tsx      # Global loading state
     │   ├── components/          # Shared Components
     │   │   └── layout/          # Layout Components
     │   │       ├── Navbar.tsx
@@ -60,7 +66,10 @@ Hrm/
     ├── services/                # API Service Layer
     │   ├── auth.service.ts
     │   ├── user.service.ts
-    │   └── dashboard.service.ts
+    │   ├── dashboard.service.ts
+    │   ├── leave.service.ts
+    │   ├── payroll.service.ts
+    │   └── recruitment.service.ts
     ├── lib/                     # Utilities
     │   └── api.ts               # Axios config
     ├── i18n.ts                  # i18n Config
@@ -91,10 +100,12 @@ Dưới đây là danh sách toàn bộ các folder và file trong dự án kèm
 - `Hrm.Api/Properties/launchSettings.json` : Cấu hình môi trường chạy (IIS, Kestrel, port).
 
 ## 3. Hrm.Domain (Entities & Interfaces)
-- `Hrm.Domain/Entities/User.cs` : Định nghĩa bảng người dùng trong Database.
+- `Hrm.Domain/Entities/User.cs` : Định nghĩa bảng tài khoản (Account) liên kết với nhân viên.
+- `Hrm.Domain/Entities/Employee.cs` : Định nghĩa hồ sơ chi tiết nhân viên (Họ tên, Lương, Ngân hàng, ...).
 - `Hrm.Domain/Entities/Attendance.cs` : Định nghĩa bảng dữ liệu chấm công.
 - `Hrm.Domain/Entities/Department.cs` : Định nghĩa bảng phòng ban.
 - `Hrm.Domain/Entities/LeaveRequest.cs` : Định nghĩa bảng yêu cầu nghỉ phép.
+- `Hrm.Domain/Entities/Recruitment.cs` : Định nghĩa bảng Tin tuyển dụng và Ứng viên.
 - `Hrm.Domain/Enums/UserRole.cs` : Danh sách các vai trò (Admin, Manager, Employee, ...).
 - `Hrm.Domain/Enums/LeaveStatus.cs` : Các trạng thái của đơn từ (Pending, Approved, Rejected).
 

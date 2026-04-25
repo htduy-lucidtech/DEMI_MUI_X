@@ -23,7 +23,10 @@ namespace Hrm.Service.Implementations
 
         public async Task<string?> Login(string username, string password)
         {
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username && u.Password == password);
+            var user = await _context.Users
+                .Include(u => u.Employee)
+                .FirstOrDefaultAsync(u => u.Username == username && u.Password == password);
+                
             if (user == null) return null;
 
             return GenerateJwtToken(user);
@@ -31,7 +34,9 @@ namespace Hrm.Service.Implementations
 
         public async Task<User?> GetUserByUsername(string username)
         {
-            return await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
+            return await _context.Users
+                .Include(u => u.Employee)
+                .FirstOrDefaultAsync(u => u.Username == username);
         }
 
         private string GenerateJwtToken(User user)
@@ -46,7 +51,8 @@ namespace Hrm.Service.Implementations
                     new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                     new Claim(ClaimTypes.Name, user.Username),
                     new Claim(ClaimTypes.Role, user.Role),
-                    new Claim("Email", user.Email)
+                    new Claim("Email", user.Email),
+                    new Claim("FullName", user.Employee?.FullName ?? user.Username)
                 }),
                 Expires = DateTime.UtcNow.AddDays(7),
                 Issuer = jwtSettings["Issuer"],

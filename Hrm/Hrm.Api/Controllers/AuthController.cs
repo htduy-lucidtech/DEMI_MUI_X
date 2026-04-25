@@ -32,7 +32,7 @@ namespace Hrm.Api.Controllers
                 {
                     user?.Id,
                     user?.Username,
-                    user?.FullName,
+                    FullName = user?.Employee?.FullName ?? user?.Username,
                     user?.Role,
                     user?.Email
                 }

@@ -246,3 +246,22 @@ i18n sẽ lòng vào từng fodel trong page theo cấu trúc: login/locales/vi.
 | 4.3  | Thông báo realtime (SignalR hoặc polling)        | Inbox cập nhật tự động               |
 | 4.4  | Testing + Fix bug + Tối ưu performance          | Hệ thống ổn định                     |
 | 4.5  | Tối ưu UX (Loading state)                       | Hiệu ứng tải trang tránh treo giao diện |
+
+### Giai đoạn 5: Module nâng cao
+
+| Bước | Công việc                                        | Output                              | Trạng thái |
+| ---- | ------------------------------------------------ | ----------------------------------- | ---------- |
+| 5.1  | Chấm công nâng cao & Tính lương tự động          | Bảng lương tính theo ngày công      | ✅ Hoàn thành |
+| 5.2  | Quản lý Đơn từ (Leave Workflow)                  | Luồng duyệt đơn realtime            | ✅ Hoàn thành |
+| 5.3  | Quản lý Tuyển dụng (Recruitment)                 | Tin tuyển dụng + Hồ sơ ứng viên     | ✅ Hoàn thành |
+| 5.4  | Hoàn thiện Chấm công & Phòng ban                 | Widget Check-in + CRUD Phòng ban    | ✅ Hoàn thành |
+| 5.5  | Đánh giá KPI & Performance                       | Hệ thống đánh giá hiệu suất         | ⏳ Sắp tới   |
+| 5.6  | Cài đặt Hệ thống (Admin Settings)                | Cấu hình giờ giấc, lịch nghỉ lễ     | ⏳ Sắp tới   |
+
+### Giai đoạn 6: DevOps & Triển khai
+
+| Bước | Công việc                                        | Output                              | Trạng thái |
+| ---- | ------------------------------------------------ | ----------------------------------- | ---------- |
+| 6.1  | Dockerize dự án (Backend + Frontend)             | Docker Image ổn định                | ⏳ Dự kiến  |
+| 6.2  | Cấu hình CI/CD                                   | Luồng build/deploy tự động          | ⏳ Dự kiến  |
+| 6.3  | Monitoring & Logging (Serilog/Elastic)           | Hệ thống giám sát lỗi               | ⏳ Dự kiến  |

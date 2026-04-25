@@ -2,12 +2,15 @@ import api from "@/lib/api";
 
 export interface User {
   id?: number;
-  fullName: string;
+  employeeId: number;
+  employee?: {
+    fullName: string;
+  };
   username: string;
   email: string;
   role: string;
   isActive: boolean;
-  password?: string; // Dùng cho tạo mới tài khoản
+  password?: string;
 }
 
 export const userService = {

@@ -65,57 +65,60 @@ export default function LeaveRequestsPage() {
   const handleSubmit = async () => {
     try {
       await leaveService.create(formData);
-      fetchRequests();
-      setOpen(false);
+      alert(t("messages.success"));
     } catch (error) {
-      alert("Failed to create request");
+      alert(t("messages.error"));
     }
   };
 
   const handleUpdateStatus = async (id: number, status: string) => {
     try {
       await leaveService.updateStatus(id, status, user?.fullName || "System");
-      fetchRequests();
+      alert(t("messages.updateSuccess"));
     } catch (error) {
-      alert("Failed to update status");
+      alert(t("messages.updateError"));
     }
   };
 
   const columns: GridColDef[] = [
     { 
-      field: "user", 
-      headerName: "Nhân viên", 
-      flex: 1,
-      valueGetter: (params: any) => params?.fullName || "N/A"
+      field: "fullName", 
+      headerName: t("columns.fullName") || "Nhân viên", 
+      flex: 1
     },
-    { field: "leaveType", headerName: "Loại nghỉ", width: 120 },
-    { field: "startDate", headerName: "Từ ngày", width: 130 },
-    { field: "endDate", headerName: "Đến ngày", width: 130 },
+    { 
+      field: "leaveType", 
+      headerName: t("columns.type"), 
+      width: 150,
+      renderCell: (params) => t(`data.type.${params.value}`)
+    },
+    { field: "startDate", headerName: t("columns.startDate"), width: 130 },
+    { field: "endDate", headerName: t("columns.endDate"), width: 130 },
     { 
       field: "status", 
-      headerName: "Trạng thái", 
+      headerName: t("columns.status"), 
       width: 120,
       renderCell: (params: GridRenderCellParams) => {
         const status = params.value as string;
         let color: "warning" | "success" | "error" | "default" = "warning";
         if (status === "Approved") color = "success";
         if (status === "Rejected") color = "error";
-        return <Chip label={status} color={color} size="small" sx={{ fontWeight: 700 }} />;
+        return <Chip label={t(`data.status.${status}`)} color={color} size="small" sx={{ fontWeight: 700 }} />;
       }
     },
     {
       field: "actions",
-      headerName: "Thao tác",
+      headerName: t("columns.actions"),
       width: 150,
       renderCell: (params: GridRenderCellParams) => (
         (user?.role === 'Admin' || user?.role === 'Personnel') && params.row.status === 'Pending' ? (
           <Stack direction="row" spacing={1}>
-            <Tooltip title="Duyệt">
+            <Tooltip title={t("common.approve")}>
               <IconButton color="success" size="small" onClick={() => handleUpdateStatus(params.row.id, 'Approved')}>
                 <ApproveIcon fontSize="small" />
               </IconButton>
             </Tooltip>
-            <Tooltip title="Từ chối">
+            <Tooltip title={t("common.reject")}>
               <IconButton color="error" size="small" onClick={() => handleUpdateStatus(params.row.id, 'Rejected')}>
                 <RejectIcon fontSize="small" />
               </IconButton>
@@ -130,12 +133,12 @@ export default function LeaveRequestsPage() {
     <Box>
       <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Box>
-          <Typography variant="h4" sx={{ fontWeight: 800 }}>Quản lý Nghỉ phép</Typography>
-          <Typography variant="body2" color="text.secondary">Danh sách và phê duyệt đơn từ</Typography>
+          <Typography variant="h4" sx={{ fontWeight: 800 }}>{t("title")}</Typography>
+          <Typography variant="body2" color="text.secondary">{t("subtitle")}</Typography>
         </Box>
         <Stack direction="row" spacing={2}>
-          <Button variant="outlined" startIcon={<RefreshIcon />} onClick={fetchRequests}>Tải lại</Button>
-          <Button variant="contained" startIcon={<AddIcon />} onClick={() => setOpen(true)}>Tạo đơn mới</Button>
+          <Button variant="outlined" startIcon={<RefreshIcon />} onClick={fetchRequests}>{t("common.refresh") || "Tải lại"}</Button>
+          <Button variant="contained" startIcon={<AddIcon />} onClick={() => setOpen(true)}>{t("createRequest")}</Button>
         </Stack>
       </Box>
 
@@ -150,23 +153,23 @@ export default function LeaveRequestsPage() {
       </Paper>
 
       <Dialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth="xs">
-        <DialogTitle sx={{ fontWeight: 700 }}>Tạo đơn nghỉ phép</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 700 }}>{t("dialog.title")}</DialogTitle>
         <DialogContent>
           <Stack spacing={3} sx={{ mt: 1 }}>
             <TextField
               select
-              label="Loại nghỉ"
+              label={t("dialog.type")}
               fullWidth
               value={formData.leaveType}
               onChange={(e) => setFormData({ ...formData, leaveType: e.target.value })}
             >
-              <MenuItem value="Annual">Nghỉ phép năm</MenuItem>
-              <MenuItem value="Sick">Nghỉ ốm</MenuItem>
-              <MenuItem value="Personal">Nghỉ việc riêng</MenuItem>
+              <MenuItem value="Annual">{t("data.type.Annual")}</MenuItem>
+              <MenuItem value="Sick">{t("data.type.Sick")}</MenuItem>
+              <MenuItem value="Personal">{t("data.type.Personal")}</MenuItem>
             </TextField>
             <TextField
               type="date"
-              label="Từ ngày"
+              label={t("dialog.startDate")}
               fullWidth
               slotProps={{ inputLabel: { shrink: true } }}
               value={formData.startDate}
@@ -174,14 +177,14 @@ export default function LeaveRequestsPage() {
             />
             <TextField
               type="date"
-              label="Đến ngày"
+              label={t("dialog.endDate")}
               fullWidth
               slotProps={{ inputLabel: { shrink: true } }}
               value={formData.endDate}
               onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
             />
             <TextField
-              label="Lý do"
+              label={t("dialog.reason")}
               fullWidth
               multiline
               rows={3}
@@ -191,8 +194,8 @@ export default function LeaveRequestsPage() {
           </Stack>
         </DialogContent>
         <DialogActions sx={{ p: 3 }}>
-          <Button onClick={() => setOpen(false)} color="inherit">Hủy</Button>
-          <Button onClick={handleSubmit} variant="contained">Gửi đơn</Button>
+          <Button onClick={() => setOpen(false)} color="inherit">{t("dialog.cancel")}</Button>
+          <Button onClick={handleSubmit} variant="contained">{t("dialog.submit")}</Button>
         </DialogActions>
       </Dialog>
     </Box>

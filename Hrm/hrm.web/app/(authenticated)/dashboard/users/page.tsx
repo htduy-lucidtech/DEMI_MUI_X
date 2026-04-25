@@ -44,12 +44,6 @@ import {
 } from "@mui/icons-material";
 import { useTranslations } from "next-intl";
 import { useAuth, Role } from "@/app/context/AuthContext";
-/**
- * Tại sao sử dụng userService? 
- * - Gom nhóm logic gọi API vào một nơi để dễ quản lý.
- * - Tránh lặp lại cấu hình Axios/Fetch trong từng Component.
- * - Dễ dàng thêm logging hoặc xử lý lỗi tập trung.
- */
 import { userService, User as UserData } from "@/services/user.service";
 
 export default function UsersPage() {
@@ -65,7 +59,7 @@ export default function UsersPage() {
   const [isEdit, setIsEdit] = useState(false);
   const [formData, setFormData] = useState<UserData>({
     username: "",
-    fullName: "",
+    employeeId: 0,
     role: "Employee",
     email: "",
     password: "",
@@ -92,7 +86,7 @@ export default function UsersPage() {
     } else {
       setFormData({
         username: "",
-        fullName: "",
+        employeeId: 0,
         role: "Employee",
         email: "",
         password: "Password@123",
@@ -107,7 +101,7 @@ export default function UsersPage() {
 
   const handleSubmit = async () => {
     try {
-      if (isEdit && formData.id !== undefined) {
+      if (isEdit && formData.id) {
         await userService.update(formData.id, formData);
       } else {
         await userService.create(formData);
@@ -161,14 +155,17 @@ export default function UsersPage() {
       headerName: t("fullname"),
       flex: 1,
       minWidth: 200,
-      renderCell: (params: GridRenderCellParams) => (
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, height: "100%" }}>
-          <Avatar sx={{ width: 32, height: 32, bgcolor: "primary.light", color: "primary.main", fontSize: "0.875rem", fontWeight: 700 }}>
-            {params.row.fullName.charAt(0).toUpperCase()}
-          </Avatar>
-          <Typography variant="body2" sx={{ fontWeight: 600 }}>{params.row.fullName}</Typography>
-        </Box>
-      ),
+      renderCell: (params: GridRenderCellParams) => {
+        const name = params.row.employee?.fullName || params.row.username;
+        return (
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, height: "100%" }}>
+            <Avatar sx={{ width: 32, height: 32, bgcolor: "primary.light", color: "primary.main", fontSize: "0.875rem", fontWeight: 700 }}>
+              {name.charAt(0).toUpperCase()}
+            </Avatar>
+            <Typography variant="body2" sx={{ fontWeight: 600 }}>{name}</Typography>
+          </Box>
+        );
+      },
     },
 
     {
@@ -256,7 +253,7 @@ export default function UsersPage() {
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       result = result.filter(u =>
-        u.fullName.toLowerCase().includes(q) ||
+        (u.employee?.fullName || "").toLowerCase().includes(q) ||
         u.username.toLowerCase().includes(q) ||
         u.email.toLowerCase().includes(q)
       );
@@ -409,13 +406,13 @@ export default function UsersPage() {
                 onChange={(e) => setFormData({ ...formData, username: e.target.value })}
               />
             </Grid>
-            <Grid size={{ xs: 12, sm: 10 }}>
+            <Grid size={{ xs: 12, sm: 12 }}>
               <TextField
                 label={t("fullname")}
                 fullWidth
                 size="small"
-                value={formData.fullName}
-                onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                disabled
+                value={formData.employee?.fullName || "N/A"}
               />
             </Grid>
             <Grid size={{ xs: 12 }}>
