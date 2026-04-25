@@ -10,5 +10,7 @@ namespace Hrm.Infrastructure.Data {
         public DbSet<Attendance> Attendances { get; set; } // Nhân viên Check-in tại đây
         public DbSet<LeaveRequest> LeaveRequests { get; set; }
         public DbSet<Department> Departments { get; set; } // Quản lý phòng ban
+        public DbSet<JobPosting> JobPostings { get; set; }
+        public DbSet<Candidate> Candidates { get; set; }
     }
 }

@@ -94,6 +94,13 @@ export default function Sidebar() {
       roles: ["Admin", "Manager", "Personnel"],
     },
     {
+      key: "recruitment",
+      text: "Tuyển dụng",
+      icon: <AssignmentIcon />,
+      path: "/dashboard/recruitment",
+      roles: ["Admin", "Manager", "Personnel"],
+    },
+    {
       key: "admin",
       text: t("admin"),
       icon: <SettingsIcon />,
