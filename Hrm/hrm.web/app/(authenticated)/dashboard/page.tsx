@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Typography,
@@ -16,6 +16,8 @@ import {
   LinearProgress,
   Button,
   Paper,
+  CircularProgress,
+  Chip
 } from "@mui/material";
 import {
   People as PeopleIcon,
@@ -23,27 +25,73 @@ import {
   AccessTime as AccessTimeIcon,
   Assignment as AssignmentIcon,
   TrendingUp as TrendingUpIcon,
-  MoreVert as MoreVertIcon,
   CheckCircle as CheckCircleIcon,
 } from "@mui/icons-material";
 import { useTranslations } from "next-intl";
+import api from "@/lib/api";
 
 export default function DashboardPage() {
   const t = useTranslations("Dashboard");
-  
+  const [statsData, setStatsData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const response = await api.get("/Dashboard/stats");
+        setStatsData(response.data);
+      } catch (error) {
+        console.error("Failed to fetch dashboard stats:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchStats();
+  }, []);
+
+  if (loading) {
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "50vh" }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
   const stats = [
-    { name: t("stats.total_employees"), value: "128", subValue: "+4% so với tháng trước", icon: PeopleIcon, color: "#4f46e5", trend: "up" },
-    { name: t("stats.attendance_today"), value: "112/128", subValue: "87.5% tỉ lệ có mặt", icon: CalendarMonthIcon, color: "#10b981", trend: "up" },
-    { name: t("stats.late_today"), value: "3", subValue: "-2% so với hôm qua", icon: AccessTimeIcon, color: "#f59e0b", trend: "down" },
-    { name: t("stats.leave_requests"), value: "8", subValue: "5 đơn đang chờ duyệt", icon: AssignmentIcon, color: "#ec4899", trend: "neutral" },
+    { 
+      name: t("stats.total_employees"), 
+      value: statsData?.totalEmployees || 0, 
+      subValue: `${statsData?.activeEmployees || 0} đang hoạt động`, 
+      icon: PeopleIcon, 
+      color: "#4f46e5", 
+      trend: "up" 
+    },
+    { 
+      name: t("stats.attendance_today"), 
+      value: `${statsData?.attendanceToday || 0}/${statsData?.totalEmployees || 0}`, 
+      subValue: `${((statsData?.attendanceToday / statsData?.totalEmployees) * 100 || 0).toFixed(1)}% tỉ lệ có mặt`, 
+      icon: CalendarMonthIcon, 
+      color: "#10b981", 
+      trend: "up" 
+    },
+    { 
+      name: t("stats.late_today"), 
+      value: statsData?.lateToday || 0, 
+      subValue: "Dữ liệu thời gian thực", 
+      icon: AccessTimeIcon, 
+      color: "#f59e0b", 
+      trend: "down" 
+    },
+    { 
+      name: t("stats.leave_requests"), 
+      value: statsData?.leaveRequests || 0, 
+      subValue: "Chờ phê duyệt", 
+      icon: AssignmentIcon, 
+      color: "#ec4899", 
+      trend: "neutral" 
+    },
   ];
 
-  const recentActivities = [
-    { id: 1, user: "Nguyễn Văn An", action: "Check-in", time: "08:00 AM", status: "success" },
-    { id: 2, user: "Trần Thị Bình", action: "Nghỉ phép", time: "08:15 AM", status: "warning" },
-    { id: 3, user: "Lê Văn Cường", action: "Check-in trễ", time: "08:45 AM", status: "error" },
-    { id: 4, user: "Phạm Minh Đức", action: "Check-in", time: "09:00 AM", status: "success" },
-  ];
 
   return (
     <Box sx={{ flexGrow: 1 }}>
@@ -54,10 +102,10 @@ export default function DashboardPage() {
             {t("title")}
           </Typography>
           <Typography variant="body1" color="text.secondary">
-            {t("welcome")}, hôm nay là một ngày làm việc tuyệt vời.
+            {t("welcome")}
           </Typography>
         </Box>
-        <Button variant="contained" size="large" sx={{ borderRadius: 3 }}>
+        <Button variant="contained" size="large" sx={{ borderRadius: 3, px: 4 }}>
           Xuất báo cáo
         </Button>
       </Box>
@@ -67,6 +115,8 @@ export default function DashboardPage() {
         {stats.map((stat) => (
           <Grid size={{ xs: 12, sm: 6, lg: 3 }} key={stat.name}>
             <Card sx={{ 
+              borderRadius: 4,
+              boxShadow: "0 4px 20px rgba(0,0,0,0.05)",
               transition: "transform 0.2s", 
               "&:hover": { transform: "translateY(-4px)" } 
             }}>
@@ -74,10 +124,10 @@ export default function DashboardPage() {
                 <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
                   <Avatar
                     sx={{
-                      bgcolor: `${stat.color}15`, // Lighten background
+                      bgcolor: `${stat.color}15`, 
                       color: stat.color,
-                      width: 44,
-                      height: 44,
+                      width: 48,
+                      height: 48,
                       borderRadius: 2
                     }}
                   >
@@ -91,14 +141,12 @@ export default function DashboardPage() {
                 <Typography variant="subtitle2" sx={{ fontWeight: 600, color: "text.secondary", mb: 1 }}>
                   {stat.name}
                 </Typography>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                  <Typography variant="caption" sx={{ 
-                    color: stat.trend === "up" ? "success.main" : stat.trend === "down" ? "error.main" : "text.secondary",
-                    fontWeight: 700 
-                  }}>
-                    {stat.subValue}
-                  </Typography>
-                </Box>
+                <Typography variant="caption" sx={{ 
+                  color: stat.trend === "up" ? "success.main" : stat.trend === "down" ? "error.main" : "text.secondary",
+                  fontWeight: 700 
+                }}>
+                  {stat.subValue}
+                </Typography>
               </CardContent>
             </Card>
           </Grid>
@@ -107,24 +155,23 @@ export default function DashboardPage() {
 
       {/* Main Content Grid */}
       <Grid container spacing={3}>
-        {/* Recent Attendance Timeline */}
         <Grid size={{ xs: 12, lg: 8 }}>
-          <Card>
+          <Card sx={{ borderRadius: 4, boxShadow: "0 4px 20px rgba(0,0,0,0.05)" }}>
             <CardContent sx={{ p: 3 }}>
               <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
-                <Typography variant="h6">
+                <Typography variant="h6" sx={{ fontWeight: 700 }}>
                   {t("recent_attendance")}
                 </Typography>
                 <Button size="small">Xem tất cả</Button>
               </Box>
               
               <List disablePadding>
-                {recentActivities.map((activity, index) => (
+                {(statsData?.recentActivities || []).map((activity: any, index: number) => (
                   <React.Fragment key={activity.id}>
                     <ListItem sx={{ px: 0, py: 2 }}>
                       <ListItemAvatar>
-                        <Avatar sx={{ bgcolor: "background.default", color: "text.primary" }}>
-                          {activity.user.charAt(0)}
+                        <Avatar sx={{ bgcolor: "primary.light", color: "primary.main", fontWeight: 700 }}>
+                          {activity.user?.charAt(0)}
                         </Avatar>
                       </ListItemAvatar>
                       <ListItemText 
@@ -137,23 +184,27 @@ export default function DashboardPage() {
                           size="small" 
                           label={activity.status === "success" ? "Đúng giờ" : activity.status === "error" ? "Muộn" : "Đơn nghỉ"}
                           color={activity.status as any}
-                          sx={{ height: 20, fontSize: "0.7rem", fontWeight: 700 }}
+                          sx={{ height: 20, fontSize: "0.7rem", fontWeight: 700, borderRadius: 1 }}
                         />
                       </Box>
                     </ListItem>
-                    {index < recentActivities.length - 1 && <Divider component="li" />}
+                    {index < (statsData?.recentActivities?.length - 1) && <Divider component="li" />}
                   </React.Fragment>
                 ))}
+                {(!statsData?.recentActivities || statsData.recentActivities.length === 0) && (
+                  <Typography variant="body2" color="text.secondary" sx={{ py: 4, textAlign: "center" }}>
+                    Chưa có hoạt động nào hôm nay.
+                  </Typography>
+                )}
               </List>
             </CardContent>
           </Card>
         </Grid>
 
-        {/* Attendance Rate / Stats */}
         <Grid size={{ xs: 12, lg: 4 }}>
-          <Card sx={{ height: "100%" }}>
+          <Card sx={{ borderRadius: 4, height: "100%", boxShadow: "0 4px 20px rgba(0,0,0,0.05)" }}>
             <CardContent sx={{ p: 3 }}>
-              <Typography variant="h6" sx={{ mb: 3 }}>
+              <Typography variant="h6" sx={{ mb: 3, fontWeight: 700 }}>
                 Hiệu suất làm việc
               </Typography>
               
@@ -173,12 +224,12 @@ export default function DashboardPage() {
                 <LinearProgress variant="determinate" value={78} color="secondary" sx={{ height: 8, borderRadius: 4 }} />
               </Box>
 
-              <Paper sx={{ p: 2, bgcolor: "primary.main", color: "white", borderRadius: 3 }}>
+              <Paper sx={{ p: 2, bgcolor: "primary.main", color: "white", borderRadius: 3, boxShadow: "0 4px 12px rgba(79, 70, 229, 0.3)" }}>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                   <CheckCircleIcon />
                   <Box>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Thông báo</Typography>
-                    <Typography variant="caption">Hệ thống đã tự động chốt công tháng 4.</Typography>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Thông báo hệ thống</Typography>
+                    <Typography variant="caption" sx={{ opacity: 0.9 }}>Dữ liệu chấm công đã được chốt.</Typography>
                   </Box>
                 </Box>
               </Paper>
@@ -189,26 +240,3 @@ export default function DashboardPage() {
     </Box>
   );
 }
-
-// Shorthand for Chip if not imported
-const Chip = ({ label, size, color, sx }: any) => {
-  const colors: any = {
-    success: { bg: "#dcfce7", text: "#166534" },
-    error: { bg: "#fee2e2", text: "#991b1b" },
-    warning: { bg: "#fef3c7", text: "#92400e" },
-  };
-  const c = colors[color] || colors.success;
-  return (
-    <Box sx={{ 
-      display: "inline-flex", 
-      alignItems: "center", 
-      px: 1, 
-      borderRadius: 1, 
-      bgcolor: c.bg, 
-      color: c.text,
-      ...sx 
-    }}>
-      <Typography sx={{ fontSize: "inherit", fontWeight: "inherit" }}>{label}</Typography>
-    </Box>
-  );
-};

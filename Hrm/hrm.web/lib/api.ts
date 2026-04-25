@@ -1,23 +1,25 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5181/api';
+import axios from 'axios';
+import Cookies from 'js-cookie';
 
-export async function apiFetch(endpoint: string, options: RequestInit = {}) {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-  
-  const headers = {
+const api = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5181/api',
+  headers: {
     'Content-Type': 'application/json',
-    ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-    ...options.headers,
-  };
+  },
+});
 
-  const response = await fetch(`${API_URL}${endpoint}`, {
-    ...options,
-    headers,
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.message || 'Something went wrong');
+// Thêm interceptor để đính kèm token vào mỗi request
+api.interceptors.request.use(
+  (config) => {
+    const token = Cookies.get('token') || (typeof window !== 'undefined' ? localStorage.getItem('token') : null);
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
   }
+);
 
-  return response.json();
-}
+export default api;
