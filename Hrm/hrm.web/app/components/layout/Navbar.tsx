@@ -223,7 +223,7 @@ export default function Navbar() {
                       {notif.message}
                     </Typography>
                     <Typography variant="caption" color="text.disabled" sx={{ mt: 0.5, display: 'block' }}>
-                      {new Date(notif.createdAt).toLocaleString('vi-VN')}
+                      {new Date(notif.createdAt).toLocaleString(Cookies.get("NEXT_LOCALE") === 'en' ? 'en-US' : 'vi-VN')}
                     </Typography>
                   </Box>
                 </MenuItem>

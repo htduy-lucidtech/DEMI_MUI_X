@@ -63,7 +63,7 @@ export default function DashboardPage() {
     { 
       name: t("stats.total_employees"), 
       value: statsData?.totalEmployees || 0, 
-      subValue: `${statsData?.activeEmployees || 0} đang hoạt động`, 
+      subValue: `${statsData?.activeEmployees || 0} ${t('stats_sub.active')}`, 
       icon: PeopleIcon, 
       color: "#4f46e5", 
       trend: "up",
@@ -72,7 +72,7 @@ export default function DashboardPage() {
     { 
       name: t("stats.attendance_today"), 
       value: `${statsData?.attendanceToday || 0}/${statsData?.totalEmployees || 0}`, 
-      subValue: `${((statsData?.attendanceToday / statsData?.totalEmployees) * 100 || 0).toFixed(1)}% tỉ lệ có mặt`, 
+      subValue: `${((statsData?.attendanceToday / statsData?.totalEmployees) * 100 || 0).toFixed(1)}${t('stats_sub.attendance_rate')}`, 
       icon: CalendarMonthIcon, 
       color: "#10b981", 
       trend: "up",
@@ -81,7 +81,7 @@ export default function DashboardPage() {
     { 
       name: t("stats.late_today"), 
       value: statsData?.lateToday || 0, 
-      subValue: "Dữ liệu thời gian thực", 
+      subValue: t('stats_sub.real_time'), 
       icon: AccessTimeIcon, 
       color: "#f59e0b", 
       trend: "down",
@@ -90,7 +90,7 @@ export default function DashboardPage() {
     { 
       name: t("stats.leave_requests"), 
       value: statsData?.leaveRequests || 0, 
-      subValue: "Chờ phê duyệt", 
+      subValue: t('stats_sub.pending_approval'), 
       icon: AssignmentIcon, 
       color: "#ec4899", 
       trend: "neutral",
@@ -116,7 +116,7 @@ export default function DashboardPage() {
           sx={{ borderRadius: 3, px: 4 }}
           onClick={() => dashboardService.testNotification()}
         >
-          Test Thông báo
+          {t('test_notification')}
         </Button>
       </Box>
 
@@ -176,7 +176,7 @@ export default function DashboardPage() {
                 <Typography variant="h6" sx={{ fontWeight: 700 }}>
                   {t("recent_attendance")}
                 </Typography>
-                <Button size="small">Xem tất cả</Button>
+                <Button size="small">{t('view_all')}</Button>
               </Box>
               
               <List disablePadding>
@@ -196,7 +196,7 @@ export default function DashboardPage() {
                         <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{activity.time}</Typography>
                         <Chip 
                           size="small" 
-                          label={activity.status === "success" ? "Đúng giờ" : activity.status === "error" ? "Muộn" : "Đơn nghỉ"}
+                          label={activity.status === "success" ? t('status.on_time') : activity.status === "error" ? t('status.late') : t('status.leave')}
                           color={activity.status as any}
                           sx={{ height: 20, fontSize: "0.7rem", fontWeight: 700, borderRadius: 1 }}
                         />
@@ -207,7 +207,7 @@ export default function DashboardPage() {
                 ))}
                 {(!statsData?.recentActivities || statsData.recentActivities.length === 0) && (
                   <Typography variant="body2" color="text.secondary" sx={{ py: 4, textAlign: "center" }}>
-                    Chưa có hoạt động nào hôm nay.
+                    {t('no_activities_today')}
                   </Typography>
                 )}
               </List>
@@ -219,12 +219,12 @@ export default function DashboardPage() {
           <Card sx={{ borderRadius: 4, height: "100%", boxShadow: "0 4px 20px rgba(0,0,0,0.05)" }}>
             <CardContent sx={{ p: 3 }}>
               <Typography variant="h6" sx={{ mb: 3, fontWeight: 700 }}>
-                Hiệu suất làm việc
+                {t('performance.title')}
               </Typography>
               
               <Box sx={{ mb: 4 }}>
                 <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
-                  <Typography variant="body2" color="text.secondary">Tỉ lệ chuyên cần</Typography>
+                  <Typography variant="body2" color="text.secondary">{t('performance.attendance_rate')}</Typography>
                   <Typography variant="body2" sx={{ fontWeight: 700 }}>92%</Typography>
                 </Box>
                 <LinearProgress variant="determinate" value={92} sx={{ height: 8, borderRadius: 4 }} />
@@ -232,7 +232,7 @@ export default function DashboardPage() {
 
               <Box sx={{ mb: 4 }}>
                 <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
-                  <Typography variant="body2" color="text.secondary">Hoàn thành KPI</Typography>
+                  <Typography variant="body2" color="text.secondary">{t('performance.kpi_completion')}</Typography>
                   <Typography variant="body2" sx={{ fontWeight: 700 }}>78%</Typography>
                 </Box>
                 <LinearProgress variant="determinate" value={78} color="secondary" sx={{ height: 8, borderRadius: 4 }} />
@@ -242,8 +242,8 @@ export default function DashboardPage() {
                 <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                   <CheckCircleIcon />
                   <Box>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>Thông báo hệ thống</Typography>
-                    <Typography variant="caption" sx={{ opacity: 0.9 }}>Dữ liệu chấm công đã được chốt.</Typography>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{t('system_notification.title')}</Typography>
+                    <Typography variant="caption" sx={{ opacity: 0.9 }}>{t('system_notification.desc')}</Typography>
                   </Box>
                 </Box>
               </Paper>

@@ -10,4 +10,27 @@ export default {
   recent_attendance: "Recent Attendance",
   personnel_change: "Personnel Changes",
   no_data: "Data will be displayed here",
+  stats_sub: {
+    active: "active",
+    attendance_rate: "% attendance rate",
+    real_time: "Real-time data",
+    pending_approval: "Pending approval"
+  },
+  test_notification: "Test Notification",
+  view_all: "View All",
+  status: {
+    on_time: "On Time",
+    late: "Late",
+    leave: "Leave"
+  },
+  no_activities_today: "No activities today.",
+  performance: {
+    title: "Work Performance",
+    attendance_rate: "Attendance Rate",
+    kpi_completion: "KPI Completion"
+  },
+  system_notification: {
+    title: "System Notification",
+    desc: "Attendance data has been locked."
+  }
 };
