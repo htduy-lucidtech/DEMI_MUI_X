@@ -40,13 +40,55 @@ namespace Hrm.Api.Controllers
                 })
                 .ToListAsync();
 
+            var lateToday = await _context.Attendances
+                .CountAsync(a => a.CheckInTime.Date == today && a.CheckInTime.TimeOfDay > new TimeSpan(8, 0, 0));
+
+            var leaveRequests = await _context.LeaveRequests
+                .CountAsync(l => l.Status == "Pending");
+
+            // KPI Completion based on PerformanceReview scores (1-5 scale)
+            var performanceReviews = await _context.PerformanceReviews.ToListAsync();
+            double kpiCompletion = 0;
+            if (performanceReviews.Any())
+            {
+                var averageScore = performanceReviews.Average(p => (double)p.TotalScore);
+                kpiCompletion = Math.Round((averageScore / 5.0) * 100, 1);
+            }
+
+            // Overall attendance rate (mock 30 days history logic or use current active base)
+            // If we have attendance data, we can just use today's attendance / active employees
+            // For a more realistic "overall" rate, we'll calculate based on all time attendances 
+            // vs total possible (simplification: attendance rate is today's rate * 100 if > 0, else 0)
+            double attendanceRate = 0;
+            if (activeEmployees > 0)
+            {
+                attendanceRate = Math.Round(((double)attendanceToday / activeEmployees) * 100, 1);
+                // If it's a weekend or holiday and 0, let's pull historical
+                if (attendanceRate == 0 && await _context.Attendances.AnyAsync())
+                {
+                    var totalDays = await _context.Attendances.Select(a => a.CheckInTime.Date).Distinct().CountAsync();
+                    var totalAttendances = await _context.Attendances.CountAsync();
+                    if (totalDays > 0)
+                    {
+                        var avgDaily = (double)totalAttendances / totalDays;
+                        attendanceRate = Math.Round((avgDaily / activeEmployees) * 100, 1);
+                    }
+                }
+            }
+
+            // Normalize to max 100%
+            if (attendanceRate > 100) attendanceRate = 100;
+            if (kpiCompletion > 100) kpiCompletion = 100;
+
             return Ok(new
             {
                 totalEmployees,
                 activeEmployees,
                 attendanceToday,
-                lateToday = 2,
-                leaveRequests = 3,
+                lateToday,
+                leaveRequests,
+                kpiCompletion,
+                attendanceRate,
                 recentActivities
             });
         }

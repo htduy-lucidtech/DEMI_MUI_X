@@ -226,17 +226,17 @@ export default function DashboardPage() {
               <Box sx={{ mb: 4 }}>
                 <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
                   <Typography variant="body2" color="text.secondary">{t('performance.attendance_rate')}</Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 700 }}>92%</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 700 }}>{statsData?.attendanceRate || 0}%</Typography>
                 </Box>
-                <LinearProgress variant="determinate" value={92} sx={{ height: 8, borderRadius: 4 }} />
+                <LinearProgress variant="determinate" value={statsData?.attendanceRate || 0} sx={{ height: 8, borderRadius: 4 }} />
               </Box>
 
               <Box sx={{ mb: 4 }}>
                 <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
                   <Typography variant="body2" color="text.secondary">{t('performance.kpi_completion')}</Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 700 }}>78%</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 700 }}>{statsData?.kpiCompletion || 0}%</Typography>
                 </Box>
-                <LinearProgress variant="determinate" value={78} color="secondary" sx={{ height: 8, borderRadius: 4 }} />
+                <LinearProgress variant="determinate" value={statsData?.kpiCompletion || 0} color="secondary" sx={{ height: 8, borderRadius: 4 }} />
               </Box>
 
               <Paper sx={{ p: 2, bgcolor: "primary.main", color: "white", borderRadius: 3, boxShadow: "0 4px 12px rgba(79, 70, 229, 0.3)" }}>
