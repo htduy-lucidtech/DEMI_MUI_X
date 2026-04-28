@@ -177,6 +177,28 @@ namespace Hrm.Api.Data
                 new Notification { UserId = employees[4].Id, Title = "Đơn xin nghỉ được duyệt", Message = "Đơn xin nghỉ của bạn đã được duyệt.", Type = "Success", CreatedAt = DateTime.UtcNow.AddMinutes(-30) }
             };
             context.Notifications.AddRange(notifications);
+            await context.SaveChangesAsync();
+
+            // 10. Seed Contracts
+            var contracts = new List<Contract>
+            {
+                new Contract { 
+                    ContractNumber = "HD-001", Type = "Indefinite", 
+                    StartDate = DateTime.UtcNow.AddYears(-1), Salary = 50000000, 
+                    Status = "Active", EmployeeId = employees[0].Id 
+                },
+                new Contract { 
+                    ContractNumber = "HD-002", Type = "Fixed-term", 
+                    StartDate = DateTime.UtcNow.AddMonths(-6), EndDate = DateTime.UtcNow.AddMonths(6),
+                    Salary = 35000000, Status = "Active", EmployeeId = employees[1].Id 
+                },
+                new Contract { 
+                    ContractNumber = "HD-003", Type = "Fixed-term", 
+                    StartDate = DateTime.UtcNow.AddMonths(-3), EndDate = DateTime.UtcNow.AddMonths(9),
+                    Salary = 20000000, Status = "Active", EmployeeId = employees[4].Id 
+                }
+            };
+            context.Contracts.AddRange(contracts);
 
             await context.SaveChangesAsync();
         }

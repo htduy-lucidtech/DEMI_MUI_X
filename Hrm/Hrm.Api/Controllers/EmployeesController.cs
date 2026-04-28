@@ -67,12 +67,20 @@ namespace Hrm.Api.Controllers
         }
 
         [HttpGet("export/excel")]
-        public async Task<IActionResult> ExportExcel()
+        public async Task<IActionResult> ExportExcel([FromQuery] string? ids)
         {
-            var employees = await _context.Employees
+            var query = _context.Employees
                 .Include(e => e.Department)
                 .Include(e => e.Account)
-                .ToListAsync();
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(ids))
+            {
+                var idList = ids.Split(',').Select(int.Parse).ToList();
+                query = query.Where(e => idList.Contains(e.Id));
+            }
+
+            var employees = await query.ToListAsync();
 
             using var workbook = new ClosedXML.Excel.XLWorkbook();
             var worksheet = workbook.Worksheets.Add("Employees");
@@ -114,6 +122,30 @@ namespace Hrm.Api.Controllers
             var content = stream.ToArray();
 
             return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Employees.xlsx");
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteEmployee(int id)
+        {
+            var employee = await _context.Employees.FindAsync(id);
+            if (employee == null) return NotFound();
+
+            _context.Employees.Remove(employee);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        [HttpPost("bulk-delete")]
+        public async Task<IActionResult> DeleteEmployees([FromBody] List<int> ids)
+        {
+            var employees = await _context.Employees.Where(e => ids.Contains(e.Id)).ToListAsync();
+            if (!employees.Any()) return NotFound();
+
+            _context.Employees.RemoveRange(employees);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
         }
 
         private bool EmployeeExists(int id)

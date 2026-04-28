@@ -50,13 +50,24 @@ export default {
       department: "Department",
       manager: "Manager",
       baseSalary: "Base Salary",
-      allowance: "Allowance"
+      allowance: "Allowance",
+      contract: "Contract",
+      idCard: "ID Card"
     }
   },
   dialog: {
     add_title: "Add New Employee",
     edit_title: "Edit Information",
+    delete_title: "Confirm Delete",
+    delete_confirm: "Are you sure you want to delete this employee? This action cannot be undone.",
+    delete_bulk_title: "Confirm Bulk Delete",
+    delete_bulk_confirm: "Are you sure you want to delete {count} selected employees? This action cannot be undone.",
+    delete: "Delete",
+    delete_all: "Delete All",
     save: "Save",
-    cancel: "Cancel"
+    cancel: "Cancel",
+    export_pdf: "Export PDF",
+    print_card: "Print Card",
+    id_card_title: "Employee ID Card"
   }
 };

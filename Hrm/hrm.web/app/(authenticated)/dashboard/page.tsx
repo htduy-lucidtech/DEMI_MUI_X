@@ -61,39 +61,39 @@ export default function DashboardPage() {
   }
 
   const stats = [
-    { 
-      name: t("stats.total_employees"), 
-      value: statsData?.totalEmployees || 0, 
-      subValue: `${statsData?.activeEmployees || 0} ${t('stats_sub.active')}`, 
-      icon: PeopleIcon, 
-      color: "#4f46e5", 
+    {
+      name: t("stats.total_employees"),
+      value: statsData?.totalEmployees || 0,
+      subValue: `${statsData?.activeEmployees || 0} ${t('stats_sub.active')}`,
+      icon: PeopleIcon,
+      color: "#4f46e5",
       trend: "up",
       link: "/dashboard/personnel"
     },
-    { 
-      name: t("stats.attendance_today"), 
-      value: `${statsData?.attendanceToday || 0}/${statsData?.totalEmployees || 0}`, 
-      subValue: `${((statsData?.attendanceToday / statsData?.totalEmployees) * 100 || 0).toFixed(1)}${t('stats_sub.attendance_rate')}`, 
-      icon: CalendarMonthIcon, 
-      color: "#10b981", 
+    {
+      name: t("stats.attendance_today"),
+      value: `${statsData?.attendanceToday || 0}/${statsData?.totalEmployees || 0}`,
+      subValue: `${((statsData?.attendanceToday / statsData?.totalEmployees) * 100 || 0).toFixed(1)}${t('stats_sub.attendance_rate')}`,
+      icon: CalendarMonthIcon,
+      color: "#10b981",
       trend: "up",
       link: "/dashboard/attendance"
     },
-    { 
-      name: t("stats.late_today"), 
-      value: statsData?.lateToday || 0, 
-      subValue: t('stats_sub.real_time'), 
-      icon: AccessTimeIcon, 
-      color: "#f59e0b", 
+    {
+      name: t("stats.late_today"),
+      value: statsData?.lateToday || 0,
+      subValue: t('stats_sub.real_time'),
+      icon: AccessTimeIcon,
+      color: "#f59e0b",
       trend: "down",
       link: "/dashboard/attendance"
     },
-    { 
-      name: t("stats.leave_requests"), 
-      value: statsData?.leaveRequests || 0, 
-      subValue: t('stats_sub.pending_approval'), 
-      icon: AssignmentIcon, 
-      color: "#ec4899", 
+    {
+      name: t("stats.leave_requests"),
+      value: statsData?.leaveRequests || 0,
+      subValue: t('stats_sub.pending_approval'),
+      icon: AssignmentIcon,
+      color: "#ec4899",
       trend: "neutral",
       link: "/dashboard/leave"
     },
@@ -111,9 +111,9 @@ export default function DashboardPage() {
             {t("welcome")}
           </Typography>
         </Box>
-        <Button 
-          variant="contained" 
-          size="large" 
+        <Button
+          variant="contained"
+          size="large"
           sx={{ borderRadius: 3, px: 4 }}
           onClick={() => dashboardService.testNotification()}
         >
@@ -125,21 +125,21 @@ export default function DashboardPage() {
       <Grid container spacing={3} sx={{ mb: 4 }}>
         {stats.map((stat) => (
           <Grid size={{ xs: 12, sm: 6, lg: 3 }} key={stat.name}>
-            <Card 
+            <Card
               onClick={() => router.push(stat.link)}
-              sx={{ 
+              sx={{
                 borderRadius: 4,
                 cursor: "pointer",
                 boxShadow: "0 4px 20px rgba(0,0,0,0.05)",
-                transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)", 
-                "&:hover": { transform: "translateY(-4px)", boxShadow: "0 12px 28px rgba(0,0,0,0.12)" } 
+                transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                "&:hover": { transform: "translateY(-4px)", boxShadow: "0 12px 28px rgba(0,0,0,0.12)" }
               }}
             >
               <CardContent sx={{ p: 3 }}>
                 <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
                   <Avatar
                     sx={{
-                      bgcolor: `${stat.color}15`, 
+                      bgcolor: `${stat.color}15`,
                       color: stat.color,
                       width: 48,
                       height: 48,
@@ -156,9 +156,9 @@ export default function DashboardPage() {
                 <Typography variant="subtitle2" sx={{ fontWeight: 600, color: "text.secondary", mb: 1 }}>
                   {stat.name}
                 </Typography>
-                <Typography variant="caption" sx={{ 
+                <Typography variant="caption" sx={{
                   color: stat.trend === "up" ? "success.main" : stat.trend === "down" ? "error.main" : "text.secondary",
-                  fontWeight: 700 
+                  fontWeight: 700
                 }}>
                   {stat.subValue}
                 </Typography>
@@ -177,9 +177,9 @@ export default function DashboardPage() {
                 <Typography variant="h6" sx={{ fontWeight: 700 }}>
                   {t("recent_attendance")}
                 </Typography>
-                <Button size="small">{t('view_all')}</Button>
+                <Button size="small" onClick={() => router.push("/dashboard/attendance")}>{t('view_all')}  </Button>
               </Box>
-              
+
               <List disablePadding>
                 {(statsData?.recentActivities || []).map((activity: any, index: number) => (
                   <React.Fragment key={activity.id}>
@@ -189,14 +189,14 @@ export default function DashboardPage() {
                           {activity.user?.charAt(0)}
                         </Avatar>
                       </ListItemAvatar>
-                      <ListItemText 
+                      <ListItemText
                         primary={<Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{activity.user}</Typography>}
                         secondary={activity.action}
                       />
                       <Box sx={{ textAlign: "right" }}>
                         <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{activity.time}</Typography>
-                        <Chip 
-                          size="small" 
+                        <Chip
+                          size="small"
                           label={activity.status === "success" ? t('status.on_time') : activity.status === "error" ? t('status.late') : t('status.leave')}
                           color={activity.status as any}
                           sx={{ height: 20, fontSize: "0.7rem", fontWeight: 700, borderRadius: 1 }}
@@ -222,7 +222,7 @@ export default function DashboardPage() {
               <Typography variant="h6" sx={{ mb: 3, fontWeight: 700 }}>
                 {t('performance.title')}
               </Typography>
-              
+
               <Box sx={{ mb: 4 }}>
                 <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
                   <Typography variant="body2" color="text.secondary">{t('performance.attendance_rate')}</Typography>

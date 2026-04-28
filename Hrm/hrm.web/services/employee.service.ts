@@ -41,8 +41,20 @@ export const employeeService = {
     return response.data;
   },
 
-  exportExcel: async (): Promise<Blob> => {
+  delete: async (id: number) => {
+    const response = await api.delete(`/Employees/${id}`);
+    return response.data;
+  },
+
+  bulkDelete: async (ids: number[]) => {
+    const response = await api.post("/Employees/bulk-delete", ids);
+    return response.data;
+  },
+
+  exportExcel: async (ids?: number[]): Promise<Blob> => {
+    const params = ids ? { ids: ids.join(',') } : {};
     const response = await api.get('/Employees/export/excel', {
+      params,
       responseType: 'blob'
     });
     return response.data;

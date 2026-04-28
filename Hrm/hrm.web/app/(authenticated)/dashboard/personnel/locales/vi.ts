@@ -50,13 +50,24 @@ export default {
       department: "Phòng ban",
       manager: "Người quản lý",
       baseSalary: "Lương cơ bản",
-      allowance: "Phụ cấp"
+      allowance: "Phụ cấp",
+      contract: "Hợp đồng",
+      idCard: "Thẻ nhân viên"
     }
   },
   dialog: {
     add_title: "Thêm nhân viên mới",
     edit_title: "Chỉnh sửa thông tin",
+    delete_title: "Xác nhận xóa",
+    delete_confirm: "Bạn có chắc chắn muốn xóa nhân viên này? Hành động này không thể hoàn tác.",
+    delete_bulk_title: "Xác nhận xóa hàng loạt",
+    delete_bulk_confirm: "Bạn có chắc chắn muốn xóa {count} nhân viên đã chọn? Hành động này không thể hoàn tác.",
+    delete: "Xóa",
+    delete_all: "Xóa tất cả",
     save: "Lưu",
-    cancel: "Hủy"
+    cancel: "Hủy",
+    export_pdf: "Xuất PDF",
+    print_card: "In thẻ",
+    id_card_title: "Thẻ nhân viên"
   }
 };

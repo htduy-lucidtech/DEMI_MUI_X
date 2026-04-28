@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Box,
   Typography,
@@ -15,9 +15,14 @@ import {
   Drawer,
   Tabs,
   Tab,
-  Grid,
   Avatar,
   Divider,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Card,
+  CardContent,
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -28,11 +33,19 @@ import {
   Refresh as RefreshIcon,
   Visibility as ViewIcon,
   Close as CloseIcon,
+  ContactPage as ContractIcon,
+  Badge as BadgeIcon,
+  Print as PrintIcon,
+  PictureAsPdf as PdfIcon,
 } from "@mui/icons-material";
 import { DataGrid, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 import { useTranslations } from "next-intl";
 import { employeeService, Employee } from "@/services/employee.service";
+import { contractService, Contract } from "@/services/contract.service";
 import CustomNoRowsOverlay from "@/app/components/CustomNoRowsOverlay";
+import EmployeeDialog from "./components/EmployeeDialog";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 
 export default function PersonnelPage() {
   const t = useTranslations("Personnel");
@@ -43,6 +56,38 @@ export default function PersonnelPage() {
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [detailDrawerOpen, setDetailDrawerOpen] = useState(false);
   const [tabValue, setTabValue] = useState(0);
+
+  // Selection state - Use any to handle different MUI X versions
+  const [selectionModel, setSelectionModel] = useState<any>([]);
+
+  // Dialog states
+  const [formDialogOpen, setFormDialogOpen] = useState(false);
+  const [dialogTitle, setDialogTitle] = useState("");
+  const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [bulkDeleteConfirmOpen, setBulkDeleteConfirmOpen] = useState(false);
+  const [idCardOpen, setIdCardOpen] = useState(false);
+
+  // Contracts state
+  const [contracts, setContracts] = useState<Contract[]>([]);
+  const [contractsLoading, setContractsLoading] = useState(false);
+
+  // Helper to get selected count and IDs
+  const getSelectedIds = (): number[] => {
+    if (Array.isArray(selectionModel)) {
+      return selectionModel as number[];
+    }
+    if (selectionModel && typeof selectionModel === 'object' && 'ids' in selectionModel) {
+      const ids = selectionModel.ids;
+      return Array.isArray(ids) ? (ids as number[]) : Array.from(ids as Set<number>);
+    }
+    return [];
+  };
+
+  const selectedCount = getSelectedIds().length;
+
+  // Ref for ID Card Printing
+  const idCardRef = useRef<HTMLDivElement>(null);
 
   const fetchEmployees = async () => {
     setLoading(true);
@@ -60,6 +105,18 @@ export default function PersonnelPage() {
     fetchEmployees();
   }, []);
 
+  const fetchContracts = async (empId: number) => {
+    setContractsLoading(true);
+    try {
+      const data = await contractService.getByEmployeeId(empId);
+      setContracts(data);
+    } catch (error) {
+      console.error("Failed to fetch contracts:", error);
+    } finally {
+      setContractsLoading(false);
+    }
+  };
+
   const filteredEmployees = employees.filter(emp =>
     emp.fullName.toLowerCase().includes(searchText.toLowerCase()) ||
     emp.email.toLowerCase().includes(searchText.toLowerCase()) ||
@@ -68,7 +125,8 @@ export default function PersonnelPage() {
 
   const handleExportExcel = async () => {
     try {
-      const blob = await employeeService.exportExcel();
+      const ids = selectedCount > 0 ? getSelectedIds() : undefined;
+      const blob = await employeeService.exportExcel(ids);
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -84,6 +142,82 @@ export default function PersonnelPage() {
   const handleViewDetails = (emp: Employee) => {
     setSelectedEmployee(emp);
     setDetailDrawerOpen(true);
+    setTabValue(0);
+    if (emp.id) fetchContracts(emp.id);
+  };
+
+  const handleOpenAdd = () => {
+    setEditingEmployee(null);
+    setDialogTitle(t("dialog.add_title"));
+    setFormDialogOpen(true);
+  };
+
+  const handleOpenEdit = (emp: Employee) => {
+    setEditingEmployee(emp);
+    setDialogTitle(t("dialog.edit_title"));
+    setFormDialogOpen(true);
+  };
+
+  const handleOpenDelete = (emp: Employee) => {
+    setSelectedEmployee(emp);
+    setDeleteConfirmOpen(true);
+  };
+
+  const handleSaveEmployee = async (data: Partial<Employee>) => {
+    try {
+      if (editingEmployee?.id) {
+        await employeeService.update(editingEmployee.id, data);
+      } else {
+        await employeeService.create(data);
+      }
+      fetchEmployees();
+    } catch (error) {
+      console.error("Failed to save employee:", error);
+    }
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (selectedEmployee?.id) {
+      try {
+        await employeeService.delete(selectedEmployee.id);
+        fetchEmployees();
+        setDeleteConfirmOpen(false);
+      } catch (error) {
+        console.error("Failed to delete employee:", error);
+      }
+    }
+  };
+
+  const handleBulkDeleteConfirm = async () => {
+    try {
+      await employeeService.bulkDelete(getSelectedIds());
+      fetchEmployees();
+      setSelectionModel([]);
+      setBulkDeleteConfirmOpen(false);
+    } catch (error) {
+      console.error("Failed to bulk delete employees:", error);
+    }
+  };
+
+  const handlePrintCard = () => {
+    window.print();
+  };
+
+  const handleExportPdfCard = async () => {
+    if (idCardRef.current) {
+      const canvas = await html2canvas(idCardRef.current, {
+        scale: 2,
+        useCORS: true,
+      });
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF("p", "mm", "a4");
+      const imgProps = pdf.getImageProperties(imgData);
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+      
+      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+      pdf.save(`ID_Card_${selectedEmployee?.fullName}.pdf`);
+    }
   };
 
   const columns: GridColDef[] = [
@@ -108,30 +242,20 @@ export default function PersonnelPage() {
       field: "department", 
       headerName: t("table.columns.department"), 
       flex: 1,
-      valueGetter: (params: any) => params?.name || "N/A"
-    },
-    {
-      field: "role",
-      headerName: t("table.columns.role"),
-      flex: 1,
-      renderCell: (params: GridRenderCellParams) => (
-        <Chip
-          label={tr(params.row.account?.role || "Employee")}
-          size="small"
-          variant="outlined"
-          sx={{ fontWeight: 700, borderRadius: 1.5 }}
-        />
-      )
+      valueGetter: (params: any) => {
+        const value = params.value || params;
+        return value?.name || "N/A";
+      }
     },
     {
       field: "actions",
       headerName: t("table.columns.actions"),
-      flex: 1.2,
+      width: 180,
       sortable: false,
       renderCell: (params: GridRenderCellParams) => (
         <Box>
           <Tooltip title={t("dialog.edit_title")}>
-            <IconButton size="small" color="primary">
+            <IconButton size="small" color="primary" onClick={() => handleOpenEdit(params.row)}>
               <EditIcon fontSize="small" />
             </IconButton>
           </Tooltip>
@@ -140,8 +264,13 @@ export default function PersonnelPage() {
               <ViewIcon fontSize="small" />
             </IconButton>
           </Tooltip>
-          <Tooltip title="Xóa">
-            <IconButton size="small" color="error">
+          <Tooltip title={t("dialog.id_card_title")}>
+            <IconButton size="small" color="info" onClick={() => { setSelectedEmployee(params.row); setIdCardOpen(true); }}>
+              <BadgeIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title={t("dialog.delete")}>
+            <IconButton size="small" color="error" onClick={() => handleOpenDelete(params.row)}>
               <DeleteIcon fontSize="small" />
             </IconButton>
           </Tooltip>
@@ -159,10 +288,21 @@ export default function PersonnelPage() {
           <Typography variant="body2" color="text.secondary">{t("description")}</Typography>
         </Box>
         <Stack component="div" direction="row" spacing={2}>
+          {selectedCount > 0 && (
+            <Button
+              variant="contained"
+              color="error"
+              startIcon={<DeleteIcon />}
+              onClick={() => setBulkDeleteConfirmOpen(true)}
+              sx={{ borderRadius: 2.5 }}
+            >
+              {t("dialog.delete")} ({selectedCount})
+            </Button>
+          )}
           <Button variant="outlined" startIcon={<ExportIcon />} onClick={handleExportExcel} sx={{ borderRadius: 2.5 }}>
             {t("table.export_excel")}
           </Button>
-          <Button variant="contained" startIcon={<AddIcon />} sx={{ borderRadius: 2.5, px: 3 }}>
+          <Button variant="contained" startIcon={<AddIcon />} onClick={handleOpenAdd} sx={{ borderRadius: 2.5, px: 3 }}>
             {t("table.add_new")}
           </Button>
         </Stack>
@@ -201,7 +341,12 @@ export default function PersonnelPage() {
           columns={columns}
           loading={loading}
           pageSizeOptions={[10, 25, 50]}
+          checkboxSelection
           disableRowSelectionOnClick
+          onRowSelectionModelChange={(newModel) => {
+            setSelectionModel(newModel);
+          }}
+          rowSelectionModel={selectionModel}
           slots={{
             noRowsOverlay: CustomNoRowsOverlay,
           }}
@@ -234,80 +379,256 @@ export default function PersonnelPage() {
                 <Typography variant="body2" color="text.secondary">{selectedEmployee.position}</Typography>
                 <Chip label={selectedEmployee.department?.name || "N/A"} size="small" sx={{ mt: 1 }} />
               </Box>
-              <Button variant="contained" startIcon={<EditIcon />} sx={{ ml: "auto" }}>Sửa</Button>
+              <Stack direction="row" spacing={1} sx={{ ml: "auto" }}>
+                <Button variant="outlined" startIcon={<BadgeIcon />} onClick={() => setIdCardOpen(true)}>{t("dialog.print_card")}</Button>
+                <Button variant="contained" startIcon={<EditIcon />} onClick={() => handleOpenEdit(selectedEmployee)}>{t("dialog.edit_title")}</Button>
+              </Stack>
             </Box>
 
             <Tabs value={tabValue} onChange={(_, v) => setTabValue(v)} sx={{ mb: 3, borderBottom: 1, borderColor: "divider" }}>
               <Tab label={t("details.tabs.personal")} />
               <Tab label={t("details.tabs.work")} />
+              <Tab label={t("details.fields.contract")} />
               <Tab label={t("details.tabs.bank_salary")} />
             </Tabs>
 
             <Box sx={{ mt: 2 }}>
               {tabValue === 0 && (
-                <Grid container spacing={3}>
-                  <Grid size={6}>
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
+                  <Box>
                     <Typography variant="caption" color="text.secondary">{t("details.fields.gender")}</Typography>
-                    <Typography sx={{ fontWeight: 600 }}>{selectedEmployee.gender || "N/A"}</Typography>
-                  </Grid>
-                  <Grid size={6}>
+                    <Typography sx={{ fontWeight: 600 }}>{selectedEmployee.gender === "Male" ? "Nam" : selectedEmployee.gender === "Female" ? "Nữ" : "Khác"}</Typography>
+                  </Box>
+                  <Box>
                     <Typography variant="caption" color="text.secondary">{t("details.fields.dob")}</Typography>
                     <Typography sx={{ fontWeight: 600 }}>
                       {selectedEmployee.dateOfBirth ? new Date(selectedEmployee.dateOfBirth).toLocaleDateString() : "N/A"}
                     </Typography>
-                  </Grid>
-                  <Grid size={12}>
+                  </Box>
+                  <Box sx={{ gridColumn: 'span 2' }}>
                     <Typography variant="caption" color="text.secondary">{t("details.fields.address")}</Typography>
                     <Typography sx={{ fontWeight: 600 }}>{selectedEmployee.address || "N/A"}</Typography>
-                  </Grid>
-                  <Grid size={12}>
+                  </Box>
+                  <Box>
                     <Typography variant="caption" color="text.secondary">{t("details.fields.phone")}</Typography>
                     <Typography sx={{ fontWeight: 600 }}>{selectedEmployee.phoneNumber || "N/A"}</Typography>
-                  </Grid>
-                </Grid>
+                  </Box>
+                  <Box>
+                    <Typography variant="caption" color="text.secondary">{t("details.fields.identityCard")}</Typography>
+                    <Typography sx={{ fontWeight: 600 }}>{selectedEmployee.identityCardNumber || "N/A"}</Typography>
+                  </Box>
+                </Box>
               )}
 
               {tabValue === 1 && (
-                <Grid container spacing={3}>
-                  <Grid size={6}>
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
+                  <Box>
                     <Typography variant="caption" color="text.secondary">{t("details.fields.position")}</Typography>
                     <Typography sx={{ fontWeight: 600 }}>{selectedEmployee.position || "N/A"}</Typography>
-                  </Grid>
-                  <Grid size={6}>
+                  </Box>
+                  <Box>
                     <Typography variant="caption" color="text.secondary">{t("details.fields.department")}</Typography>
                     <Typography sx={{ fontWeight: 600 }}>{selectedEmployee.department?.name || "N/A"}</Typography>
-                  </Grid>
-                </Grid>
+                  </Box>
+                </Box>
               )}
 
               {tabValue === 2 && (
-                <Grid container spacing={3}>
-                  <Grid size={6}>
+                <Box>
+                  <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 700 }}>Danh sách hợp đồng</Typography>
+                  {contractsLoading ? (
+                    <Typography>Đang tải...</Typography>
+                  ) : contracts.length > 0 ? (
+                    <Stack spacing={2}>
+                      {contracts.map((contract) => (
+                        <Card key={contract.id} variant="outlined" sx={{ borderRadius: 2 }}>
+                          <CardContent sx={{ p: 2, "&:last-child": { pb: 2 } }}>
+                            <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
+                              <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{contract.contractNumber}</Typography>
+                              <Chip label={contract.type} size="small" color="primary" variant="outlined" />
+                            </Box>
+                            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+                              <Box>
+                                <Typography variant="caption" color="text.secondary">Ngày bắt đầu</Typography>
+                                <Typography variant="body2">{new Date(contract.startDate).toLocaleDateString()}</Typography>
+                              </Box>
+                              <Box>
+                                <Typography variant="caption" color="text.secondary">Ngày kết thúc</Typography>
+                                <Typography variant="body2">{contract.endDate ? new Date(contract.endDate).toLocaleDateString() : "Vô thời hạn"}</Typography>
+                              </Box>
+                              <Box>
+                                <Typography variant="caption" color="text.secondary">Mức lương</Typography>
+                                <Typography variant="body2" sx={{ color: "success.main", fontWeight: 700 }}>{contract.salary.toLocaleString()} VND</Typography>
+                              </Box>
+                              <Box>
+                                <Typography variant="caption" color="text.secondary">Trạng thái</Typography>
+                                <Typography variant="body2">{contract.status}</Typography>
+                              </Box>
+                            </Box>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </Stack>
+                  ) : (
+                    <Typography variant="body2" color="text.secondary">Chưa có thông tin hợp đồng.</Typography>
+                  )}
+                  <Button startIcon={<AddIcon />} sx={{ mt: 2 }}>Thêm hợp đồng</Button>
+                </Box>
+              )}
+
+              {tabValue === 3 && (
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
+                  <Box>
                     <Typography variant="caption" color="text.secondary">{t("details.fields.bankName")}</Typography>
                     <Typography sx={{ fontWeight: 600 }}>{selectedEmployee.bankName || "N/A"}</Typography>
-                  </Grid>
-                  <Grid size={6}>
+                  </Box>
+                  <Box>
                     <Typography variant="caption" color="text.secondary">{t("details.fields.bankAccount")}</Typography>
                     <Typography sx={{ fontWeight: 600 }}>{selectedEmployee.bankAccountNumber || "N/A"}</Typography>
-                  </Grid>
-                  <Grid size={6}>
+                  </Box>
+                  <Box>
                     <Typography variant="caption" color="text.secondary">{t("details.fields.baseSalary")}</Typography>
                     <Typography sx={{ fontWeight: 600, color: "primary.main" }}>
                       {selectedEmployee.baseSalary.toLocaleString()} VND
                     </Typography>
-                  </Grid>
-                  <Grid size={6}>
+                  </Box>
+                  <Box>
                     <Typography variant="caption" color="text.secondary">{t("details.fields.allowance")}</Typography>
                     <Typography sx={{ fontWeight: 600 }}>
                       {selectedEmployee.allowance.toLocaleString()} VND
                     </Typography>
-                  </Grid>
-                </Grid>
+                  </Box>
+                </Box>
               )}
             </Box>
           </Box>
         )}
       </Drawer>
+
+      {/* Dialogs */}
+      <EmployeeDialog
+        open={formDialogOpen}
+        onClose={() => setFormDialogOpen(false)}
+        onSave={handleSaveEmployee}
+        employee={editingEmployee}
+        title={dialogTitle}
+      />
+
+      <Dialog open={deleteConfirmOpen} onClose={() => setDeleteConfirmOpen(false)}>
+        <DialogTitle>{t("dialog.delete_title")}</DialogTitle>
+        <DialogContent>
+          {t("dialog.delete_confirm")} <strong>{selectedEmployee?.fullName}</strong>
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button onClick={() => setDeleteConfirmOpen(false)} variant="outlined">{t("dialog.cancel")}</Button>
+          <Button onClick={handleDeleteConfirm} variant="contained" color="error">{t("dialog.delete")}</Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={bulkDeleteConfirmOpen} onClose={() => setBulkDeleteConfirmOpen(false)}>
+        <DialogTitle>{t("dialog.delete_bulk_title")}</DialogTitle>
+        <DialogContent>
+          {t("dialog.delete_bulk_confirm", { count: selectedCount })}
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button onClick={() => setBulkDeleteConfirmOpen(false)} variant="outlined">{t("dialog.cancel")}</Button>
+          <Button onClick={handleBulkDeleteConfirm} variant="contained" color="error">{t("dialog.delete_all")}</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* ID Card Modal */}
+      <Dialog open={idCardOpen} onClose={() => setIdCardOpen(false)} maxWidth="xs" fullWidth>
+        <DialogTitle sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          {t("dialog.id_card_title")}
+          <IconButton onClick={() => setIdCardOpen(false)} size="small"><CloseIcon /></IconButton>
+        </DialogTitle>
+        <DialogContent>
+          <Box ref={idCardRef} sx={{
+            p: 4,
+            border: "1px solid #ddd",
+            borderRadius: 4,
+            textAlign: "center",
+            background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
+            position: "relative",
+            overflow: "hidden"
+          }}>
+            <Box sx={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: 80,
+              bgcolor: "primary.main",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
+            }}>
+              <Typography variant="h6" color="white" sx={{ fontWeight: 800 }}>HRM PRO</Typography>
+            </Box>
+
+            <Box sx={{ mt: 8 }}>
+              <Avatar
+                sx={{
+                  width: 120,
+                  height: 120,
+                  mx: "auto",
+                  mb: 2,
+                  border: "4px solid white",
+                  boxShadow: 3,
+                  bgcolor: "primary.dark",
+                  fontSize: "3rem"
+                }}
+              >
+                {selectedEmployee?.fullName.charAt(0)}
+              </Avatar>
+              <Typography variant="h5" sx={{ fontWeight: 800, mb: 1 }}>{selectedEmployee?.fullName}</Typography>
+              <Typography variant="subtitle1" color="primary" sx={{ fontWeight: 700, mb: 2 }}>{selectedEmployee?.position}</Typography>
+
+              <Divider sx={{ my: 2 }} />
+
+              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr', gap: 1.5, textAlign: "left" }}>
+                <Box>
+                  <Typography variant="caption" color="text.secondary">Mã nhân viên:</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>NV{selectedEmployee?.id?.toString().padStart(3, '0')}</Typography>
+                </Box>
+                <Box>
+                  <Typography variant="caption" color="text.secondary">Phòng ban:</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>{selectedEmployee?.department?.name || "N/A"}</Typography>
+                </Box>
+                <Box>
+                  <Typography variant="caption" color="text.secondary">Email:</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 600 }}>{selectedEmployee?.email}</Typography>
+                </Box>
+              </Box>
+            </Box>
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button startIcon={<PrintIcon />} variant="outlined" fullWidth onClick={handlePrintCard}>{t("dialog.print_card")}</Button>
+          <Button startIcon={<PdfIcon />} variant="contained" fullWidth onClick={handleExportPdfCard}>{t("dialog.export_pdf")}</Button>
+        </DialogActions>
+      </Dialog>
+
+      <style jsx global>{`
+        @media print {
+          body * {
+            visibility: hidden;
+          }
+          .MuiDialog-root, .MuiDialog-root * {
+            visibility: visible;
+          }
+          .MuiDialog-root {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+          }
+          .MuiDialogActions-root {
+            display: none;
+          }
+        }
+      `}</style>
     </Box>
   );
 }
