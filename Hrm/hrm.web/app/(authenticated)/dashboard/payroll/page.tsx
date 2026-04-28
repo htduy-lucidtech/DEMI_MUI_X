@@ -22,6 +22,7 @@ import { payrollService, PayrollRecord } from "@/services/payroll.service";
 import * as XLSX from "xlsx";
 import CustomNoRowsOverlay from "@/app/components/CustomNoRowsOverlay";
 import { useTranslations } from "next-intl";
+import Cookies from "js-cookie";
 
 export default function PayrollPage() {
   const t = useTranslations("Payroll");
@@ -42,11 +43,46 @@ export default function PayrollPage() {
     }
   };
 
-  const handleExport = () => {
-    const ws = XLSX.utils.json_to_sheet(records);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Payroll");
-    XLSX.writeFile(wb, `Payroll_${month}_${year}.xlsx`);
+  const handleExportExcel = async () => {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5181/api'}/Payroll/export/excel/${month}/${year}`, {
+        headers: {
+          'Authorization': `Bearer ${Cookies.get('token')}`
+        }
+      });
+      if (!response.ok) throw new Error('Export failed');
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Payroll_${month}_${year}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      alert("Failed to export Excel");
+    }
+  };
+
+  const handleExportPdf = async (userId: number, fullName: string) => {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5181/api'}/Payroll/export/pdf/${userId}/${month}/${year}`, {
+        headers: {
+          'Authorization': `Bearer ${Cookies.get('token')}`
+        }
+      });
+      if (!response.ok) throw new Error('Export PDF failed');
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Payslip_${fullName}_${month}_${year}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      alert("Failed to export PDF");
+    }
   };
 
   const columns: GridColDef[] = [
@@ -68,6 +104,20 @@ export default function PayrollPage() {
         </Typography>
       )
     },
+    {
+      field: "actions",
+      headerName: "Thao tác",
+      width: 150,
+      renderCell: (params: GridRenderCellParams) => (
+        <Button 
+          size="small" 
+          variant="outlined" 
+          onClick={() => handleExportPdf(params.row.userId, params.row.fullName)}
+        >
+          Tải PDF
+        </Button>
+      )
+    }
   ];
 
   return (
@@ -109,8 +159,8 @@ export default function PayrollPage() {
             <Button variant="contained" startIcon={<CalcIcon />} onClick={handleCalculate} disabled={loading}>
               {loading ? t("calculating") : t("calculate")}
             </Button>
-            <Button variant="outlined" startIcon={<DownloadIcon />} onClick={handleExport} disabled={records.length === 0}>
-              {t("export")}
+            <Button variant="outlined" startIcon={<DownloadIcon />} onClick={handleExportExcel} disabled={records.length === 0}>
+              {t("export")} Excel
             </Button>
           </Stack>
         </CardContent>

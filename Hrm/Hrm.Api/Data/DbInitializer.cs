@@ -168,6 +168,16 @@ namespace Hrm.Api.Data
             };
             context.PerformanceReviews.AddRange(performanceReviews);
 
+            // 9. Seed Notifications
+            var notifications = new List<Notification>
+            {
+                new Notification { UserId = employees[0].Id, Title = "Đơn nghỉ phép mới", Message = "Nguyễn Văn Employee vừa nộp đơn xin nghỉ phép.", Type = "Info", CreatedAt = DateTime.UtcNow.AddHours(-2) },
+                new Notification { UserId = employees[0].Id, Title = "Lương đã duyệt", Message = "Bảng lương tháng này đã được duyệt.", Type = "Success", CreatedAt = DateTime.UtcNow.AddDays(-1) },
+                new Notification { UserId = employees[1].Id, Title = "Họp phòng ban", Message = "Cuộc họp phòng IT lúc 14:00 hôm nay.", Type = "Warning", CreatedAt = DateTime.UtcNow.AddHours(-1) },
+                new Notification { UserId = employees[4].Id, Title = "Đơn xin nghỉ được duyệt", Message = "Đơn xin nghỉ của bạn đã được duyệt.", Type = "Success", CreatedAt = DateTime.UtcNow.AddMinutes(-30) }
+            };
+            context.Notifications.AddRange(notifications);
+
             await context.SaveChangesAsync();
         }
     }

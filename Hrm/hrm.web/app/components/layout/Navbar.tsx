@@ -44,6 +44,37 @@ export default function Navbar() {
     setAnchorEl(null);
   };
 
+  const [notifAnchorEl, setNotifAnchorEl] = useState<null | HTMLElement>(null);
+  const [notifications, setNotifications] = useState<any[]>([]);
+
+  React.useEffect(() => {
+    if (user?.id) {
+      import('@/services/notification.service').then(({ notificationService }) => {
+        notificationService.getUserNotifications(user.id).then(setNotifications).catch(console.error);
+      });
+    }
+  }, [user]);
+
+  const handleNotifMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setNotifAnchorEl(event.currentTarget);
+  };
+
+  const handleNotifMenuClose = () => {
+    setNotifAnchorEl(null);
+  };
+
+  const handleMarkAsRead = async (id: number) => {
+    try {
+      const { notificationService } = await import('@/services/notification.service');
+      await notificationService.markAsRead(id);
+      setNotifications(notifications.map(n => n.id === id ? { ...n, isRead: true } : n));
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const unreadCount = notifications.filter(n => !n.isRead).length;
+
   const handleLanguageChange = () => {
     const currentLocale = Cookies.get("NEXT_LOCALE") || "vi";
     const newLocale = currentLocale === "vi" ? "en" : "vi";
@@ -112,11 +143,79 @@ export default function Navbar() {
           </IconButton>
 
           {/* Notifications */}
-          <IconButton sx={{ color: "text.secondary", bgcolor: "background.default", borderRadius: 2 }}>
-            <Badge variant="dot" color="error">
+          <IconButton onClick={handleNotifMenuOpen} sx={{ color: "text.secondary", bgcolor: "background.default", borderRadius: 2 }}>
+            <Badge badgeContent={unreadCount} color="error" variant={unreadCount > 0 ? "standard" : "dot"}>
               <NotificationsIcon fontSize="small" />
             </Badge>
           </IconButton>
+
+          <Menu
+            anchorEl={notifAnchorEl}
+            open={Boolean(notifAnchorEl)}
+            onClose={handleNotifMenuClose}
+            elevation={3}
+            sx={{ mt: 1.5 }}
+            transformOrigin={{ horizontal: "right", vertical: "top" }}
+            anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+            slotProps={{
+              paper: {
+                sx: { borderRadius: 3, minWidth: 300, maxWidth: 350, maxHeight: 400, overflow: 'auto' }
+              }
+            }}
+          >
+            <Box sx={{ px: 2, py: 1.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 800 }}>Thông báo</Typography>
+              {unreadCount > 0 && (
+                <Typography 
+                  variant="caption" 
+                  color="primary" 
+                  sx={{ cursor: 'pointer', fontWeight: 700 }}
+                  onClick={async () => {
+                    if (user?.id) {
+                      const { notificationService } = await import('@/services/notification.service');
+                      await notificationService.markAllAsRead(user.id);
+                      setNotifications(notifications.map(n => ({ ...n, isRead: true })));
+                    }
+                  }}
+                >
+                  Đánh dấu đã đọc
+                </Typography>
+              )}
+            </Box>
+            <Divider />
+            {notifications.length === 0 ? (
+              <MenuItem disabled sx={{ py: 3, justifyContent: 'center' }}>
+                <Typography variant="body2" color="text.secondary">Không có thông báo mới.</Typography>
+              </MenuItem>
+            ) : (
+              notifications.map((notif) => (
+                <MenuItem 
+                  key={notif.id} 
+                  onClick={() => handleMarkAsRead(notif.id)}
+                  sx={{ 
+                    whiteSpace: 'normal', 
+                    py: 1.5, 
+                    px: 2, 
+                    borderLeft: notif.isRead ? '4px solid transparent' : '4px solid', 
+                    borderLeftColor: 'primary.main',
+                    bgcolor: notif.isRead ? 'transparent' : 'primary.50'
+                  }}
+                >
+                  <Box>
+                    <Typography variant="subtitle2" sx={{ fontWeight: notif.isRead ? 600 : 800, mb: 0.5 }}>
+                      {notif.title}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                      {notif.message}
+                    </Typography>
+                    <Typography variant="caption" color="text.disabled" sx={{ mt: 0.5, display: 'block' }}>
+                      {new Date(notif.createdAt).toLocaleString('vi-VN')}
+                    </Typography>
+                  </Box>
+                </MenuItem>
+              ))
+            )}
+          </Menu>
 
           <Divider orientation="vertical" flexItem sx={{ mx: 0.5, height: 24, my: "auto" }} />
 
