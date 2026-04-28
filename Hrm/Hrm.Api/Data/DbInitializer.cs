@@ -90,24 +90,47 @@ namespace Hrm.Api.Data
                     var date = DateTime.UtcNow.AddDays(-i).Date;
                     if (date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday) continue;
 
+                    var checkIn = date.AddHours(8).AddMinutes(random.Next(0, 60));
+                    var isLate = checkIn.TimeOfDay > new TimeSpan(8, 30, 0);
+
                     attendances.Add(new Attendance
                     {
                         UserId = u.Id,
-                        CheckInTime = date.AddHours(8).AddMinutes(random.Next(0, 15)),
+                        CheckInTime = checkIn,
                         CheckOutTime = date.AddHours(17).AddMinutes(random.Next(30, 60)),
-                        Note = "Đúng giờ"
+                        IsLate = isLate,
+                        LateReason = isLate ? "Kẹt xe đường Nguyễn Trãi" : null,
+                        Note = isLate ? "Đi muộn" : "Đúng giờ"
                     });
                 }
             }
             context.Attendances.AddRange(attendances);
+            await context.SaveChangesAsync(); // Lưu Attendances trước
 
             // 5. Seed Leave Requests
             var leaveRequests = new List<LeaveRequest>
             {
-                new LeaveRequest { UserId = users[4].Id, StartDate = DateTime.UtcNow.AddDays(2), EndDate = DateTime.UtcNow.AddDays(3), Reason = "Nghỉ ốm", Status = "Approved", LeaveType = "Sick Leave" },
-                new LeaveRequest { UserId = users[1].Id, StartDate = DateTime.UtcNow.AddDays(5), EndDate = DateTime.UtcNow.AddDays(10), Reason = "Nghỉ phép năm", Status = "Pending", LeaveType = "Annual Leave" }
+                new LeaveRequest { 
+                    UserId = users[4].Id, 
+                    StartDate = DateTime.UtcNow.AddDays(2), 
+                    EndDate = DateTime.UtcNow.AddDays(3), 
+                    Reason = "Nghỉ ốm", 
+                    Status = "Approved", 
+                    LeaveType = "Sick Leave",
+                    CreatedAt = DateTime.UtcNow
+                },
+                new LeaveRequest { 
+                    UserId = users[1].Id, 
+                    StartDate = DateTime.UtcNow.AddDays(5), 
+                    EndDate = DateTime.UtcNow.AddDays(10), 
+                    Reason = "Nghỉ phép năm", 
+                    Status = "Pending", 
+                    LeaveType = "Annual Leave",
+                    CreatedAt = DateTime.UtcNow
+                }
             };
             context.LeaveRequests.AddRange(leaveRequests);
+            await context.SaveChangesAsync(); // Lưu LeaveRequests riêng để dễ debug
 
             // 6. Seed Recruitment
             var jobs = new List<JobPosting>
@@ -132,7 +155,9 @@ namespace Hrm.Api.Data
                 new SystemSetting { Key = "SystemName", Value = "HRM Pro", Category = "General", Description = "Tên hệ thống" },
                 new SystemSetting { Key = "LogoUrl", Value = "/logo.png", Category = "UI", Description = "Đường dẫn logo" },
                 new SystemSetting { Key = "MaxLoginAttempts", Value = "5", Category = "Security", Description = "Số lần đăng nhập sai tối đa" },
-                new SystemSetting { Key = "RequireStrongPassword", Value = "true", Category = "Security", Description = "Yêu cầu mật khẩu mạnh" }
+                new SystemSetting { Key = "RequireStrongPassword", Value = "true", Category = "Security", Description = "Yêu cầu mật khẩu mạnh" },
+                new SystemSetting { Key = "StandardCheckInTime", Value = "08:30", Category = "General", Description = "Giờ vào làm tiêu chuẩn" },
+                new SystemSetting { Key = "StandardCheckOutTime", Value = "17:30", Category = "General", Description = "Giờ tan làm tiêu chuẩn" }
             };
             context.SystemSettings.AddRange(settings);
 

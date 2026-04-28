@@ -17,16 +17,99 @@ namespace Hrm.Api.Controllers
         }
 
         [HttpGet("stats")]
-        public async Task<IActionResult> GetStats()
+        public async Task<IActionResult> GetStats([FromQuery] int? userId = null)
         {
+            var today = DateTime.UtcNow.Date;
+            
+            // If userId is provided, return personalized stats
+            if (userId.HasValue)
+            {
+                var user = await _context.Users
+                    .Include(u => u.Employee)
+                    .FirstOrDefaultAsync(u => u.Id == userId);
+                
+                if (user == null) return NotFound("User not found");
+
+                var myAttendances = await _context.Attendances
+                    .Where(a => a.UserId == userId.Value)
+                    .OrderByDescending(a => a.CheckInTime)
+                    .ToListAsync();
+
+                var attendanceToday = myAttendances.FirstOrDefault(a => a.CheckInTime.Date == today);
+                var myLeaveRequests = await _context.LeaveRequests
+                    .Where(l => l.UserId == userId.Value)
+                    .ToListAsync();
+
+                var currentMonth = DateTime.UtcNow.Month;
+                var currentYear = DateTime.UtcNow.Year;
+
+                var pendingLeave = myLeaveRequests.Count(l => l.Status == "Pending");
+                var approvedLeave = myLeaveRequests.Count(l => l.Status == "Approved");
+                
+                // Days in CURRENT MONTH
+                var monthLeaveDays = myLeaveRequests
+                    .Where(l => l.Status == "Approved" && 
+                               l.StartDate.Month == currentMonth && 
+                               l.StartDate.Year == currentYear)
+                    .Sum(l => (l.EndDate - l.StartDate).Days + 1);
+
+                // Total Lateness count (not just today)
+                var totalLateCount = myAttendances.Count(a => a.IsLate);
+
+                // Performance for this individual
+                var myReviews = await _context.PerformanceReviews
+                    .Where(p => p.EmployeeId == user.EmployeeId)
+                    .ToListAsync();
+                
+                double kpiCompletion = 0;
+                if (myReviews.Any())
+                {
+                    var averageScore = myReviews.Average(p => (double)p.TotalScore);
+                    kpiCompletion = Math.Round((averageScore / 5.0) * 100, 1);
+                }
+
+                // Individual attendance rate (e.g. over last 30 days)
+                // For simplicity: (days present in last 30) / (30 days)
+                var last30Days = DateTime.UtcNow.AddDays(-30).Date;
+                var presentDays = myAttendances.Count(a => a.CheckInTime.Date >= last30Days);
+                double attendanceRate = Math.Round((presentDays / 30.0) * 100, 1);
+
+                var recentActivities = myAttendances
+                    .Take(5)
+                    .Select(a => new {
+                        id = a.Id,
+                        user = user.Employee?.FullName ?? user.Username,
+                        action = "Check-in",
+                        time = a.CheckInTime.ToString("hh:mm tt"),
+                        status = a.IsLate ? "error" : "success"
+                    })
+                    .ToList();
+
+                return Ok(new
+                {
+                    totalEmployees = 0, // Hidden for employees
+                    activeEmployees = 1,
+                    attendanceToday = attendanceToday != null ? 1 : 0,
+                    lateToday = totalLateCount, // Now returns total count
+                    leaveRequests = pendingLeave,
+                    approvedLeave,
+                    totalLeaveDays = monthLeaveDays, // Now returns monthly count
+                    kpiCompletion,
+                    attendanceRate,
+                    recentActivities,
+                    isPersonal = true,
+                    currentMonthName = DateTime.UtcNow.ToString("MMMM")
+                });
+            }
+
+            // Global stats for Admin/HR
             var totalEmployees = await _context.Employees.CountAsync();
             var activeEmployees = await _context.Users.CountAsync(u => u.IsActive);
             
-            var today = DateTime.UtcNow.Date;
-            var attendanceToday = await _context.Attendances
+            var attendanceTodayCount = await _context.Attendances
                 .CountAsync(a => a.CheckInTime.Date == today);
 
-            var recentActivities = await _context.Attendances
+            var recentActivitiesGlobal = await _context.Attendances
                 .Include(a => a.User)
                     .ThenInclude(u => u!.Employee)
                 .OrderByDescending(a => a.CheckInTime)
@@ -36,60 +119,42 @@ namespace Hrm.Api.Controllers
                     user = (a.User != null && a.User.Employee != null) ? a.User.Employee.FullName : (a.User != null ? a.User.Username : "N/A"),
                     action = "Check-in",
                     time = a.CheckInTime.ToString("hh:mm tt"),
-                    status = "success"
+                    status = a.IsLate ? "error" : "success"
                 })
                 .ToListAsync();
 
-            var lateToday = await _context.Attendances
-                .CountAsync(a => a.CheckInTime.Date == today && a.CheckInTime.TimeOfDay > new TimeSpan(8, 0, 0));
+            var lateTodayCount = await _context.Attendances
+                .CountAsync(a => a.CheckInTime.Date == today && a.IsLate);
 
-            var leaveRequests = await _context.LeaveRequests
+            var leaveRequestsCount = await _context.LeaveRequests
                 .CountAsync(l => l.Status == "Pending");
 
-            // KPI Completion based on PerformanceReview scores (1-5 scale)
+            // Global Performance
             var performanceReviews = await _context.PerformanceReviews.ToListAsync();
-            double kpiCompletion = 0;
+            double globalKpi = 0;
             if (performanceReviews.Any())
             {
                 var averageScore = performanceReviews.Average(p => (double)p.TotalScore);
-                kpiCompletion = Math.Round((averageScore / 5.0) * 100, 1);
+                globalKpi = Math.Round((averageScore / 5.0) * 100, 1);
             }
 
-            // Overall attendance rate (mock 30 days history logic or use current active base)
-            // If we have attendance data, we can just use today's attendance / active employees
-            // For a more realistic "overall" rate, we'll calculate based on all time attendances 
-            // vs total possible (simplification: attendance rate is today's rate * 100 if > 0, else 0)
-            double attendanceRate = 0;
+            double globalAttendanceRate = 0;
             if (activeEmployees > 0)
             {
-                attendanceRate = Math.Round(((double)attendanceToday / activeEmployees) * 100, 1);
-                // If it's a weekend or holiday and 0, let's pull historical
-                if (attendanceRate == 0 && await _context.Attendances.AnyAsync())
-                {
-                    var totalDays = await _context.Attendances.Select(a => a.CheckInTime.Date).Distinct().CountAsync();
-                    var totalAttendances = await _context.Attendances.CountAsync();
-                    if (totalDays > 0)
-                    {
-                        var avgDaily = (double)totalAttendances / totalDays;
-                        attendanceRate = Math.Round((avgDaily / activeEmployees) * 100, 1);
-                    }
-                }
+                globalAttendanceRate = Math.Round(((double)attendanceTodayCount / activeEmployees) * 100, 1);
             }
-
-            // Normalize to max 100%
-            if (attendanceRate > 100) attendanceRate = 100;
-            if (kpiCompletion > 100) kpiCompletion = 100;
 
             return Ok(new
             {
                 totalEmployees,
                 activeEmployees,
-                attendanceToday,
-                lateToday,
-                leaveRequests,
-                kpiCompletion,
-                attendanceRate,
-                recentActivities
+                attendanceToday = attendanceTodayCount,
+                lateToday = lateTodayCount,
+                leaveRequests = leaveRequestsCount,
+                kpiCompletion = globalKpi,
+                attendanceRate = globalAttendanceRate,
+                recentActivities = recentActivitiesGlobal,
+                isPersonal = false
             });
         }
         

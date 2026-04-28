@@ -1,13 +1,22 @@
 export default {
   title: "Admin Dashboard",
-  welcome: "Welcome back to the HRM system.",
+  welcome: "Welcome back to the personnel management system.",
+  welcome_personal: "Welcome back, {name}!",
+  month: "Month {month}",
   stats: {
     total_employees: "Total Employees",
     attendance_today: "Attendance Today",
     late_today: "Late Today",
+    total_late: "Total Late Occurrences",
     leave_requests: "Leave Requests",
+    checked_in: "Checked-in",
+    not_checked_in: "Not yet",
+    leave_pending: "{count} pending requests",
+    leave_approved_all: "All approved",
+    total_leave_days: "{count} days taken"
   },
-  recent_attendance: "Recent Attendance",
+  recent_attendance: "Recent Attendance Management",
+  recent_attendance_personal: "My Recent Attendance",
   personnel_change: "Personnel Changes",
   no_data: "Data will be displayed here",
   stats_sub: {
@@ -25,12 +34,13 @@ export default {
   },
   no_activities_today: "No activities today.",
   performance: {
-    title: "Work Performance",
+    title: "Performance",
+    title_personal: "Personal Performance",
     attendance_rate: "Attendance Rate",
     kpi_completion: "KPI Completion"
   },
   system_notification: {
     title: "System Notification",
-    desc: "Attendance data has been locked."
+    desc: "Attendance data has been finalized."
   }
 };

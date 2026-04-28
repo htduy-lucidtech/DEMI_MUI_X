@@ -8,5 +8,7 @@ namespace Hrm.Domain.Entities
         public DateTime CheckInTime { get; set; }
         public DateTime? CheckOutTime { get; set; }
         public string? Note { get; set; }
+        public bool IsLate { get; set; }
+        public string? LateReason { get; set; }
     }
 }

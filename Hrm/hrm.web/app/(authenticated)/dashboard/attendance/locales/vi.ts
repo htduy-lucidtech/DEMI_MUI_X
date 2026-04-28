@@ -1,21 +1,42 @@
 export default {
   title: "Chấm công thời gian thực",
   description: "Ghi nhận thời gian làm việc hàng ngày của bạn",
-  checkIn: "Check In",
-  checkOut: "Check Out",
+  checkIn: "Vào ca (Check In)",
+  checkOut: "Tan ca (Check Out)",
   status: {
     title: "Trạng thái hôm nay",
     checkedIn: "Bạn đã vào ca lúc",
     checkedOut: "Bạn đã tan ca lúc",
-    notYet: "Bạn chưa bắt đầu ca làm việc hôm nay"
+    notYet: "Bạn chưa bắt đầu ca làm việc hôm nay",
+    late: "Đi muộn",
+    onTime: "Đúng giờ"
   },
-  history: "Lịch sử chấm công",
+  regulations: {
+    title: "Quy định thời gian",
+    checkInTime: "Giờ vào làm tiêu chuẩn",
+    checkOutTime: "Giờ tan làm tiêu chuẩn",
+    edit: "Cấu hình thời gian",
+    saveSuccess: "Cập nhật quy định thành công"
+  },
+  late: {
+    title: "Ghi nhận đi muộn",
+    reasonPlaceholder: "Vui lòng nhập lý do đi muộn...",
+    reasonLabel: "Lý do đi muộn",
+    submit: "Xác nhận và Chấm công"
+  },
+  history: "Lịch sử chấm công toàn công ty",
   columns: {
     employee: "Nhân viên",
+    date: "Ngày",
     checkIn: "Giờ vào",
     checkOut: "Giờ ra",
     duration: "Tổng giờ",
-    status: "Trạng thái"
+    status: "Trạng thái",
+    lateReason: "Lý do đi muộn"
+  },
+  dialog: {
+    save: "Lưu thay đổi",
+    cancel: "Hủy bỏ"
   },
   messages: {
     successIn: "Check-in thành công!",

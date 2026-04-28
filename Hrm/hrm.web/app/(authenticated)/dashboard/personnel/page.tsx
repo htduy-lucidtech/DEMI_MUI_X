@@ -57,7 +57,7 @@ export default function PersonnelPage() {
   const [detailDrawerOpen, setDetailDrawerOpen] = useState(false);
   const [tabValue, setTabValue] = useState(0);
 
-  // Selection state - Use any to handle different MUI X versions
+  // Selection state - Initializing to empty array which is safe for most versions
   const [selectionModel, setSelectionModel] = useState<any>([]);
 
   // Dialog states
@@ -72,14 +72,20 @@ export default function PersonnelPage() {
   const [contracts, setContracts] = useState<Contract[]>([]);
   const [contractsLoading, setContractsLoading] = useState(false);
 
-  // Helper to get selected count and IDs
+  // Helper to get selected count and IDs safely
   const getSelectedIds = (): number[] => {
+    if (!selectionModel) return [];
     if (Array.isArray(selectionModel)) {
       return selectionModel as number[];
     }
-    if (selectionModel && typeof selectionModel === 'object' && 'ids' in selectionModel) {
-      const ids = selectionModel.ids;
-      return Array.isArray(ids) ? (ids as number[]) : Array.from(ids as Set<number>);
+    if (typeof selectionModel === 'object') {
+      if ('ids' in selectionModel && selectionModel.ids) {
+        const ids = selectionModel.ids;
+        return Array.isArray(ids) ? (ids as number[]) : Array.from(ids as any);
+      }
+      if (selectionModel instanceof Set) {
+        return Array.from(selectionModel) as number[];
+      }
     }
     return [];
   };
@@ -93,9 +99,10 @@ export default function PersonnelPage() {
     setLoading(true);
     try {
       const data = await employeeService.getAll();
-      setEmployees(data);
+      setEmployees(data || []);
     } catch (error) {
       console.error("Failed to fetch employees:", error);
+      setEmployees([]);
     } finally {
       setLoading(false);
     }
@@ -109,18 +116,19 @@ export default function PersonnelPage() {
     setContractsLoading(true);
     try {
       const data = await contractService.getByEmployeeId(empId);
-      setContracts(data);
+      setContracts(data || []);
     } catch (error) {
       console.error("Failed to fetch contracts:", error);
+      setContracts([]);
     } finally {
       setContractsLoading(false);
     }
   };
 
-  const filteredEmployees = employees.filter(emp =>
-    emp.fullName.toLowerCase().includes(searchText.toLowerCase()) ||
-    emp.email.toLowerCase().includes(searchText.toLowerCase()) ||
-    emp.position?.toLowerCase().includes(searchText.toLowerCase())
+  const filteredEmployees = (employees || []).filter(emp =>
+    emp?.fullName?.toLowerCase().includes(searchText.toLowerCase()) ||
+    emp?.email?.toLowerCase().includes(searchText.toLowerCase()) ||
+    emp?.position?.toLowerCase().includes(searchText.toLowerCase())
   );
 
   const handleExportExcel = async () => {
@@ -143,7 +151,7 @@ export default function PersonnelPage() {
     setSelectedEmployee(emp);
     setDetailDrawerOpen(true);
     setTabValue(0);
-    if (emp.id) fetchContracts(emp.id);
+    if (emp?.id) fetchContracts(emp.id);
   };
 
   const handleOpenAdd = () => {
@@ -204,7 +212,7 @@ export default function PersonnelPage() {
   };
 
   const handleExportPdfCard = async () => {
-    if (idCardRef.current) {
+    if (idCardRef.current && selectedEmployee) {
       const canvas = await html2canvas(idCardRef.current, {
         scale: 2,
         useCORS: true,
@@ -216,44 +224,43 @@ export default function PersonnelPage() {
       const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
       
       pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-      pdf.save(`ID_Card_${selectedEmployee?.fullName}.pdf`);
+      pdf.save(`ID_Card_${selectedEmployee.fullName}.pdf`);
     }
   };
 
   const columns: GridColDef[] = [
     {
       field: "fullName",
-      headerName: t("table.columns.fullName"),
+      headerName: t("table.columns.fullName") || "Họ tên",
       flex: 1.5,
       renderCell: (params: GridRenderCellParams) => (
-        <Stack component="div" direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
+        <Stack component="div" direction="row" spacing={1.5} sx={{ alignItems: "center", height: "100%" }}>
           <Avatar sx={{ width: 32, height: 32, bgcolor: "primary.main", fontSize: "0.75rem" }}>
-            {params.value?.charAt(0)}
+            {params.row?.fullName?.charAt(0) || "U"}
           </Avatar>
           <Typography sx={{ fontWeight: 600, fontSize: "0.875rem" }}>
-            {params.value}
+            {params.row?.fullName || "N/A"}
           </Typography>
         </Stack>
       )
     },
-    { field: "email", headerName: t("table.columns.email"), flex: 1.5 },
-    { field: "position", headerName: t("table.columns.position"), flex: 1 },
+    { field: "email", headerName: t("table.columns.email") || "Email", flex: 1.5 },
+    { field: "position", headerName: t("table.columns.position") || "Chức vụ", flex: 1 },
     { 
       field: "department", 
-      headerName: t("table.columns.department"), 
+      headerName: t("table.columns.department") || "Phòng ban", 
       flex: 1,
-      valueGetter: (params: any) => {
-        const value = params.value || params;
-        return value?.name || "N/A";
-      }
+      renderCell: (params: GridRenderCellParams) => (
+        <Typography variant="body2">{params.row?.department?.name || "N/A"}</Typography>
+      )
     },
     {
       field: "actions",
-      headerName: t("table.columns.actions"),
+      headerName: t("table.columns.actions") || "Thao tác",
       width: 180,
       sortable: false,
       renderCell: (params: GridRenderCellParams) => (
-        <Box>
+        <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center', height: '100%' }}>
           <Tooltip title={t("dialog.edit_title")}>
             <IconButton size="small" color="primary" onClick={() => handleOpenEdit(params.row)}>
               <EditIcon fontSize="small" />
@@ -337,19 +344,11 @@ export default function PersonnelPage() {
       {/* Table */}
       <Paper sx={{ height: 600, width: "100%", borderRadius: 4, overflow: "hidden", border: "1px solid #e2e8f0" }}>
         <DataGrid
-          rows={filteredEmployees}
+          rows={filteredEmployees || []}
           columns={columns}
           loading={loading}
           pageSizeOptions={[10, 25, 50]}
-          checkboxSelection
           disableRowSelectionOnClick
-          onRowSelectionModelChange={(newModel) => {
-            setSelectionModel(newModel);
-          }}
-          rowSelectionModel={selectionModel}
-          slots={{
-            noRowsOverlay: CustomNoRowsOverlay,
-          }}
           sx={{ border: "none" }}
         />
       </Paper>
@@ -372,7 +371,7 @@ export default function PersonnelPage() {
 
             <Box sx={{ display: "flex", alignItems: "center", gap: 3, mb: 4 }}>
               <Avatar sx={{ width: 80, height: 80, bgcolor: "primary.main", fontSize: "2rem" }}>
-                {selectedEmployee.fullName.charAt(0)}
+                {selectedEmployee?.fullName?.charAt(0) || "U"}
               </Avatar>
               <Box>
                 <Typography variant="h6" sx={{ fontWeight: 700 }}>{selectedEmployee.fullName}</Typography>
@@ -438,7 +437,7 @@ export default function PersonnelPage() {
                   <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 700 }}>Danh sách hợp đồng</Typography>
                   {contractsLoading ? (
                     <Typography>Đang tải...</Typography>
-                  ) : contracts.length > 0 ? (
+                  ) : contracts && contracts.length > 0 ? (
                     <Stack spacing={2}>
                       {contracts.map((contract) => (
                         <Card key={contract.id} variant="outlined" sx={{ borderRadius: 2 }}>
@@ -579,7 +578,7 @@ export default function PersonnelPage() {
                   fontSize: "3rem"
                 }}
               >
-                {selectedEmployee?.fullName.charAt(0)}
+                {selectedEmployee?.fullName?.charAt(0) || "U"}
               </Avatar>
               <Typography variant="h5" sx={{ fontWeight: 800, mb: 1 }}>{selectedEmployee?.fullName}</Typography>
               <Typography variant="subtitle1" color="primary" sx={{ fontWeight: 700, mb: 2 }}>{selectedEmployee?.position}</Typography>
