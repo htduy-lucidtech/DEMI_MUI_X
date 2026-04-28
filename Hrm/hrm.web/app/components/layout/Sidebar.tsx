@@ -114,6 +114,20 @@ export default function Sidebar() {
       path: "/dashboard/org-chart",
       roles: ["Admin", "Manager", "Personnel", "Attendance", "Employee"],
     },
+    {
+      key: "performance",
+      text: "Đánh giá KPI",
+      icon: <AssignmentIcon />,
+      path: "/dashboard/performance",
+      roles: ["Admin", "Manager", "Personnel"],
+    },
+    {
+      key: "settings",
+      text: "Cài đặt",
+      icon: <SettingsIcon />,
+      path: "/settings",
+      roles: ["Admin"],
+    },
   ];
 
   const filteredItems = activeRole 

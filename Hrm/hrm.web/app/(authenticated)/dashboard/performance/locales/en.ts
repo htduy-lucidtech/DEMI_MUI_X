@@ -1,0 +1,18 @@
+export default {
+  title: "KPI & Performance Review",
+  subtitle: "Manage employee performance reviews.",
+  createReview: "Create Review",
+  employeeName: "Employee",
+  reviewerName: "Reviewer",
+  reviewDate: "Review Date",
+  totalScore: "Avg Score",
+  status: "Status",
+  newReviewTitle: "New Employee Review",
+  evaluatedEmployee: "Evaluated Employee",
+  workQuality: "Work Quality (1-5)",
+  teamwork: "Teamwork (1-5)",
+  punctuality: "Punctuality (1-5)",
+  comments: "Comments",
+  cancel: "Cancel",
+  save: "Save Review",
+};

@@ -125,6 +125,50 @@ namespace Hrm.Api.Data
             });
 
             await context.SaveChangesAsync();
+
+            // 7. Seed System Settings
+            var settings = new List<SystemSetting>
+            {
+                new SystemSetting { Key = "SystemName", Value = "HRM Pro", Category = "General", Description = "Tên hệ thống" },
+                new SystemSetting { Key = "LogoUrl", Value = "/logo.png", Category = "UI", Description = "Đường dẫn logo" },
+                new SystemSetting { Key = "MaxLoginAttempts", Value = "5", Category = "Security", Description = "Số lần đăng nhập sai tối đa" },
+                new SystemSetting { Key = "RequireStrongPassword", Value = "true", Category = "Security", Description = "Yêu cầu mật khẩu mạnh" }
+            };
+            context.SystemSettings.AddRange(settings);
+
+            // 8. Seed Performance Reviews
+            var performanceReviews = new List<PerformanceReview>
+            {
+                new PerformanceReview 
+                { 
+                    EmployeeId = employees[4].Id, 
+                    ReviewerId = employees[1].Id, 
+                    ReviewDate = DateTime.UtcNow.AddDays(-10), 
+                    WorkQuality = 4, 
+                    Teamwork = 5, 
+                    Punctuality = 4, 
+                    TotalScore = 4.33m, 
+                    Comments = "Hoàn thành tốt công việc được giao.", 
+                    GoalsForNextPeriod = "Cải thiện kỹ năng giao tiếp", 
+                    Status = "Completed" 
+                },
+                new PerformanceReview 
+                { 
+                    EmployeeId = employees[3].Id, 
+                    ReviewerId = employees[2].Id, 
+                    ReviewDate = DateTime.UtcNow.AddDays(-2), 
+                    WorkQuality = 3, 
+                    Teamwork = 4, 
+                    Punctuality = 5, 
+                    TotalScore = 4.0m, 
+                    Comments = "Đi làm đúng giờ, cần chủ động hơn trong công việc.", 
+                    GoalsForNextPeriod = "Hoàn thành chứng chỉ nhân sự", 
+                    Status = "Pending" 
+                }
+            };
+            context.PerformanceReviews.AddRange(performanceReviews);
+
+            await context.SaveChangesAsync();
         }
     }
 }

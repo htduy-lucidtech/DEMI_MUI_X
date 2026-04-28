@@ -30,6 +30,8 @@ import payrollVi from "./app/(authenticated)/dashboard/payroll/locales/vi";
 import payrollEn from "./app/(authenticated)/dashboard/payroll/locales/en";
 import recruitmentVi from "./app/(authenticated)/dashboard/recruitment/locales/vi";
 import recruitmentEn from "./app/(authenticated)/dashboard/recruitment/locales/en";
+import performanceVi from "./app/(authenticated)/dashboard/performance/locales/vi";
+import performanceEn from "./app/(authenticated)/dashboard/performance/locales/en";
 
 const messagesMap = {
   vi: {
@@ -47,6 +49,7 @@ const messagesMap = {
     OrgChart: orgChartVi,
     Payroll: payrollVi,
     Recruitment: recruitmentVi,
+    Performance: performanceVi,
   },
   en: {
     Login: loginEn,
@@ -63,6 +66,7 @@ const messagesMap = {
     OrgChart: orgChartEn,
     Payroll: payrollEn,
     Recruitment: recruitmentEn,
+    Performance: performanceEn,
   }
 };
 

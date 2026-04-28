@@ -152,7 +152,7 @@ export default function Navbar() {
                 {user?.fullName || "User"}
               </Typography>
               <Typography variant="caption" sx={{ color: "primary.main", fontWeight: 700 }}>
-                {tr(activeRole)}
+                {activeRole ? tr(activeRole as string) : ""}
               </Typography>
             </Box>
           </Box>

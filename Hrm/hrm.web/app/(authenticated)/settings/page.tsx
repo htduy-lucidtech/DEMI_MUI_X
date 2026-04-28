@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Typography,
@@ -20,6 +20,7 @@ import {
   Select,
   MenuItem,
   Paper,
+  TextField,
 } from "@mui/material";
 import {
   Language as LanguageIcon,
@@ -31,21 +32,51 @@ import {
   Lock as LockIcon,
 } from "@mui/icons-material";
 import { useTranslations } from "next-intl";
+import { settingsService, SystemSetting } from "@/services/settings.service";
 
 export default function SettingsPage() {
   const t = useTranslations("Settings");
   const [emailNotif, setEmailNotif] = useState(true);
   const [pushNotif, setPushNotif] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
+  
+  const [systemSettings, setSystemSettings] = useState<SystemSetting[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    fetchSettings();
+  }, []);
+
+  const fetchSettings = async () => {
+    try {
+      const data = await settingsService.getAll();
+      setSystemSettings(data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleUpdateSetting = async (id: number, value: string) => {
+    const setting = systemSettings.find(s => s.id === id);
+    if (!setting) return;
+    
+    const updatedSetting = { ...setting, value };
+    try {
+      await settingsService.update(id, updatedSetting);
+      setSystemSettings(systemSettings.map(s => s.id === id ? updatedSetting : s));
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   return (
     <Box sx={{ maxWidth: 1000, mx: "auto" }}>
       <Box sx={{ mb: 4 }}>
         <Typography variant="h4" sx={{ fontWeight: 800, mb: 1 }}>
-          Cài đặt hệ thống
+          {t('title')}
         </Typography>
         <Typography variant="body1" color="text.secondary">
-          Quản lý các tùy chọn cấu hình và bảo mật tài khoản của bạn.
+          {t('subtitle')}
         </Typography>
       </Box>
 
@@ -53,35 +84,63 @@ export default function SettingsPage() {
         {/* Left Column: Sections */}
         <Grid size={{ xs: 12, md: 4 }}>
           <List sx={{ p: 0 }}>
-            <ListItemButton selected icon={<PersonIcon />} text="Tài khoản" />
-            <ListItemButton icon={<NotificationsIcon />} text="Thông báo" />
-            <ListItemButton icon={<SecurityIcon />} text="Bảo mật" />
-            <ListItemButton icon={<PaletteIcon />} text="Giao diện" />
+            <ListItemButton selected icon={<PersonIcon />} text={t('account')} />
+            <ListItemButton icon={<NotificationsIcon />} text={t('notifications')} />
+            <ListItemButton icon={<SecurityIcon />} text={t('security')} />
+            <ListItemButton icon={<PaletteIcon />} text={t('appearance')} />
           </List>
         </Grid>
 
         {/* Right Column: Settings Content */}
         <Grid size={{ xs: 12, md: 8 }}>
           <Stack spacing={4}>
+            {/* System Parameters Card */}
+            <Card sx={{ borderRadius: 4 }}>
+              <CardContent sx={{ p: 4 }}>
+                <Typography variant="h6" sx={{ fontWeight: 800, mb: 3 }}>
+                  {t('systemParamsTitle')}
+                </Typography>
+                <Grid container spacing={3}>
+                  {systemSettings.map((setting) => (
+                    <Grid size={{ xs: 12 }} key={setting.id}>
+                      <TextField
+                        fullWidth
+                        label={setting.description || setting.key}
+                        value={setting.value || ""}
+                        onChange={(e) => {
+                          const newSettings = [...systemSettings];
+                          const index = newSettings.findIndex(s => s.id === setting.id);
+                          newSettings[index].value = e.target.value;
+                          setSystemSettings(newSettings);
+                        }}
+                        onBlur={() => handleUpdateSetting(setting.id, setting.value)}
+                        helperText={`Category: ${setting.category}`}
+                      />
+                    </Grid>
+                  ))}
+                </Grid>
+              </CardContent>
+            </Card>
+
             {/* Notifications Card */}
             <Card sx={{ borderRadius: 4 }}>
               <CardContent sx={{ p: 4 }}>
                 <Typography variant="h6" sx={{ fontWeight: 800, mb: 3 }}>
-                  Thông báo
+                  {t('notifications')}
                 </Typography>
                 <List disablePadding>
                   <SettingSwitch 
                     icon={<EmailIcon color="primary" />} 
-                    title="Thông báo qua Email" 
-                    subtitle="Nhận cập nhật về các đơn nghỉ phép và tin nhắn qua email."
+                    title={t('emailNotifTitle')} 
+                    subtitle={t('emailNotifSubtitle')}
                     checked={emailNotif}
                     onChange={() => setEmailNotif(!emailNotif)}
                   />
                   <Divider sx={{ my: 2 }} />
                   <SettingSwitch 
                     icon={<NotificationsIcon color="primary" />} 
-                    title="Thông báo đẩy (Push)" 
-                    subtitle="Hiển thị thông báo trên trình duyệt ngay lập tức."
+                    title={t('pushNotifTitle')} 
+                    subtitle={t('pushNotifSubtitle')}
                     checked={pushNotif}
                     onChange={() => setPushNotif(!pushNotif)}
                   />
@@ -93,13 +152,13 @@ export default function SettingsPage() {
             <Card sx={{ borderRadius: 4 }}>
               <CardContent sx={{ p: 4 }}>
                 <Typography variant="h6" sx={{ fontWeight: 800, mb: 3 }}>
-                  Ngôn ngữ & Vùng
+                  {t('langRegionTitle')}
                 </Typography>
                 <Grid container spacing={3}>
                   <Grid size={{ xs: 12, sm: 6 }}>
                     <FormControl fullWidth size="small">
-                      <InputLabel>Ngôn ngữ hiển thị</InputLabel>
-                      <Select value="vi" label="Ngôn ngữ hiển thị">
+                      <InputLabel>{t('displayLang')}</InputLabel>
+                      <Select value="vi" label={t('displayLang')}>
                         <MenuItem value="vi">Tiếng Việt (VI)</MenuItem>
                         <MenuItem value="en">English (EN)</MenuItem>
                       </Select>
@@ -107,8 +166,8 @@ export default function SettingsPage() {
                   </Grid>
                   <Grid size={{ xs: 12, sm: 6 }}>
                     <FormControl fullWidth size="small">
-                      <InputLabel>Múi giờ</InputLabel>
-                      <Select value="hanoi" label="Múi giờ">
+                      <InputLabel>{t('timezone')}</InputLabel>
+                      <Select value="hanoi" label={t('timezone')}>
                         <MenuItem value="hanoi">(GMT+07:00) Hanoi</MenuItem>
                         <MenuItem value="sg">(GMT+08:00) Singapore</MenuItem>
                       </Select>
@@ -122,14 +181,14 @@ export default function SettingsPage() {
             <Card sx={{ borderRadius: 4, border: "1px solid", borderColor: "error.light" }}>
               <CardContent sx={{ p: 4 }}>
                 <Typography variant="h6" sx={{ fontWeight: 800, mb: 3, color: "error.main" }}>
-                  Bảo mật tài khoản
+                  {t('securityTitle')}
                 </Typography>
                 <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <Box>
-                    <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>Thay đổi mật khẩu</Typography>
-                    <Typography variant="body2" color="text.secondary">Chúng tôi khuyên bạn nên đổi mật khẩu định kỳ 6 tháng một lần.</Typography>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>{t('changePassword')}</Typography>
+                    <Typography variant="body2" color="text.secondary">{t('changePasswordDesc')}</Typography>
                   </Box>
-                  <Button variant="outlined" color="error">Cập nhật</Button>
+                  <Button variant="outlined" color="error">{t('updateBtn')}</Button>
                 </Box>
               </CardContent>
             </Card>

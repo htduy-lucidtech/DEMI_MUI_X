@@ -1,0 +1,18 @@
+export default {
+  title: "Đánh giá KPI & Hiệu suất",
+  subtitle: "Quản lý các đợt đánh giá nhân viên.",
+  createReview: "Tạo đánh giá",
+  employeeName: "Nhân viên",
+  reviewerName: "Người đánh giá",
+  reviewDate: "Ngày đánh giá",
+  totalScore: "Điểm TB",
+  status: "Trạng thái",
+  newReviewTitle: "Đánh giá nhân viên mới",
+  evaluatedEmployee: "Nhân viên được đánh giá",
+  workQuality: "Chất lượng (1-5)",
+  teamwork: "Teamwork (1-5)",
+  punctuality: "Đúng giờ (1-5)",
+  comments: "Nhận xét",
+  cancel: "Hủy",
+  save: "Lưu đánh giá",
+};

@@ -12,6 +12,9 @@ namespace Hrm.Infrastructure.Data {
         public DbSet<Department> Departments { get; set; } 
         public DbSet<JobPosting> JobPostings { get; set; }
         public DbSet<Candidate> Candidates { get; set; }
+        public DbSet<PerformanceReview> PerformanceReviews { get; set; }
+        public DbSet<SystemSetting> SystemSettings { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
