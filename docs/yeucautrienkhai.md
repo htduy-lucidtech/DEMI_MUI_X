@@ -1,36 +1,44 @@
-# Yêu cầu triển khai tiếp theo (Giai đoạn 6 & Tối ưu hóa)
+# Tiến độ triển khai & Yêu cầu tiếp theo (Giai đoạn 7)
 
-Sau khi hoàn thiện Giai đoạn 5.5 (Đánh giá KPI & Cài đặt hệ thống Admin), hệ thống HRM Pro đã có nền tảng rất vững chắc. Dưới đây là các phân vân và câu hỏi gợi ý để chúng ta chốt phương án cho các bước tiếp theo:
+Sau khi hoàn thiện xuất sắc Giai đoạn 6, hệ thống HRM Pro đã đạt đến mức độ hoàn thiện rất cao về mặt kiến trúc và trải nghiệm người dùng. Dưới đây là tổng hợp những gì chúng ta đã làm và các câu hỏi gợi ý cho Giai đoạn tiếp theo.
 
-## 1. Về tính năng Xuất báo cáo (Export/Reporting)
-Hệ thống hiện tại đã có Nút "Export" bằng file Excel (`.xlsx`) ở một số màn hình sử dụng thư viện `xlsx` ở client-side.
-**Câu hỏi:**
-- Bạn muốn duy trì việc xuất Excel tại Client-side (nhanh, dễ làm nhưng giới hạn định dạng phức tạp) hay chuyển sang xuất báo cáo từ Server-side (C# tạo file Excel/PDF chuẩn format công ty với header/footer/logo)?
-- Có cần làm tính năng xuất "Phiếu lương cá nhân" (Payslip) ra định dạng PDF cho từng nhân viên không?
-
-## 2. Về tính năng Thông báo thời gian thực (Real-time Notifications)
-Giao diện `layout.tsx` hiện đang có code kết nối đến SignalR Hub (`/notificationHub`), nhưng backend dường như chưa được sử dụng triệt để để đẩy thông báo cho các nghiệp vụ (vd: Có đơn xin nghỉ phép mới, Lương đã được duyệt...).
-**Câu hỏi:**
-- Chúng ta có nên bắt đầu thiết lập luồng thông báo tự động (Ví dụ: Khi Manager duyệt đơn nghỉ phép -> Đẩy thông báo tức thời cho Employee qua SignalR)?
-- Bạn có muốn thêm một Dropdown Notification trên `Navbar` để lưu trữ lịch sử thông báo chưa đọc không?
-
-## 3. Về Quản lý Phân quyền (Role-based Access Control - RBAC) nâng cao
-Chúng ta đang hardcode mảng `roles: ["Admin", "Manager", ...]` ở phía Frontend (trong `Sidebar.tsx`, `Navbar.tsx`).
-**Câu hỏi:**
-- Có cần làm một giao diện "Quản lý Vai trò" riêng trong Admin Settings để linh hoạt gán từng quyền (Xem/Thêm/Sửa/Xóa) cho từng màn hình không? Hay mô hình phân quyền cứng hiện tại là đủ cho dự án này?
-
-## 4. Về chuẩn bị Triển khai (Deployment & Docker)
-Ứng dụng hiện tại đang chạy tốt trên local. Giai đoạn cuối thường là đóng gói (Containerization).
-**Câu hỏi:**
-- Bạn có muốn tôi bắt đầu viết `Dockerfile` và `docker-compose.yml` để đóng gói Frontend, Backend và Postgres Database thành một cụm dịch vụ chạy với 1 câu lệnh không?
-- Bạn có định host dự án này lên môi trường Cloud nào cụ thể không (AWS, Azure, DigitalOcean, VPS Linux...)?
+## ✅ Tổng kết các tính năng đã hoàn thành (Giai đoạn 6)
+1. **Kiến trúc & Tối ưu hóa**: Đã chuyển dời toàn bộ API calls thuần túy sang cấu trúc `services/` chuyên biệt. Nâng cấp và cấu hình thành công `proxy.ts` cho chuẩn Next.js (Turbopack) mới nhất. Xử lý triệt để các lỗi về React Hooks.
+2. **Xuất báo cáo (Export/Reporting)**: Chuyển hoàn toàn logic xuất Excel (Bảng lương, Nhân sự) sang Server-side bằng `ClosedXML`. Hoàn thiện tính năng xuất Phiếu lương (Payslip) dạng PDF bằng `QuestPDF`.
+3. **Thông báo (Notifications)**: Hoàn thiện UI chuông thông báo trên Navbar, tích hợp chuyển hướng thông minh (Smart Routing) cực kỳ mượt mà qua `useRouter`. Khởi tạo nền tảng SignalR ở Backend.
+4. **Dashboard Dữ liệu Thực (Real-time Stats)**: Gỡ bỏ hoàn toàn dữ liệu giả, kết nối trực tiếp các biểu đồ và chỉ số hiệu suất (Tỉ lệ KPI, Tỉ lệ chuyên cần, Nhân viên đi muộn, Đơn xin nghỉ) với PostgreSQL Database.
+5. **Đa ngôn ngữ (i18n)**: Phủ sóng i18n 100% lên trang Tổng quan và tối ưu format ngày tháng của thông báo theo ngôn ngữ hiển thị.
 
 ---
 
-### 💡 Gợi ý lộ trình ngay tiếp theo:
-Nếu bạn đồng ý, tôi đề xuất chúng ta sẽ làm:
-1. **Hoàn thiện tính năng Thông báo (Notification Bell)**: Tích hợp SignalR với UI thông báo trên Navbar.
-2. **Hoàn thiện xuất báo cáo (PDF Payslip)**: Giúp nhân viên có thể tải phiếu lương của họ.
-3. **Đóng gói Docker**: Chuẩn bị sẵn sàng đưa sản phẩm lên môi trường Production.
+## ❓ Câu hỏi phân vân & Gợi ý cho Giai đoạn 7
 
-Vui lòng cho tôi biết lựa chọn của bạn hoặc bất kỳ yêu cầu cụ thể nào bạn muốn ưu tiên trước!
+Hệ thống hiện tại đã rất "thực", nhưng để trở thành một sản phẩm thương mại hoàn chỉnh, chúng ta cần xem xét các khía cạnh sau:
+
+### 1. Về Bảo mật & Phân quyền (RBAC & API Security)
+Hiện tại giao diện Frontend đã chặn theo Roles, nhưng Backend API phần lớn mới chỉ yêu cầu có Token (`[Authorize]`), chưa phân chia Role cụ thể.
+**Câu hỏi:**
+- Bạn có muốn tôi thiết lập chặt chẽ thuộc tính `[Authorize(Roles = "Admin, Manager")]` cho từng endpoint quan trọng ở Backend không?
+- Có cần xây dựng một giao diện **Quản lý Quyền (Roles & Permissions)** trong mục Cài đặt (Settings) để Admin linh hoạt bật/tắt quyền xem, sửa, xóa cho từng nhóm nhân viên?
+
+### 2. Về Trực quan hóa dữ liệu (Charts & Analytics)
+Dashboard hiện đang hiển thị các số liệu thống kê tổng quan và Progress Bar.
+**Câu hỏi:**
+- Bạn có muốn tích hợp thư viện (như `Recharts` hoặc `Chart.js`) để vẽ Biểu đồ đường (Line Chart) mô phỏng biến động nhân sự, hoặc Biểu đồ cột (Bar Chart) mô phỏng chi phí quỹ lương qua các tháng không?
+
+### 3. Về Quy trình Đánh giá Hiệu suất (Performance/KPI Flow)
+Cột KPI hiện tại lấy trung bình từ `PerformanceReviews`. Tuy nhiên quy trình tạo đánh giá chưa thực sự hoàn thiện.
+**Câu hỏi:**
+- Chúng ta có nên làm một luồng đánh giá thực tế: (1) Nhân viên tự đánh giá -> (2) Quản lý duyệt và cho điểm -> (3) Hệ thống tính KPI tự động không?
+
+### 4. Về chuẩn bị Triển khai (Deployment)
+Dù trước đó chúng ta đã thống nhất "tạm thời chưa cần deploy", nhưng dự án đã phình to.
+**Câu hỏi:**
+- Khi nào bạn muốn đóng gói toàn bộ Frontend, API và Database bằng Docker để có thể test thử trên một môi trường Staging/VPS thực tế?
+
+---
+
+### 💡 Đề xuất lộ trình tiếp theo:
+Nếu bạn đồng ý, tôi đề xuất ưu tiên **Mục 1 (Bảo mật API & RBAC)** và **Mục 2 (Tích hợp biểu đồ Chart)** để khóa chặt hệ thống trước khi mở rộng thêm các quy trình phức tạp khác.
+
+Vui lòng cho tôi biết bạn muốn bắt tay vào phần nào trước!
