@@ -28,6 +28,7 @@ import {
   CheckCircle as CheckCircleIcon,
 } from "@mui/icons-material";
 import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
 import { dashboardService } from "@/services/dashboard.service";
 
 export default function DashboardPage() {
@@ -57,6 +58,7 @@ export default function DashboardPage() {
     );
   }
 
+  const router = useRouter();
   const stats = [
     { 
       name: t("stats.total_employees"), 
@@ -64,7 +66,8 @@ export default function DashboardPage() {
       subValue: `${statsData?.activeEmployees || 0} đang hoạt động`, 
       icon: PeopleIcon, 
       color: "#4f46e5", 
-      trend: "up" 
+      trend: "up",
+      link: "/dashboard/personnel"
     },
     { 
       name: t("stats.attendance_today"), 
@@ -72,7 +75,8 @@ export default function DashboardPage() {
       subValue: `${((statsData?.attendanceToday / statsData?.totalEmployees) * 100 || 0).toFixed(1)}% tỉ lệ có mặt`, 
       icon: CalendarMonthIcon, 
       color: "#10b981", 
-      trend: "up" 
+      trend: "up",
+      link: "/dashboard/attendance"
     },
     { 
       name: t("stats.late_today"), 
@@ -80,7 +84,8 @@ export default function DashboardPage() {
       subValue: "Dữ liệu thời gian thực", 
       icon: AccessTimeIcon, 
       color: "#f59e0b", 
-      trend: "down" 
+      trend: "down",
+      link: "/dashboard/attendance"
     },
     { 
       name: t("stats.leave_requests"), 
@@ -88,10 +93,10 @@ export default function DashboardPage() {
       subValue: "Chờ phê duyệt", 
       icon: AssignmentIcon, 
       color: "#ec4899", 
-      trend: "neutral" 
+      trend: "neutral",
+      link: "/dashboard/leave"
     },
   ];
-
 
   return (
     <Box sx={{ flexGrow: 1 }}>
@@ -119,12 +124,16 @@ export default function DashboardPage() {
       <Grid container spacing={3} sx={{ mb: 4 }}>
         {stats.map((stat) => (
           <Grid size={{ xs: 12, sm: 6, lg: 3 }} key={stat.name}>
-            <Card sx={{ 
-              borderRadius: 4,
-              boxShadow: "0 4px 20px rgba(0,0,0,0.05)",
-              transition: "transform 0.2s", 
-              "&:hover": { transform: "translateY(-4px)" } 
-            }}>
+            <Card 
+              onClick={() => router.push(stat.link)}
+              sx={{ 
+                borderRadius: 4,
+                cursor: "pointer",
+                boxShadow: "0 4px 20px rgba(0,0,0,0.05)",
+                transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)", 
+                "&:hover": { transform: "translateY(-4px)", boxShadow: "0 12px 28px rgba(0,0,0,0.12)" } 
+              }}
+            >
               <CardContent sx={{ p: 3 }}>
                 <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
                   <Avatar

@@ -191,7 +191,21 @@ export default function Navbar() {
               notifications.map((notif) => (
                 <MenuItem 
                   key={notif.id} 
-                  onClick={() => handleMarkAsRead(notif.id)}
+                  onClick={async () => {
+                    await handleMarkAsRead(notif.id);
+                    handleNotifMenuClose();
+                    // Basic routing heuristic based on title/message
+                    const text = (notif.title + " " + notif.message).toLowerCase();
+                    if (text.includes("nghỉ") || text.includes("leave")) {
+                      router.push("/dashboard/leave");
+                    } else if (text.includes("lương") || text.includes("payroll")) {
+                      router.push("/dashboard/payroll");
+                    } else if (text.includes("đánh giá") || text.includes("performance")) {
+                      router.push("/dashboard/performance");
+                    } else {
+                      router.push("/dashboard");
+                    }
+                  }}
                   sx={{ 
                     whiteSpace: 'normal', 
                     py: 1.5, 
