@@ -21,11 +21,28 @@
 - Build Backend sạch 100%, không còn cảnh báo Null Reference.
 - Tích hợp giao diện `CustomNoRowsOverlay` (trạng thái trống) cho toàn bộ hệ thống.
 
+## 1. Kể từ yesterday, bạn đã làm được những gì?
+
+### ✅ Triển khai Giai đoạn 5.5 (KPI & Performance)
+- Khởi tạo Entity `PerformanceReview` trên Database.
+- Viết API `PerformanceReviewsController` xử lý nghiệp vụ đánh giá năng lực.
+- Dựng giao diện `/dashboard/performance` hỗ trợ tạo mới và liệt kê đánh giá.
+
+### ✅ Hoàn thiện Cài đặt hệ thống (Admin Settings)
+- Thiết lập `SystemSetting` lưu các cấu hình động.
+- Viết API `SettingsController`.
+- Cập nhật giao diện `/settings` fetch dữ liệu cấu hình từ Backend thay vì hardcode.
+- Hỗ trợ đầy đủ ngôn ngữ Anh/Việt (i18n) cho cả module Settings và Performance.
+
+### ✅ Xử lý Database Seeding & Kiểm tra luồng lương
+- Bổ sung dữ liệu mẫu cho Settings (Tên hệ thống, Logo) và Đánh giá KPI.
+- Kiểm tra tính toàn vẹn của Bảng lương tự động (`PayrollController`), hoạt động tốt với dữ liệu chấm công.
+- Build thành công cả Backend và Frontend với 0 cảnh báo type mismatch.
+
 ## 2. Hôm nay bạn sẽ làm gì?
-- 🎯 **Triển khai Giai đoạn 5.5 (KPI & Performance)**: Thiết kế module đánh giá hiệu suất, thiết lập tiêu chí và lưu trữ lịch sử đánh giá nhân viên.
-- 🎯 **Hoàn thiện Cài đặt hệ thống (Admin Settings)**: Xây dựng giao diện cấu hình tham số hệ thống, logo, và các tùy chọn bảo mật.
-- 🎯 **Kiểm tra luồng Lương tự động**: Xác nhận logic tính lương từ dữ liệu chấm công thực tế đã nạp mẫu.
+- 🎯 Thảo luận về lộ trình Giai đoạn 6 (dựa trên file `yeucautrienkhai.md`).
+- 🎯 Tối ưu hóa tính năng thông báo Real-time (SignalR) và Xuất báo cáo nâng cao (PDF/Excel).
+- 🎯 Bắt đầu chuẩn bị cấu hình Docker để đóng gói sản phẩm.
 
 ## 3. Có điều gì đang cản trở tiến độ công việc của bạn không?
-- ❌ **Hiện tại không có cản trở nào**. Hệ thống đang ở trạng thái ổn định nhất kể từ khi bắt đầu dự án.
-- 💡 *Lưu ý*: Cần người dùng xác nhận Backend đã khởi chạy lại thành công để nạp bộ dữ liệu mẫu mới nhất.
+- ❌ **Hiện tại không có cản trở nào**. Hệ thống đang ở trạng thái hoàn thiện rất cao. Cần ý kiến chỉ đạo từ bạn để quyết định phạm vi tính năng cuối cùng trước khi Release.
