@@ -50,6 +50,8 @@ export default function DashboardPage() {
     fetchStats();
   }, []);
 
+  const router = useRouter();
+
   if (loading) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "50vh" }}>
@@ -58,7 +60,6 @@ export default function DashboardPage() {
     );
   }
 
-  const router = useRouter();
   const stats = [
     { 
       name: t("stats.total_employees"), 
