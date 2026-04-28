@@ -33,12 +33,12 @@ Hrm/
 | Thành phần        | Công nghệ                     | Ghi chú                                |
 | ----------------- | ------------------------------ | -------------------------------------- |
 | **Frontend**      | Next.js 15 (App Router)       | React Server Components                |
-| **UI Library**    | MUI (Material UI)             | ~~HeroUI~~ — đã loại bỏ               |
+| **UI Library**    | MUI (Material UI)             |                                        |
 | **Icons**         | MUI Icons / Lucide React      |                                        |
 | **Styling**       | Tailwind CSS + MUI Theme      |                                        |
 | **Đa ngôn ngữ**  | next-intl                     | vi / en                                |
 | **Backend**       | ASP.NET Core Web API (.NET 8) | Clean Architecture                     |
-| **ORM**           | Entity Framework Core         | ~~Prisma~~ — không dùng cho .NET       |
+| **ORM**           | Entity Framework Core         |                                        |
 | **Database**      | Supabase (PostgreSQL)         | Hosted DB                              |
 | **Auth**          | JWT Bearer Token              | Lưu trong localStorage                 |
 | **Biểu đồ**      | Recharts hoặc MUI X Charts   |                                        |
@@ -152,7 +152,7 @@ Nội dung Dashboard thay đổi theo Role:
 | Ngày nghỉ phép     | Có phép (không trừ lương)      |
 | Ngày làm thêm giờ  | Overtime                      |
 
-**Bảng lương:** (có thể lọc từ ngày → đến ngày, xuất Excel)
+**Bảng lương:** (có thể lọc từ ngày → đến ngày, xuất Excel/PDF)
 
 | Cột              | Mô tả                        |
 | ----------------- | ----------------------------- |
@@ -162,10 +162,6 @@ Nội dung Dashboard thay đổi theo Role:
 | Tổng lương         | = Cơ bản + Thưởng - Khấu trừ  |
 | Đã ứng            | Tiền đã ứng trước              |
 | Còn nhận          | = Tổng - Đã ứng               |
-
-**Ứng lương:**
-- Danh sách yêu cầu ứng lương (số tiền, ngày ứng, trạng thái)
-- Lọc theo năm
 
 ### 5.5. Module: Yêu cầu / Đơn từ
 
@@ -205,47 +201,9 @@ Employee tạo yêu cầu → Personnel / Attendance duyệt → Cập nhật DB
 
 ## 6. Lộ trình triển khai
 i18n sẽ lòng vào từng fodel trong page theo cấu trúc: login/locales/vi.ts, login/locales/en.ts, page.tsx
-### Giai đoạn 1: Nền tảng (Foundation)
 
-| Bước | Công việc                                        | Output                              |
-| ---- | ------------------------------------------------ | ----------------------------------- |
-| 1.1  | Khởi tạo Backend: Solution + 4 Projects          | Hrm.slnx chạy được                 |
-| 1.2  | Thiết lập EF Core + kết nối Supabase              | DbContext + connection string       |
-| 1.3  | Migration: Bảng Users, Roles                     | DB có 2 bảng, data seed 5 tài khoản |
-| 1.4  | API Login (POST `/api/auth/login`)                | Trả JWT Token + UserInfo            |
-| 1.5  | Khởi tạo Frontend: Next.js 15 + MUI + next-intl  | Trang trắng chạy được               |
-| 1.6  | Trang Login + gọi API + lưu token + redirect     | Login hoạt động end-to-end           |
-| 1.7  | Thiết lập Swagger (UI + JWT Auth support)        | API documentation chuyên nghiệp      |
-| 1.8  | Chuẩn hóa API Service Layer (Gom nhóm gọi API)   | Dễ quản lý, bảo trì và thêm logic    |
-
-### Giai đoạn 2: Layout & Phân quyền
-
-| Bước | Công việc                                        | Output                              |
-| ---- | ------------------------------------------------ | ----------------------------------- |
-| 2.1  | Layout chính: Sidebar + Navbar + Content area    | Layout responsive                    |
-| 2.2  | Sidebar động theo Role (dựa trên ma trận §4.2)  | Menu thay đổi theo quyền             |
-| 2.3  | Admin: Dropdown chọn Role preview trên Navbar    | Admin có thể xem giao diện từng Role |
-| 2.4  | Đa ngôn ngữ: Tích hợp next-intl vào layout      | Chuyển đổi vi/en                     |
-
-### Giai đoạn 3: Các Module nghiệp vụ
-
-| Bước | Công việc                                        | Output                              |
-| ---- | ------------------------------------------------ | ----------------------------------- |
-| 3.1  | Module Dashboard: Thông báo + Sơ đồ + Thống kê  | Dashboard hoàn chỉnh theo Role       |
-| 3.2  | Module Nhân sự: CRUD nhân viên                   | Bảng + Form + Tìm kiếm              |
-| 3.3  | Module Chấm công: Bảng công + Lương              | Bảng chấm công + Bảng lương          |
-| 3.4  | Module Yêu cầu: Tạo + Duyệt đơn từ              | Luồng tạo-duyệt hoàn chỉnh          |
-| 3.5  | Module Profile: Xem + Sửa thông tin cá nhân     | Profile + luồng duyệt cập nhật      |
-
-### Giai đoạn 4: Hoàn thiện
-
-| Bước | Công việc                                        | Output                              |
-| ---- | ------------------------------------------------ | ----------------------------------- |
-| 4.1  | Xuất Excel (danh sách NV, bảng lương)            | Download file .xlsx                  |
-| 4.2  | Sơ đồ tổ chức với React Flow                    | Sơ đồ interactive                    |
-| 4.3  | Thông báo realtime (SignalR hoặc polling)        | Inbox cập nhật tự động               |
-| 4.4  | Testing + Fix bug + Tối ưu performance          | Hệ thống ổn định                     |
-| 4.5  | Tối ưu UX (Loading state)                       | Hiệu ứng tải trang tránh treo giao diện |
+### Giai đoạn 1 - 4: Nền tảng đến Hoàn thiện
+- (Đã hoàn thành trước đó: Khởi tạo Backend/Frontend, Phân quyền, Các module cơ bản CRUD).
 
 ### Giai đoạn 5: Module nâng cao
 
@@ -255,13 +213,24 @@ i18n sẽ lòng vào từng fodel trong page theo cấu trúc: login/locales/vi.
 | 5.2  | Quản lý Đơn từ (Leave Workflow)                  | Luồng duyệt đơn realtime            | ✅ Hoàn thành |
 | 5.3  | Quản lý Tuyển dụng (Recruitment)                 | Tin tuyển dụng + Hồ sơ ứng viên     | ✅ Hoàn thành |
 | 5.4  | Hoàn thiện Chấm công & Phòng ban                 | Widget Check-in + CRUD Phòng ban    | ✅ Hoàn thành |
-| 5.5  | Đánh giá KPI & Performance                       | Hệ thống đánh giá hiệu suất         | ⏳ Sắp tới   |
-| 5.6  | Cài đặt Hệ thống (Admin Settings)                | Cấu hình giờ giấc, lịch nghỉ lễ     | ⏳ Sắp tới   |
+| 5.5  | Đánh giá KPI & Performance                       | Hệ thống đánh giá hiệu suất         | ✅ Hoàn thành |
+| 5.6  | Cài đặt Hệ thống (Admin Settings)                | Cấu hình giờ giấc, lịch nghỉ lễ     | ✅ Hoàn thành |
 
-### Giai đoạn 6: DevOps & Triển khai
+### Giai đoạn 6: Tối ưu hóa Kiến trúc & Báo cáo nâng cao
 
 | Bước | Công việc                                        | Output                              | Trạng thái |
 | ---- | ------------------------------------------------ | ----------------------------------- | ---------- |
-| 6.1  | Dockerize dự án (Backend + Frontend)             | Docker Image ổn định                | ⏳ Dự kiến  |
-| 6.2  | Cấu hình CI/CD                                   | Luồng build/deploy tự động          | ⏳ Dự kiến  |
-| 6.3  | Monitoring & Logging (Serilog/Elastic)           | Hệ thống giám sát lỗi               | ⏳ Dự kiến  |
+| 6.1  | Service-Oriented Architecture                    | Di dời API calls sang `services/`   | ✅ Hoàn thành |
+| 6.2  | Xuất Báo cáo Server-side (Excel & PDF)           | Bảng lương, Nhân sự, Payslip        | ✅ Hoàn thành |
+| 6.3  | Hệ thống Thông báo (SignalR) & Smart Routing     | UI Navbar chuông thông báo          | ✅ Hoàn thành |
+| 6.4  | Dashboard Dữ liệu thực & i18n toàn diện          | Biểu đồ kết nối DB, i18n 100%       | ✅ Hoàn thành |
+
+### Giai đoạn 7: Bảo mật, Biểu đồ & DevOps
+
+| Bước | Công việc                                        | Output                              | Trạng thái |
+| ---- | ------------------------------------------------ | ----------------------------------- | ---------- |
+| 7.1  | API Security & RBAC chặt chẽ                     | Phân quyền Endpoint `[Authorize]`   | ⏳ Sắp tới   |
+| 7.2  | Quản lý Quyền (Roles & Permissions)              | Giao diện Settings tùy chỉnh quyền  | ⏳ Sắp tới   |
+| 7.3  | Trực quan hóa dữ liệu (Advanced Charts)          | Recharts/Chart.js cho Dashboard     | ⏳ Sắp tới   |
+| 7.4  | Luồng duyệt Performance 3 bước                   | Self-review -> Manager -> System    | ⏳ Sắp tới   |
+| 7.5  | Dockerize & Triển khai (CI/CD)                   | Đóng gói Docker, Staging deploy     | ⏳ Dự kiến  |
