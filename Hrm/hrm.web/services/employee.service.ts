@@ -39,5 +39,12 @@ export const employeeService = {
   update: async (id: number, data: Partial<Employee>) => {
     const response = await api.put(`/Employees/${id}`, data);
     return response.data;
+  },
+
+  exportExcel: async (): Promise<Blob> => {
+    const response = await api.get('/Employees/export/excel', {
+      responseType: 'blob'
+    });
+    return response.data;
   }
 };

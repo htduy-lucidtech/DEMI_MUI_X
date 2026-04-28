@@ -33,7 +33,6 @@ import { DataGrid, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 import { useTranslations } from "next-intl";
 import { employeeService, Employee } from "@/services/employee.service";
 import CustomNoRowsOverlay from "@/app/components/CustomNoRowsOverlay";
-import * as XLSX from 'xlsx';
 
 export default function PersonnelPage() {
   const t = useTranslations("Personnel");
@@ -67,19 +66,19 @@ export default function PersonnelPage() {
     emp.position?.toLowerCase().includes(searchText.toLowerCase())
   );
 
-  const handleExportExcel = () => {
-    const dataToExport = filteredEmployees.map(e => ({
-      [t("table.columns.fullName")]: e.fullName,
-      [t("table.columns.email")]: e.email,
-      [t("table.columns.position")]: e.position || "N/A",
-      [t("table.columns.department")]: e.department?.name || "N/A",
-      [t("table.columns.role")]: tr(e.account?.role || "Employee"),
-    }));
-
-    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Personnel");
-    XLSX.writeFile(workbook, `HRM_Personnel_${new Date().toISOString().split('T')[0]}.xlsx`);
+  const handleExportExcel = async () => {
+    try {
+      const blob = await employeeService.exportExcel();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `HRM_Personnel_${new Date().toISOString().split('T')[0]}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Failed to export Excel:", error);
+    }
   };
 
   const handleViewDetails = (emp: Employee) => {

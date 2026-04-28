@@ -1,14 +1,20 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Box,
   Typography,
+  Card,
+  CardContent,
+  Grid,
+  TextField,
+  Button,
   Paper,
-import React, { useState } from "react";
-import { Box, Typography, Card, CardContent, Grid, TextField, Button, Paper, Stack, MenuItem } from "@mui/material";
+  Stack,
+  MenuItem
+} from "@mui/material";
 import { DataGrid, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
-import { 
+import {
   CalculateOutlined as CalcIcon,
   DownloadOutlined as DownloadIcon
 } from "@mui/icons-material";
@@ -89,9 +95,9 @@ export default function PayrollPage() {
       headerName: t('actions'),
       width: 150,
       renderCell: (params: GridRenderCellParams) => (
-        <Button 
-          size="small" 
-          variant="outlined" 
+        <Button
+          size="small"
+          variant="outlined"
           onClick={() => handleExportPdf(params.row.userId, params.row.fullName)}
         >
           {t('downloadPdf')}
