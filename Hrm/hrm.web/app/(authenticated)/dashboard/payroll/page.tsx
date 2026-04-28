@@ -5,31 +5,23 @@ import {
   Box,
   Typography,
   Paper,
-  Button,
-  Stack,
-  TextField,
-  MenuItem,
-  Card,
-  CardContent,
-  Grid,
-} from "@mui/material";
-import {
-  Calculate as CalcIcon,
-  Download as DownloadIcon,
-} from "@mui/icons-material";
+import React, { useState } from "react";
+import { Box, Typography, Card, CardContent, Grid, TextField, Button, Paper, Stack, MenuItem } from "@mui/material";
 import { DataGrid, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
-import { payrollService, PayrollRecord } from "@/services/payroll.service";
-import * as XLSX from "xlsx";
+import { 
+  CalculateOutlined as CalcIcon,
+  DownloadOutlined as DownloadIcon
+} from "@mui/icons-material";
 import CustomNoRowsOverlay from "@/app/components/CustomNoRowsOverlay";
 import { useTranslations } from "next-intl";
-import Cookies from "js-cookie";
+import { payrollService, PayrollRecord } from "@/services/payroll.service";
 
 export default function PayrollPage() {
   const t = useTranslations("Payroll");
+  const [month, setMonth] = useState<number>(new Date().getMonth() + 1);
+  const [year, setYear] = useState<number>(new Date().getFullYear());
   const [records, setRecords] = useState<PayrollRecord[]>([]);
   const [loading, setLoading] = useState(false);
-  const [month, setMonth] = useState(new Date().getMonth() + 1);
-  const [year, setYear] = useState(new Date().getFullYear());
 
   const handleCalculate = async () => {
     setLoading(true);
@@ -37,7 +29,7 @@ export default function PayrollPage() {
       const data = await payrollService.calculate(month, year);
       setRecords(data);
     } catch (error) {
-      alert(t("failedToCalculate"));
+      console.error(error);
     } finally {
       setLoading(false);
     }
@@ -45,13 +37,7 @@ export default function PayrollPage() {
 
   const handleExportExcel = async () => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5181/api'}/Payroll/export/excel/${month}/${year}`, {
-        headers: {
-          'Authorization': `Bearer ${Cookies.get('token')}`
-        }
-      });
-      if (!response.ok) throw new Error('Export failed');
-      const blob = await response.blob();
+      const blob = await payrollService.exportExcel(month, year);
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -66,13 +52,7 @@ export default function PayrollPage() {
 
   const handleExportPdf = async (userId: number, fullName: string) => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5181/api'}/Payroll/export/pdf/${userId}/${month}/${year}`, {
-        headers: {
-          'Authorization': `Bearer ${Cookies.get('token')}`
-        }
-      });
-      if (!response.ok) throw new Error('Export PDF failed');
-      const blob = await response.blob();
+      const blob = await payrollService.exportPdf(userId, month, year);
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
