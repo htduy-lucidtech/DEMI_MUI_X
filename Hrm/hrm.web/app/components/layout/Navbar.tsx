@@ -164,7 +164,7 @@ export default function Navbar() {
             }}
           >
             <Box sx={{ px: 2, py: 1.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Typography variant="subtitle1" sx={{ fontWeight: 800 }}>Thông báo</Typography>
+              <Typography variant="subtitle1" sx={{ fontWeight: 800 }}>{t('notificationsTitle')}</Typography>
               {unreadCount > 0 && (
                 <Typography 
                   variant="caption" 
@@ -178,14 +178,14 @@ export default function Navbar() {
                     }
                   }}
                 >
-                  Đánh dấu đã đọc
+                  {t('markAllRead')}
                 </Typography>
               )}
             </Box>
             <Divider />
             {notifications.length === 0 ? (
               <MenuItem disabled sx={{ py: 3, justifyContent: 'center' }}>
-                <Typography variant="body2" color="text.secondary">Không có thông báo mới.</Typography>
+                <Typography variant="body2" color="text.secondary">{t('noNewNotif')}</Typography>
               </MenuItem>
             ) : (
               notifications.map((notif) => (

@@ -15,6 +15,9 @@ export default {
     settings: "Cài đặt",
     logout: "Đăng xuất",
     preview_role: "Xem trước vai trò",
+    notificationsTitle: "Thông báo",
+    markAllRead: "Đánh dấu đã đọc",
+    noNewNotif: "Không có thông báo mới.",
   },
   roles: {
     Admin: "Quản trị viên",

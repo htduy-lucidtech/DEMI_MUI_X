@@ -106,7 +106,7 @@ export default function PayrollPage() {
     },
     {
       field: "actions",
-      headerName: "Thao tác",
+      headerName: t('actions'),
       width: 150,
       renderCell: (params: GridRenderCellParams) => (
         <Button 
@@ -114,7 +114,7 @@ export default function PayrollPage() {
           variant="outlined" 
           onClick={() => handleExportPdf(params.row.userId, params.row.fullName)}
         >
-          Tải PDF
+          {t('downloadPdf')}
         </Button>
       )
     }

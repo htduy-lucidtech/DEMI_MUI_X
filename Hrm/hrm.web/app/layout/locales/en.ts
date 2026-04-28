@@ -10,11 +10,14 @@ export default {
     org_chart: "Org Chart",
   },
   navbar: {
-    title: "HRM Management System",
+    title: "HRM Admin System",
     profile: "Profile",
     settings: "Settings",
     logout: "Logout",
     preview_role: "Preview Role",
+    notificationsTitle: "Notifications",
+    markAllRead: "Mark all as read",
+    noNewNotif: "No new notifications.",
   },
   roles: {
     Admin: "Administrator",
