@@ -11,6 +11,17 @@ Sau khi hoàn thiện xuất sắc Giai đoạn 6, hệ thống HRM Pro đã đ�
 
 ---
 
+
+
+# Tập trung xử các chức năng có sẵn ổn định và đầy đủ trước tiên.
+## Page Nhân sự:
+- Tìm kiếm nhân sự
+- Thêm sửa xoá nhân sự
+- Hợp đồng 
+- Thẻ nhân viên
+
+
+Tạm thời ngưng triển khai giai đoạn 7
 ## ❓ Câu hỏi phân vân & Gợi ý cho Giai đoạn 7
 
 Hệ thống hiện tại đã rất "thực", nhưng để trở thành một sản phẩm thương mại hoàn chỉnh, chúng ta cần xem xét các khía cạnh sau:

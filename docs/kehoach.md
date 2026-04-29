@@ -11,22 +11,21 @@ Ví dụ:
     │    └──en.ts
     └── page.tsx
 
-```
-Hrm/
-├── Hrm.slnx                    # File Solution quản lý 4 Project Backend
-├── Hrm.Api/                    # (Web API) - Tầng giao tiếp, xử lý request/response
-├── Hrm.Service/                # (Class Library) - Tầng xử lý nghiệp vụ (Business Logic)
-├── Hrm.Infrastructure/         # (Class Library) - Tầng kết nối Database (EF Core)
-├── Hrm.Domain/                 # (Class Library) - Tầng chứa Entities & Interfaces
+.
+├── src/                        # File Solution quản lý 4 Project Backend
+│   ├── Hrm.slnx
+│   ├── Hrm.Api/
+│   ├── Hrm.Service/
+│   ├── Hrm.Infrastructure/
+│   └── Hrm.Domain/
 │
-└── hrm.web/                    # (Next.js 15) - Giao diện người dùng
+└── web/                        # (Next.js 16) - Giao diện người dùng
     ├── app/                    # App Router (pages & layouts)
     ├── components/             # Component dùng chung
-    ├── i18n/                   # Cấu hình đa ngôn ngữ (vi, en)
+    ├── i18n.ts                 # Cấu hình đa ngôn ngữ (vi, en)
     ├── public/                 # Ảnh, icons, file tĩnh
     ├── package.json
     └── tailwind.config.ts
-```
 
 ## 2. Công nghệ sử dụng
 
@@ -203,7 +202,7 @@ Employee tạo yêu cầu → Personnel / Attendance duyệt → Cập nhật DB
 i18n sẽ lòng vào từng fodel trong page theo cấu trúc: login/locales/vi.ts, login/locales/en.ts, page.tsx
 
 ### Giai đoạn 1 - 4: Nền tảng đến Hoàn thiện
-- (Đã hoàn thành trước đó: Khởi tạo Backend/Frontend, Phân quyền, Các module cơ bản CRUD).
+- (Đã hoàn thành trước đó: Khởi tạo src/Frontend, Phân quyền, Các module cơ bản CRUD).
 
 ### Giai đoạn 5: Module nâng cao
 
