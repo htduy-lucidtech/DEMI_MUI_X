@@ -46,6 +46,7 @@ export default function AttendancePage() {
   const [status, setStatus] = useState<TodayStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [mounted, setMounted] = useState(false);
 
   // Late Reason Dialog
   const [lateDialogOpen, setLateDialogOpen] = useState(false);
@@ -56,8 +57,18 @@ export default function AttendancePage() {
   const [regulationSettings, setRegulationSettings] = useState<SystemSetting[]>([]);
 
   useEffect(() => {
+    setMounted(true);
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-    return () => clearInterval(timer);
+    
+    // Auto-refresh data every 60 seconds to keep it "real-time"
+    const refreshTimer = setInterval(() => {
+      fetchData();
+    }, 60000);
+
+    return () => {
+      clearInterval(timer);
+      clearInterval(refreshTimer);
+    };
   }, []);
 
   useEffect(() => {
@@ -104,23 +115,54 @@ export default function AttendancePage() {
   };
 
   const performCheckIn = async () => {
+    setLoading(true);
     try {
       await attendanceService.checkIn(user?.id || 0, lateReason);
       setLateDialogOpen(false);
       setLateReason("");
-      fetchData();
+      await fetchData();
     } catch (error) {
       alert(t("messages.error"));
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleCheckOut = async () => {
+    setLoading(true);
     try {
       await attendanceService.checkOut(user?.id || 0);
-      fetchData();
+      await fetchData();
     } catch (error) {
       alert(t("messages.error"));
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const formatUTCHourToLocal = (utcStr: string) => {
+    if (!utcStr) return "--:--";
+    try {
+      const [h, m] = utcStr.split(':').map(Number);
+      const d = new Date();
+      d.setUTCHours(h, m, 0, 0);
+      return d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', hour12: false });
+    } catch (e) {
+      return utcStr;
+    }
+  };
+
+  const calculateDuration = (startTime?: string) => {
+    if (!startTime) return "00:00:00";
+    const start = new Date(startTime).getTime();
+    const now = currentTime.getTime();
+    const diff = Math.max(0, now - start);
+    
+    const h = Math.floor(diff / 3600000);
+    const m = Math.floor((diff % 3600000) / 60000);
+    const s = Math.floor((diff % 60000) / 1000);
+    
+    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
 
   const handleOpenSettings = async () => {
@@ -221,122 +263,133 @@ export default function AttendancePage() {
   const isHR = user?.role === "Admin" || user?.role === "Personnel" || user?.role === "Manager";
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Box>
-          <Typography variant="h4" sx={{ fontWeight: 800 }}>{t("title")}</Typography>
+          <Typography variant="h5" sx={{ fontWeight: 800 }}>{t("title")}</Typography>
           <Typography variant="body2" color="text.secondary">{t("description")}</Typography>
         </Box>
         {isHR && (
           <Button 
             variant="outlined" 
+            size="small"
             startIcon={<SettingsIcon />} 
             onClick={handleOpenSettings}
-            sx={{ borderRadius: 2.5 }}
+            sx={{ borderRadius: 2 }}
           >
             {t("regulations.edit")}
           </Button>
         )}
       </Box>
 
-      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }, gap: 3 }}>
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4, 1fr)' }, gap: 2 }}>
         {/* Clock Card */}
         <Box sx={{ gridColumn: { xs: 'span 1', md: 'span 1' } }}>
           <Card sx={{ 
-            borderRadius: 4, 
+            borderRadius: 3, 
             height: "100%", 
             background: "linear-gradient(135deg, #2563eb 0%, #1e40af 100%)", 
             color: "white",
-            boxShadow: "0 10px 15px -3px rgba(37, 99, 235, 0.2)"
+            boxShadow: "0 4px 12px rgba(37, 99, 235, 0.2)"
           }}>
-            <CardContent sx={{ textAlign: "center", py: 4 }}>
-              <Typography variant="h3" sx={{ fontWeight: 800, mb: 1, letterSpacing: 2 }}>
-                {currentTime.toLocaleTimeString()}
+            <CardContent sx={{ textAlign: "center", py: 2, '&:last-child': { pb: 2 } }}>
+              <Typography variant="h4" sx={{ fontWeight: 800, mb: 0.5 }}>
+                {mounted ? currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : "--:--:--"}
               </Typography>
-              <Typography variant="body1" sx={{ opacity: 0.8, mb: 4 }}>
-                {currentTime.toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+              <Typography variant="caption" sx={{ opacity: 0.9, mb: 2, display: 'block' }}>
+                {mounted ? currentTime.toLocaleDateString('vi-VN', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }) : "..."}
               </Typography>
               
-              <Stack direction="row" spacing={2} sx={{ justifyContent: "center" }}>
+              <Box sx={{ mt: 1 }}>
                 {status && !status.hasCheckedIn ? (
                   <Button 
                     variant="contained" 
                     color="inherit" 
-                    size="large"
+                    size="medium"
                     startIcon={<LoginIcon />}
                     onClick={handleCheckInAttempt}
-                    sx={{ color: "primary.main", fontWeight: 700, borderRadius: 3, px: 4, py: 1.5 }}
+                    sx={{ color: "primary.main", fontWeight: 700, borderRadius: 2, width: '100%' }}
                   >
                     {t("checkIn")}
                   </Button>
                 ) : status && !status.hasCheckedOut ? (
-                  <Button 
-                    variant="contained" 
-                    color="secondary" 
-                    size="large"
-                    startIcon={<LogoutIcon />}
-                    onClick={handleCheckOut}
-                    sx={{ fontWeight: 700, borderRadius: 3, px: 4, py: 1.5 }}
-                  >
-                    {t("checkOut")}
-                  </Button>
+                  <Stack spacing={1}>
+                    <Typography variant="caption" sx={{ opacity: 0.8 }}>
+                      {t("status.workingTime")}: {mounted ? calculateDuration(status.checkInTime) : "00:00:00"}
+                    </Typography>
+                    <Button 
+                      variant="contained" 
+                      color="secondary" 
+                      size="medium"
+                      startIcon={<LogoutIcon />}
+                      onClick={handleCheckOut}
+                      disabled={loading}
+                      sx={{ fontWeight: 700, borderRadius: 2, width: '100%' }}
+                    >
+                      {loading ? "..." : t("checkOut")}
+                    </Button>
+                  </Stack>
                 ) : (
-                  <Box sx={{ bgcolor: 'rgba(255,255,255,0.1)', p: 2, borderRadius: 3, width: '100%' }}>
-                    <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                  <Box sx={{ bgcolor: 'rgba(255,255,255,0.15)', p: 1.5, borderRadius: 2 }}>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
                       ✨ {t("status.checkedOut")}
                     </Typography>
-                    <Typography variant="body2" sx={{ opacity: 0.8 }}>
-                      {status?.checkOutTime ? new Date(status.checkOutTime).toLocaleTimeString() : "--:--"}
+                    <Typography variant="caption" sx={{ opacity: 0.9 }}>
+                      {status?.checkOutTime ? new Date(status.checkOutTime).toLocaleTimeString('vi-VN') : "--:--"}
                     </Typography>
                   </Box>
                 )}
-              </Stack>
+              </Box>
             </CardContent>
           </Card>
         </Box>
 
-        {/* Status & Regulations */}
-        <Box sx={{ gridColumn: { xs: 'span 1', md: 'span 2' }, display: 'flex', flexDirection: 'column', gap: 3 }}>
-          <Card sx={{ borderRadius: 4, flex: 1 }}>
-            <CardContent>
-              <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-                <TimeIcon color="primary" /> {t("status.title")}
+        {/* Info & Stats Summary */}
+        <Box sx={{ gridColumn: { xs: 'span 1', md: 'span 3' }, display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '2fr 1fr' }, gap: 2 }}>
+          <Card sx={{ borderRadius: 3, display: 'flex', flexDirection: 'column' }}>
+            <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
+                <TimeIcon color="primary" fontSize="small" /> {t("status.title")} & {t("regulations.title")}
               </Typography>
-              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
+              
+              <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 2 }}>
                 <Box>
                   <Typography variant="caption" color="text.secondary">{t("columns.checkIn")}</Typography>
-                  <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                    {status?.checkInTime ? new Date(status.checkInTime).toLocaleTimeString() : "--:--"}
+                  <Typography variant="body1" sx={{ fontWeight: 700 }}>
+                    {status?.checkInTime ? new Date(status.checkInTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "--:--"}
                   </Typography>
                   {status?.isLate && (
-                    <Chip label={t("status.late")} color="error" size="small" sx={{ mt: 1 }} />
+                    <Chip label={t("status.late")} color="error" size="small" sx={{ height: 20, fontSize: '0.625rem' }} />
                   )}
                 </Box>
                 <Box>
                   <Typography variant="caption" color="text.secondary">{t("columns.checkOut")}</Typography>
-                  <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                    {status?.checkOutTime ? new Date(status.checkOutTime).toLocaleTimeString() : "--:--"}
+                  <Typography variant="body1" sx={{ fontWeight: 700 }}>
+                    {status?.checkOutTime ? new Date(status.checkOutTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "--:--"}
+                  </Typography>
+                </Box>
+                <Divider orientation="vertical" flexItem />
+                <Box>
+                  <Typography variant="caption" color="text.secondary">{t("regulations.shortTitle")}</Typography>
+                  <Typography variant="body1" sx={{ fontWeight: 700, color: 'primary.main' }}>
+                    {formatUTCHourToLocal(status?.regulations.checkIn || "")} - {formatUTCHourToLocal(status?.regulations.checkOut || "")}
                   </Typography>
                 </Box>
               </Box>
             </CardContent>
           </Card>
 
-          <Card sx={{ borderRadius: 4, flex: 1, borderLeft: '4px solid #2563eb' }}>
-            <CardContent>
-              <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 2 }}>{t("regulations.title")}</Typography>
-              <Stack direction="row" spacing={4}>
-                <Box>
-                  <Typography variant="caption" color="text.secondary">{t("regulations.checkInTime")}</Typography>
-                  <Typography variant="h6" sx={{ fontWeight: 700, color: 'primary.main' }}>
-                    {status?.regulations.checkIn || "--:--"}
-                  </Typography>
+          <Card sx={{ borderRadius: 3, bgcolor: 'primary.50', border: '1px dashed', borderColor: 'primary.main' }}>
+            <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>{t("stats.monthly")}</Typography>
+              <Stack spacing={1}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Typography variant="caption">{t("stats.workingDays")}:</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 700 }}>{history.filter(h => new Date(h.checkInTime).getMonth() === new Date().getMonth()).length}</Typography>
                 </Box>
-                <Box>
-                  <Typography variant="caption" color="text.secondary">{t("regulations.checkOutTime")}</Typography>
-                  <Typography variant="h6" sx={{ fontWeight: 700, color: 'primary.main' }}>
-                    {status?.regulations.checkOut || "--:--"}
-                  </Typography>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Typography variant="caption">{t("stats.lateDays")}:</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 700, color: 'error.main' }}>{history.filter(h => h.isLate && new Date(h.checkInTime).getMonth() === new Date().getMonth()).length}</Typography>
                 </Box>
               </Stack>
             </CardContent>
@@ -345,15 +398,16 @@ export default function AttendancePage() {
       </Box>
 
       {/* History Table */}
-      <Paper sx={{ borderRadius: 4, overflow: 'hidden', border: '1px solid #e2e8f0', boxShadow: 'none' }}>
-        <Box sx={{ p: 2.5, borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Typography variant="h6" sx={{ fontWeight: 700 }}>{t("history")}</Typography>
+      <Paper sx={{ borderRadius: 3, overflow: 'hidden', border: '1px solid #e2e8f0', boxShadow: 'none' }}>
+        <Box sx={{ px: 2, py: 1.5, borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>{t("history")}</Typography>
         </Box>
-        <Box sx={{ height: 500, width: '100%' }}>
+        <Box sx={{ height: 400, width: '100%' }}>
           <DataGrid
             rows={history}
             columns={columns}
             loading={loading}
+            density="compact"
             disableRowSelectionOnClick
             pageSizeOptions={[10, 25, 50]}
             initialState={{
@@ -381,7 +435,10 @@ export default function AttendancePage() {
         </DialogTitle>
         <DialogContent>
           <Typography variant="body2" sx={{ mb: 2, color: 'text.secondary' }}>
-            Giờ vào làm tiêu chuẩn là <strong>{status?.regulations.checkIn}</strong>. Hiện tại đã quá giờ quy định, vui lòng nhập lý do.
+            {t.rich("late.description", {
+              time: status?.regulations.checkIn,
+              strong: (chunks) => <strong>{chunks}</strong>
+            })}
           </Typography>
           <TextField
             fullWidth

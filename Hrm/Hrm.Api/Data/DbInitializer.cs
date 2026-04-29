@@ -83,29 +83,66 @@ namespace Hrm.Api.Data
             // 4. Seed Attendances
             var attendances = new List<Attendance>();
             var random = new Random();
+            var now = DateTime.UtcNow;
+            
             foreach (var u in users)
             {
-                for (int i = 0; i < 10; i++)
+                // Seed for last 10 days, but NOT today
+                for (int i = 1; i <= 10; i++)
                 {
-                    var date = DateTime.UtcNow.AddDays(-i).Date;
+                    var date = now.AddDays(-i).Date;
                     if (date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday) continue;
 
-                    var checkIn = date.AddHours(8).AddMinutes(random.Next(0, 60));
-                    var isLate = checkIn.TimeOfDay > new TimeSpan(8, 30, 0);
+                    // Standard shift: 8:00 - 17:00 (UTC approx for demo)
+                    // Let's use 1:00 AM UTC as 8:00 AM GMT+7
+                    var checkIn = date.AddHours(1).AddMinutes(random.Next(0, 60));
+                    var isLate = checkIn.TimeOfDay > new TimeSpan(1, 30, 0); // Late if after 8:30 AM GMT+7
 
                     attendances.Add(new Attendance
                     {
                         UserId = u.Id,
                         CheckInTime = checkIn,
-                        CheckOutTime = date.AddHours(17).AddMinutes(random.Next(30, 60)),
+                        CheckOutTime = date.AddHours(10).AddMinutes(random.Next(30, 60)), // 5:30 - 6:00 PM GMT+7
                         IsLate = isLate,
                         LateReason = isLate ? "Kẹt xe đường Nguyễn Trãi" : null,
                         Note = isLate ? "Đi muộn" : "Đúng giờ"
                     });
                 }
+
+                // For today: Some users are checked in, some are not
+                var today = now.Date;
+                if (today.DayOfWeek != DayOfWeek.Saturday && today.DayOfWeek != DayOfWeek.Sunday)
+                {
+                    if (u.Username == "employee")
+                    {
+                        // Employee is NOT checked in yet (demo manual check-in)
+                    }
+                    else if (u.Username == "admin")
+                    {
+                        // Admin is checked in but not out
+                        attendances.Add(new Attendance
+                        {
+                            UserId = u.Id,
+                            CheckInTime = today.AddHours(1).AddMinutes(15),
+                            IsLate = false,
+                            Note = "Admin đã vào hệ thống"
+                        });
+                    }
+                    else
+                    {
+                        // Others are checked in
+                        attendances.Add(new Attendance
+                        {
+                            UserId = u.Id,
+                            CheckInTime = today.AddHours(1).AddMinutes(random.Next(0, 30)),
+                            IsLate = false,
+                            Note = "Đang làm việc"
+                        });
+                    }
+                }
             }
             context.Attendances.AddRange(attendances);
-            await context.SaveChangesAsync(); // Lưu Attendances trước
+            await context.SaveChangesAsync();
 
             // 5. Seed Leave Requests
             var leaveRequests = new List<LeaveRequest>
@@ -156,8 +193,8 @@ namespace Hrm.Api.Data
                 new SystemSetting { Key = "LogoUrl", Value = "/logo.png", Category = "UI", Description = "Đường dẫn logo" },
                 new SystemSetting { Key = "MaxLoginAttempts", Value = "5", Category = "Security", Description = "Số lần đăng nhập sai tối đa" },
                 new SystemSetting { Key = "RequireStrongPassword", Value = "true", Category = "Security", Description = "Yêu cầu mật khẩu mạnh" },
-                new SystemSetting { Key = "StandardCheckInTime", Value = "08:30", Category = "General", Description = "Giờ vào làm tiêu chuẩn" },
-                new SystemSetting { Key = "StandardCheckOutTime", Value = "17:30", Category = "General", Description = "Giờ tan làm tiêu chuẩn" }
+                new SystemSetting { Key = "StandardCheckInTime", Value = "01:30", Category = "General", Description = "Giờ vào làm tiêu chuẩn" },
+                new SystemSetting { Key = "StandardCheckOutTime", Value = "10:30", Category = "General", Description = "Giờ tan làm tiêu chuẩn" }
             };
             context.SystemSettings.AddRange(settings);
 

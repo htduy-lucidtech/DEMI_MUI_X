@@ -51,7 +51,6 @@ export default {
       manager: "Người quản lý",
       baseSalary: "Lương cơ bản",
       allowance: "Phụ cấp",
-      contract: "Hợp đồng",
       idCard: "Thẻ nhân viên"
     }
   },

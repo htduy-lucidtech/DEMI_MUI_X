@@ -27,7 +27,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useAuth, Role } from "@/app/context/AuthContext";
 
-const drawerWidth = 280; // Tăng lên 280px theo mẫu WMS
+const drawerWidth = 250; // Giảm xuống 250px để tối ưu không gian nội dung
 
 interface MenuItem {
   text: string;
@@ -88,14 +88,14 @@ export default function Sidebar() {
     },
     {
       key: "payroll",
-      text: "Bảng lương",
+      text: t("payroll"),
       icon: <PaidIcon />,
       path: "/dashboard/payroll",
       roles: ["Admin", "Manager", "Personnel"],
     },
     {
       key: "recruitment",
-      text: "Tuyển dụng",
+      text: t("recruitment"),
       icon: <AssignmentIcon />,
       path: "/dashboard/recruitment",
       roles: ["Admin", "Manager", "Personnel"],
@@ -116,14 +116,14 @@ export default function Sidebar() {
     },
     {
       key: "performance",
-      text: "Đánh giá KPI",
+      text: t("performance"),
       icon: <AssignmentIcon />,
       path: "/dashboard/performance",
       roles: ["Admin", "Manager", "Personnel"],
     },
     {
       key: "settings",
-      text: "Cài đặt",
+      text: t("settings"),
       icon: <SettingsIcon />,
       path: "/settings",
       roles: ["Admin"],
@@ -149,7 +149,7 @@ export default function Sidebar() {
         },
       }}
     >
-      <Toolbar sx={{ px: [2, 3], mb: 2 }}>
+      <Toolbar sx={{ px: [2, 3], mb: 1 }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
           <Box sx={{ 
             width: 32, 
@@ -170,20 +170,20 @@ export default function Sidebar() {
         </Box>
       </Toolbar>
       <Box sx={{ overflow: "auto", px: 2 }}>
-        <Typography variant="caption" sx={{ px: 2, mb: 1, display: "block", color: "rgba(255, 255, 255, 0.4)", fontWeight: 700, textTransform: "uppercase" }}>
-          Menu chính
+        <Typography variant="caption" sx={{ px: 2, mb: 0.5, display: "block", color: "rgba(255, 255, 255, 0.4)", fontWeight: 700, textTransform: "uppercase" }}>
+          {t("mainMenu")}
         </Typography>
         <List disablePadding>
           {filteredItems.map((item) => {
             const isActive = pathname === item.path;
             return (
-              <ListItem key={item.key} disablePadding sx={{ mb: 0.5 }}>
+              <ListItem key={item.key} disablePadding sx={{ mb: 0 }}>
                 <ListItemButton
                   onClick={() => router.push(item.path)}
                   selected={isActive}
                   sx={{
                     borderRadius: 1.5,
-                    py: 1,
+                    py: 0.75,
                     mx: 1,
                     transition: "all 0.2s",
                     "&.Mui-selected": {

@@ -8,6 +8,11 @@ export default {
     admin: "Quản trị hệ thống",
     users: "Tài khoản",
     org_chart: "Sơ đồ tổ chức",
+    payroll: "Bảng lương",
+    recruitment: "Tuyển dụng",
+    performance: "Đánh giá KPI",
+    settings: "Cài đặt",
+    mainMenu: "Menu chính",
   },
   navbar: {
     title: "Hệ thống Quản trị HRM",

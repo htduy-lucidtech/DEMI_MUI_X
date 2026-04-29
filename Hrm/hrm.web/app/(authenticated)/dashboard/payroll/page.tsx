@@ -59,12 +59,14 @@ export default function PayrollPage() {
   const handleExportPdf = async (userId: number, fullName: string) => {
     try {
       const blob = await payrollService.exportPdf(userId, month, year);
-      const url = window.URL.createObjectURL(blob);
+      const url = window.URL.createObjectURL(new Blob([blob], { type: 'application/pdf' }));
       const a = document.createElement('a');
       a.href = url;
-      a.download = `Payslip_${fullName}_${month}_${year}.pdf`;
+      const fileName = `Payslip_${fullName.trim().replace(/\s+/g, '_')}_${month}_${year}.pdf`;
+      a.download = fileName;
       document.body.appendChild(a);
       a.click();
+      document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
     } catch (error) {
       alert("Failed to export PDF");

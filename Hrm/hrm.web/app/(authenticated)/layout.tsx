@@ -26,22 +26,40 @@ export default function AuthenticatedLayout({
   const [notification, setNotification] = useState<{ open: boolean; message: string; user: string } | null>(null);
 
   useEffect(() => {
-    const connection = new signalR.HubConnectionBuilder()
-      .withUrl(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5181/api'}`.replace('/api', '') + "/notificationHub")
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5181/api';
+    const hubUrl = baseUrl.replace(/\/api\/?$/, '') + "/notificationHub";
+
+    const newConnection = new signalR.HubConnectionBuilder()
+      .withUrl(hubUrl, {
+        skipNegotiation: false,
+        transport: signalR.HttpTransportType.WebSockets | signalR.HttpTransportType.LongPolling
+      })
       .withAutomaticReconnect()
       .build();
 
-    connection.start()
-      .then(() => {
-        console.log("Connected to SignalR Hub");
-        connection.on("ReceiveNotification", (user, message) => {
-          setNotification({ open: true, user, message });
-        });
-      })
-      .catch(err => console.error("SignalR Connection Error: ", err));
+    const startConnection = async () => {
+      try {
+        if (newConnection.state === signalR.HubConnectionState.Disconnected) {
+          await newConnection.start();
+          console.log("SignalR Connected to:", hubUrl);
+          
+          newConnection.on("ReceiveNotification", (user, message) => {
+            setNotification({ open: true, user, message });
+          });
+        }
+      } catch (err) {
+        console.error("SignalR Connection Error: ", err);
+        // Retry logic is handled by withAutomaticReconnect() if it started once, 
+        // but if it fails to start initially, we might want a manual retry.
+      }
+    };
+
+    startConnection();
 
     return () => {
-      connection.stop();
+      if (newConnection.state !== signalR.HubConnectionState.Disconnected) {
+        newConnection.stop();
+      }
     };
   }, []);
 
@@ -64,7 +82,7 @@ export default function AuthenticatedLayout({
         component="main"
         sx={{
           flexGrow: 1,
-          p: { xs: 2, md: 4 },
+          p: { xs: 1.5, md: 2.5 },
           backgroundColor: "background.default",
           minHeight: "100vh",
           width: { sm: `calc(100% - 260px)` },
@@ -73,7 +91,7 @@ export default function AuthenticatedLayout({
         <Toolbar /> {/* Spacer for fixed Navbar */}
         
         {/* Breadcrumbs Section */}
-        <Box sx={{ mb: 3 }}>
+        <Box sx={{ mb: 1.5 }}>
           <Breadcrumbs 
             separator={<NavigateNextIcon fontSize="small" />} 
             aria-label="breadcrumb"

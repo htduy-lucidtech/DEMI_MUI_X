@@ -51,7 +51,6 @@ export default {
       manager: "Manager",
       baseSalary: "Base Salary",
       allowance: "Allowance",
-      contract: "Contract",
       idCard: "ID Card"
     }
   },

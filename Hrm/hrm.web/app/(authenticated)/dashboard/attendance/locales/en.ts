@@ -9,20 +9,28 @@ export default {
     checkedOut: "You checked out at",
     notYet: "You haven't started your shift today",
     late: "Late",
-    onTime: "On Time"
+    onTime: "On Time",
+    workingTime: "Working Time"
+  },
+  stats: {
+    monthly: "Monthly Stats",
+    workingDays: "Working Days",
+    lateDays: "Late Days"
   },
   regulations: {
     title: "Time Regulations",
     checkInTime: "Standard Check-In",
     checkOutTime: "Standard Check-Out",
     edit: "Time Configuration",
-    saveSuccess: "Regulations updated successfully"
+    saveSuccess: "Regulations updated successfully",
+    shortTitle: "Rules (In/Out)"
   },
   late: {
     title: "Record Lateness",
     reasonPlaceholder: "Please enter a reason for being late...",
     reasonLabel: "Late Reason",
-    submit: "Confirm & Check In"
+    submit: "Confirm & Check In",
+    description: "Standard check-in time is <strong>{time}</strong>. Current time is late, please provide a reason."
   },
   history: "Company-wide Attendance History",
   columns: {

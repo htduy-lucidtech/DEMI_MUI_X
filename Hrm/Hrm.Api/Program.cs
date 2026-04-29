@@ -122,6 +122,7 @@ if (app.Environment.IsDevelopment())
 }
 
 // app.UseHttpsRedirection();
+app.UseWebSockets();
 app.UseCors("HrmPolicy");
 app.UseAuthentication(); // Must be before UseAuthorization
 app.UseAuthorization();

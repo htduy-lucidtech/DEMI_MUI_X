@@ -41,7 +41,6 @@ import {
 import { DataGrid, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 import { useTranslations } from "next-intl";
 import { employeeService, Employee } from "@/services/employee.service";
-import { contractService, Contract } from "@/services/contract.service";
 import CustomNoRowsOverlay from "@/app/components/CustomNoRowsOverlay";
 import EmployeeDialog from "./components/EmployeeDialog";
 import html2canvas from "html2canvas";
@@ -68,9 +67,7 @@ export default function PersonnelPage() {
   const [bulkDeleteConfirmOpen, setBulkDeleteConfirmOpen] = useState(false);
   const [idCardOpen, setIdCardOpen] = useState(false);
 
-  // Contracts state
-  const [contracts, setContracts] = useState<Contract[]>([]);
-  const [contractsLoading, setContractsLoading] = useState(false);
+
 
   // Helper to get selected count and IDs safely
   const getSelectedIds = (): number[] => {
@@ -112,18 +109,7 @@ export default function PersonnelPage() {
     fetchEmployees();
   }, []);
 
-  const fetchContracts = async (empId: number) => {
-    setContractsLoading(true);
-    try {
-      const data = await contractService.getByEmployeeId(empId);
-      setContracts(data || []);
-    } catch (error) {
-      console.error("Failed to fetch contracts:", error);
-      setContracts([]);
-    } finally {
-      setContractsLoading(false);
-    }
-  };
+
 
   const filteredEmployees = (employees || []).filter(emp =>
     emp?.fullName?.toLowerCase().includes(searchText.toLowerCase()) ||
@@ -151,7 +137,7 @@ export default function PersonnelPage() {
     setSelectedEmployee(emp);
     setDetailDrawerOpen(true);
     setTabValue(0);
-    if (emp?.id) fetchContracts(emp.id);
+    if (emp?.id) fetchEmployees(); // Refresh list just in case, or just open drawer
   };
 
   const handleOpenAdd = () => {
@@ -224,7 +210,8 @@ export default function PersonnelPage() {
       const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
       
       pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-      pdf.save(`ID_Card_${selectedEmployee.fullName}.pdf`);
+      const fileName = `ID_Card_${selectedEmployee.fullName.trim().replace(/\s+/g, '_')}.pdf`;
+      pdf.save(fileName);
     }
   };
 
@@ -387,7 +374,6 @@ export default function PersonnelPage() {
             <Tabs value={tabValue} onChange={(_, v) => setTabValue(v)} sx={{ mb: 3, borderBottom: 1, borderColor: "divider" }}>
               <Tab label={t("details.tabs.personal")} />
               <Tab label={t("details.tabs.work")} />
-              <Tab label={t("details.fields.contract")} />
               <Tab label={t("details.tabs.bank_salary")} />
             </Tabs>
 
@@ -433,49 +419,6 @@ export default function PersonnelPage() {
               )}
 
               {tabValue === 2 && (
-                <Box>
-                  <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 700 }}>Danh sách hợp đồng</Typography>
-                  {contractsLoading ? (
-                    <Typography>Đang tải...</Typography>
-                  ) : contracts && contracts.length > 0 ? (
-                    <Stack spacing={2}>
-                      {contracts.map((contract) => (
-                        <Card key={contract.id} variant="outlined" sx={{ borderRadius: 2 }}>
-                          <CardContent sx={{ p: 2, "&:last-child": { pb: 2 } }}>
-                            <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
-                              <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>{contract.contractNumber}</Typography>
-                              <Chip label={contract.type} size="small" color="primary" variant="outlined" />
-                            </Box>
-                            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-                              <Box>
-                                <Typography variant="caption" color="text.secondary">Ngày bắt đầu</Typography>
-                                <Typography variant="body2">{new Date(contract.startDate).toLocaleDateString()}</Typography>
-                              </Box>
-                              <Box>
-                                <Typography variant="caption" color="text.secondary">Ngày kết thúc</Typography>
-                                <Typography variant="body2">{contract.endDate ? new Date(contract.endDate).toLocaleDateString() : "Vô thời hạn"}</Typography>
-                              </Box>
-                              <Box>
-                                <Typography variant="caption" color="text.secondary">Mức lương</Typography>
-                                <Typography variant="body2" sx={{ color: "success.main", fontWeight: 700 }}>{contract.salary.toLocaleString()} VND</Typography>
-                              </Box>
-                              <Box>
-                                <Typography variant="caption" color="text.secondary">Trạng thái</Typography>
-                                <Typography variant="body2">{contract.status}</Typography>
-                              </Box>
-                            </Box>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </Stack>
-                  ) : (
-                    <Typography variant="body2" color="text.secondary">Chưa có thông tin hợp đồng.</Typography>
-                  )}
-                  <Button startIcon={<AddIcon />} sx={{ mt: 2 }}>Thêm hợp đồng</Button>
-                </Box>
-              )}
-
-              {tabValue === 3 && (
                 <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
                   <Box>
                     <Typography variant="caption" color="text.secondary">{t("details.fields.bankName")}</Typography>

@@ -9,20 +9,28 @@ export default {
     checkedOut: "Bạn đã tan ca lúc",
     notYet: "Bạn chưa bắt đầu ca làm việc hôm nay",
     late: "Đi muộn",
-    onTime: "Đúng giờ"
+    onTime: "Đúng giờ",
+    workingTime: "Thời gian làm việc"
+  },
+  stats: {
+    monthly: "Thống kê tháng",
+    workingDays: "Số ngày công",
+    lateDays: "Đi muộn"
   },
   regulations: {
     title: "Quy định thời gian",
     checkInTime: "Giờ vào làm tiêu chuẩn",
     checkOutTime: "Giờ tan làm tiêu chuẩn",
     edit: "Cấu hình thời gian",
-    saveSuccess: "Cập nhật quy định thành công"
+    saveSuccess: "Cập nhật quy định thành công",
+    shortTitle: "Quy định (Vào/Ra)"
   },
   late: {
     title: "Ghi nhận đi muộn",
     reasonPlaceholder: "Vui lòng nhập lý do đi muộn...",
     reasonLabel: "Lý do đi muộn",
-    submit: "Xác nhận và Chấm công"
+    submit: "Xác nhận và Chấm công",
+    description: "Giờ vào làm tiêu chuẩn là <strong>{time}</strong>. Hiện tại đã quá giờ quy định, vui lòng nhập lý do."
   },
   history: "Lịch sử chấm công toàn công ty",
   columns: {

@@ -8,6 +8,11 @@ export default {
     admin: "System Admin",
     users: "Accounts",
     org_chart: "Org Chart",
+    payroll: "Payroll",
+    recruitment: "Recruitment",
+    performance: "Performance",
+    settings: "Settings",
+    mainMenu: "Main Menu",
   },
   navbar: {
     title: "HRM Admin System",
