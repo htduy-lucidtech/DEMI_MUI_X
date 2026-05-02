@@ -12,12 +12,20 @@ namespace Hrm.Api.Controllers
     public class NotificationsController : ControllerBase
     {
         private readonly HrmDbContext _context;
-        private readonly IHubContext<NotificationHub> _hubContext;
+        private readonly Hrm.Service.Interfaces.INotificationService _notificationService;
 
-        public NotificationsController(HrmDbContext context, IHubContext<NotificationHub> hubContext)
+        public NotificationsController(HrmDbContext context, Hrm.Service.Interfaces.INotificationService notificationService)
         {
             _context = context;
-            _hubContext = hubContext;
+            _notificationService = notificationService;
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Notification>>> GetAllNotifications()
+        {
+            return await _context.Notifications
+                .OrderByDescending(n => n.CreatedAt)
+                .ToListAsync();
         }
 
         // Get notifications for a user
@@ -46,6 +54,15 @@ namespace Hrm.Api.Controllers
             return NoContent();
         }
 
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateNotification(int id, Notification notification)
+        {
+            if (id != notification.Id) return BadRequest();
+            _context.Entry(notification).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+            return NoContent();
+        }
+
         // Mark all notifications as read for a user
         [HttpPut("user/{userId}/read-all")]
         public async Task<IActionResult> MarkAllAsRead(int userId)
@@ -65,17 +82,11 @@ namespace Hrm.Api.Controllers
 
         // Create a new notification (usually called internally by other services, but exposed for testing)
         [HttpPost]
-        public async Task<ActionResult<Notification>> CreateNotification(Notification notification)
+        public async Task<ActionResult<Notification>> CreateNotification(Notification notification, [FromQuery] string? role = null)
         {
-            notification.CreatedAt = DateTime.UtcNow;
-            _context.Notifications.Add(notification);
-            await _context.SaveChangesAsync();
-
-            // Broadcast via SignalR to a specific group/user (in a real app you'd map connection IDs)
-            // For now, broadcast to all with the user identifier in the message or handle client-side
-            await _hubContext.Clients.All.SendAsync("ReceiveNotification", notification.UserId.ToString(), notification.Message);
-
-            return CreatedAtAction(nameof(GetUserNotifications), new { userId = notification.UserId }, notification);
+            // Delegate to notification service which saves and sends realtime events
+            var created = await _notificationService.CreateAndSendAsync(notification, role);
+            return CreatedAtAction(nameof(GetUserNotifications), new { userId = created.UserId }, created);
         }
     }
 }
