@@ -82,6 +82,9 @@ builder.Services.AddAuthentication(options =>
 
 // 3. Register Services
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<Hrm.Service.Interfaces.IAttendanceService, Hrm.Service.Implementations.AttendanceService>();
+// Notification service (implementation lives in Hrm.Api.Services)
+builder.Services.AddScoped<Hrm.Service.Interfaces.INotificationService, Hrm.Api.Services.NotificationService>();
 
 // 4. Cấu hình CORS (Cho phép Next.js truy cập)
 builder.Services.AddCors(options => {
