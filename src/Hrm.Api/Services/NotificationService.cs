@@ -20,12 +20,34 @@ namespace Hrm.Api.Services
 
         public async Task<Notification> CreateAndSendAsync(Notification notification, string? role = null)
         {
-            notification.CreatedAt = DateTime.UtcNow;
-            _context.Notifications.Add(notification);
-            await _context.SaveChangesAsync();
+            // Always create a new entity instance to persist to avoid re-using a previously-saved instance
+            var toSave = new Notification
+            {
+                UserId = notification.UserId,
+                Role = notification.Role,
+                Title = notification.Title,
+                Message = notification.Message,
+                Type = notification.Type,
+                MetaJson = notification.MetaJson,
+                CreatedAt = DateTime.UtcNow
+            };
 
-            var shortPayload = new { type = notification.Type, title = notification.Title, message = notification.Message };
-            var fullPayload = new { id = notification.Id, type = notification.Type, title = notification.Title, message = notification.Message, meta = (object?)null };
+            _context.Notifications.Add(toSave);
+            Console.WriteLine($"[NotificationService] Saving primary notification (Id before save = {toSave.Id}) Title={toSave.Title} UserId={toSave.UserId}");
+            await _context.SaveChangesAsync();
+            Console.WriteLine($"[NotificationService] Saved primary notification (Id after save = {toSave.Id})");
+
+            var shortPayload = new { type = toSave.Type, title = toSave.Title, message = toSave.Message };
+            object? meta = null;
+            if (!string.IsNullOrEmpty(toSave.MetaJson))
+            {
+                try
+                {
+                    meta = System.Text.Json.JsonSerializer.Deserialize<object>(toSave.MetaJson);
+                }
+                catch { meta = toSave.MetaJson; }
+            }
+            var fullPayload = new { id = toSave.Id, type = toSave.Type, title = toSave.Title, message = toSave.Message, meta };
 
             if (notification.UserId.HasValue)
             {
@@ -38,16 +60,23 @@ namespace Hrm.Api.Services
                 var users = await _context.Users.Where(u => u.Role == role && u.IsActive).ToListAsync();
                 var userNotifications = users.Select(u => new Notification {
                     UserId = u.Id,
-                    Title = notification.Title,
-                    Message = notification.Message,
-                    Type = notification.Type,
+                    Title = toSave.Title,
+                    Message = toSave.Message,
+                    Type = toSave.Type,
+                    MetaJson = toSave.MetaJson,
                     CreatedAt = DateTime.UtcNow
                 }).ToList();
 
                 if (userNotifications.Any())
                 {
+                    Console.WriteLine($"[NotificationService] Creating {userNotifications.Count} user notifications for role={role}");
+                    for (int i = 0; i < userNotifications.Count; i++)
+                    {
+                        Console.WriteLine($"  userNotif[{i}] Id={userNotifications[i].Id} UserId={userNotifications[i].UserId} Title={userNotifications[i].Title}");
+                    }
                     _context.Notifications.AddRange(userNotifications);
                     await _context.SaveChangesAsync();
+                    Console.WriteLine($"[NotificationService] Saved {userNotifications.Count} user notifications");
                 }
 
                 await _hubContext.Clients.Group($"role-{role}").SendAsync("ReceiveNotificationShort", shortPayload);

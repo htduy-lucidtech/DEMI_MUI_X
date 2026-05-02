@@ -11,6 +11,7 @@ import { useAuth } from "@/app/context/AuthContext";
 import { useEffect, useState } from "react";
 import * as signalR from "@microsoft/signalr";
 import { Snackbar, Alert } from "@mui/material";
+import { translate } from "@/lib/notification-i18n";
 
 export default function AuthenticatedLayout({
   children,
@@ -60,12 +61,44 @@ export default function AuthenticatedLayout({
           await newConnection.start();
           console.log("SignalR Connected to:", hubUrl);
 
+          const formatIncoming = (msg: any) => {
+            if (!msg && msg !== 0) return "";
+            if (typeof msg === "string") return msg;
+            if (typeof msg === "object") {
+              const metaRaw = (msg.meta ?? msg.MetaJson) as any;
+              let meta: any = null;
+              if (metaRaw) {
+                if (typeof metaRaw === "string") {
+                  try {
+                    meta = JSON.parse(metaRaw);
+                  } catch {
+                    meta = null;
+                  }
+                } else {
+                  meta = metaRaw;
+                }
+              }
+              if (meta?.messageKey) {
+                return translate(meta.messageKey, meta.messageParams);
+              }
+              if (typeof msg.message === "string") return msg.message;
+              if (typeof msg.title === "string") return msg.title;
+              try {
+                return JSON.stringify(msg);
+              } catch {
+                return String(msg);
+              }
+            }
+            return String(msg);
+          };
+
           newConnection.on("ReceiveNotification", (user, message) => {
-            setNotification({ open: true, user, message });
+            setNotification({ open: true, user, message: formatIncoming(message) });
           });
           // Short and full notifications — show short as snackbar and dispatch events for pages to refresh
           newConnection.on("ReceiveNotificationShort", (message) => {
-            setNotification({ open: true, user: "Hệ thống", message });
+            const display = formatIncoming(message);
+            setNotification({ open: true, user: "Hệ thống", message: display });
             try {
               window.dispatchEvent(
                 new CustomEvent("notification:short", { detail: { message } }),
@@ -74,8 +107,9 @@ export default function AuthenticatedLayout({
           });
 
           newConnection.on("ReceiveNotificationFull", (message) => {
+            const display = formatIncoming(message) || (message?.type || "Thông báo");
             // show snackbar for full notifications as well and also emit short event so pages using "short" refresh
-            setNotification({ open: true, user: "Hệ thống", message: message?.type || "Thông báo" });
+            setNotification({ open: true, user: "Hệ thống", message: display });
             try {
               window.dispatchEvent(
                 new CustomEvent("notification:full", { detail: { message } }),

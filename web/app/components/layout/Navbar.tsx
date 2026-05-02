@@ -76,7 +76,11 @@ export default function Navbar({ isSidebarCollapsed, onToggleSidebar }: NavbarPr
       const { notificationService } = await import('@/services/notification.service');
       try {
         const data = await notificationService.getUserNotifications(user.id);
-        setNotifications(data);
+        // Deduplicate by id in case backend returns duplicates and sort newest-first
+        const map = new Map<number, any>();
+        data.forEach((n: any) => map.set(n.id, n));
+        const unique = Array.from(map.values()).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        setNotifications(unique);
       } catch (err) {
         console.error(err);
       }

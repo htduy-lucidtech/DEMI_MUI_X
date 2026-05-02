@@ -169,6 +169,12 @@ namespace Hrm.Api.Controllers
                 Type = "System"
             };
 
+            notif.MetaJson = System.Text.Json.JsonSerializer.Serialize(new {
+                messageKey = "system.welcome",
+                messageParams = new { },
+                fallback = notif.Message
+            });
+
             // send to common roles as a basic broadcast
             await notificationService.CreateAndSendAsync(notif, "Admin");
             await notificationService.CreateAndSendAsync(notif, "Personnel");

@@ -134,5 +134,3 @@ Ghi chú chung:
 - Nếu cần gửi cho từng cá nhân trong role, `NotificationService` hiện đã hỗ trợ tạo bản ghi cho mỗi user trong role trước khi gửi group event.
 
 ---
-
-Thêm mục này vào cuối file giúp team biết chính xác vị trí code nơi notification được sinh và ai sẽ nhận.

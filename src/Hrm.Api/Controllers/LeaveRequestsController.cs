@@ -90,25 +90,54 @@ namespace Hrm.Api.Controllers
             _context.LeaveRequests.Add(request);
             await _context.SaveChangesAsync();
 
+            // Load the author (with Employee) to avoid null dereference of navigation properties
+            var author = await _context.Users.Include(u => u.Employee).FirstOrDefaultAsync(u => u.Id == request.UserId);
+            var senderName = (author != null && author.Employee != null) ? author.Employee.FullName : (author != null ? author.Username : $"User {request.UserId}");
+
             // Notify Admin/Personnel/Manager roles that a new leave request was created
-            var roleShort = $"Yêu cầu nghỉ mới (ID: {request.Id}) từ user {request.UserId}";
-            var roleFull = $"Đơn nghỉ mới (ID: {request.Id}) - Người gửi: {request.UserId}. Thời gian: {request.StartDate:u} - {request.EndDate:u}. Lý do: {request.Reason}";
+            var roleShort = $"Yêu cầu nghỉ mới từ user {senderName}";
+            var roleFull = $"Đơn nghỉ mới - Người gửi: {senderName}";
 
             var notif = new Notification
             {
                 UserId = null,
                 Role = null,
                 Title = "Yêu cầu nghỉ mới",
+                // fallback message (kept for older clients)
                 Message = roleFull,
-                Type = "LeaveRequest"
+                Type = "LeaveRequest",
+                MetaJson = System.Text.Json.JsonSerializer.Serialize(new {
+                    messageKey = "leave.request.created",
+                    messageParams = new {
+                        id = request.Id,
+                        userId = request.UserId,
+                        startDate = request.StartDate,
+                        endDate = request.EndDate
+                    },
+                    fallback = roleFull
+                })
             };
 
-            // Send to multiple roles
+            // Send to multiple roles (server provides key+params; FE localizes)
             await notificationService.CreateAndSendAsync(notif, "Admin");
             await notificationService.CreateAndSendAsync(notif, "Personnel");
             await notificationService.CreateAndSendAsync(notif, "Manager");
 
-            return CreatedAtAction(nameof(GetLeaveRequest), new { id = request.Id }, request);
+            var result = new {
+                request.Id,
+                request.UserId,
+                request.LeaveType,
+                request.StartDate,
+                request.EndDate,
+                request.ApprovedBy,
+                request.Comment,
+                request.Reason,
+                request.Status,
+                request.CreatedAt,
+                FullName = (request.User != null && request.User.Employee != null) ? request.User.Employee.FullName : (request.User != null ? request.User.Username : "N/A")
+            };
+
+            return CreatedAtAction(nameof(GetLeaveRequest), new { id = request.Id }, result);
         }
 
         [HttpGet("{id}")]
@@ -138,44 +167,59 @@ namespace Hrm.Api.Controllers
         [HttpPatch("{id}/status")]
         public async Task<IActionResult> UpdateStatus(int id, [FromBody] UpdateStatusDto dto, [FromServices] Hrm.Service.Interfaces.INotificationService notificationService)
         {
-            var request = await _context.LeaveRequests.Include(l => l.User).FirstOrDefaultAsync(l => l.Id == id);
-            if (request == null) return NotFound();
-
-            request.Status = dto.Status;
-            request.ApprovedBy = dto.ApprovedBy;
-            request.Comment = dto.Comment;
-
-            await _context.SaveChangesAsync();
-
-            // Gửi thông báo realtime NGẮN và ĐẦY ĐỦ cho người dùng liên quan (theo user-{id}) via notificationService
-            var shortMsg = dto.Status == "Approved" ? "Đơn nghỉ của bạn đã được duyệt" : "Đơn nghỉ của bạn đã bị từ chối";
-            var fullMsg = $"Đơn nghỉ phép (ID: {request.Id}) của bạn đã được {(dto.Status == "Approved" ? "Duyệt" : "Từ chối")}. Người duyệt: {dto.ApprovedBy ?? "-"}. Ghi chú: {dto.Comment ?? "-"}.";
-
-            var userNotif = new Notification
+            try
             {
-                UserId = request.UserId,
-                Title = dto.Status == "Approved" ? "Đơn nghỉ được duyệt" : "Đơn nghỉ bị từ chối",
-                Message = fullMsg,
-                Type = dto.Status == "Approved" ? "LeaveApproved" : "LeaveRejected"
-            };
+                var request = await _context.LeaveRequests.Include(l => l.User).FirstOrDefaultAsync(l => l.Id == id);
+                if (request == null) return NotFound();
 
-            await notificationService.CreateAndSendAsync(userNotif);
+                request.Status = dto.Status;
+                request.ApprovedBy = dto.ApprovedBy;
+                request.Comment = dto.Comment;
 
-            // Đồng thời gửi thông báo rút gọn cho các role quản trị (Admin/Personnel/Manager) để cập nhật danh sách
-            var roleShort = $"Đơn nghỉ (ID: {request.Id}) đã chuyển sang trạng thái {request.Status}";
-            var roleNotif = new Notification
+                await _context.SaveChangesAsync();
+
+                // Gửi thông báo realtime NGẮN và ĐẦY ĐỦ cho người dùng liên quan (theo user-{id}) via notificationService
+                var shortMsg = dto.Status == "Approved" ? "Đơn nghỉ của bạn đã được duyệt" : "Đơn nghỉ của bạn đã bị từ chối";
+                var fullMsg = $"Đơn nghỉ phép của bạn đã được {(dto.Status == "Approved" ? "Duyệt" : "Từ chối")}. Người duyệt: {dto.ApprovedBy ?? "-"}. Ghi chú: {dto.Comment ?? "-"}.";
+
+                var userNotif = new Notification
+                {
+                    UserId = request.UserId,
+                    Title = dto.Status == "Approved" ? "Đơn nghỉ được duyệt" : "Đơn nghỉ bị từ chối",
+                    Message = fullMsg,
+                    Type = dto.Status == "Approved" ? "LeaveApproved" : "LeaveRejected",
+                    MetaJson = System.Text.Json.JsonSerializer.Serialize(new {
+                        messageKey = "leave.request.status",
+                        messageParams = new { id = request.Id, status = dto.Status },
+                        fallback = fullMsg
+                    })
+                };
+
+                await notificationService.CreateAndSendAsync(userNotif);
+
+                // Đồng thời gửi thông báo rút gọn cho các role quản trị (Admin/Personnel/Manager) để cập nhật danh sách
+                var roleShort = $"Đơn nghỉ đã chuyển sang trạng thái {request.Status}";
+                var roleNotif = new Notification
+                {
+                    UserId = null,
+                    Title = "Cập nhật đơn nghỉ",
+                    Message = roleShort,
+                    Type = "LeaveStatus"
+                };
+
+                await notificationService.CreateAndSendAsync(roleNotif, "Admin");
+                await notificationService.CreateAndSendAsync(roleNotif, "Personnel");
+                await notificationService.CreateAndSendAsync(roleNotif, "Manager");
+
+                return NoContent();
+            }
+            catch (Exception ex)
             {
-                UserId = null,
-                Title = "Cập nhật đơn nghỉ",
-                Message = roleShort,
-                Type = "LeaveStatus"
-            };
-
-            await notificationService.CreateAndSendAsync(roleNotif, "Admin");
-            await notificationService.CreateAndSendAsync(roleNotif, "Personnel");
-            await notificationService.CreateAndSendAsync(roleNotif, "Manager");
-
-            return NoContent();
+                // Log exception for debugging and return details (dev only)
+                Console.WriteLine("Exception in UpdateStatus: ");
+                Console.WriteLine(ex.ToString());
+                return Problem(detail: ex.ToString(), title: "Internal Server Error");
+            }
         }
 
         [HttpPut("{id}")]

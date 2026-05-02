@@ -45,7 +45,11 @@ namespace Hrm.Api.Controllers
                 Title = "Check-in",
                 Message = "Bạn đã điểm danh (check-in)",
                 Type = "Attendance",
-                MetaJson = JsonSerializer.Serialize(new { type = "attendance:checkin", data = attendance })
+                MetaJson = JsonSerializer.Serialize(new {
+                    messageKey = "attendance.checkin",
+                    messageParams = new { attendanceId = attendance.Id },
+                    fallback = "Bạn đã điểm danh (check-in)"
+                })
             };
             await _notificationService.CreateAndSendAsync(userNotif);
 
@@ -53,8 +57,13 @@ namespace Hrm.Api.Controllers
             {
                 UserId = null,
                 Title = "Nhân viên điểm danh",
-                Message = $"User {userId} đã check-in (ID: {attendance.Id})",
-                Type = "Attendance"
+                Message = $"User {userId} đã check-in)",
+                Type = "Attendance",
+                MetaJson = JsonSerializer.Serialize(new {
+                    messageKey = "attendance.checkin",
+                    messageParams = new { userId = userId, attendanceId = attendance.Id },
+                    fallback = $"User {userId} đã check-in"
+                })
             };
             await _notificationService.CreateAndSendAsync(roleNotif, "Manager");
 
@@ -74,7 +83,11 @@ namespace Hrm.Api.Controllers
                 Title = "Check-out",
                 Message = "Bạn đã điểm danh (check-out)",
                 Type = "Attendance",
-                MetaJson = JsonSerializer.Serialize(new { type = "attendance:checkout", data = attendance })
+                MetaJson = JsonSerializer.Serialize(new {
+                    messageKey = "attendance.checkout",
+                    messageParams = new { attendanceId = attendance.Id },
+                    fallback = "Bạn đã điểm danh (check-out)"
+                })
             };
             await _notificationService.CreateAndSendAsync(userNotifOut);
 
@@ -259,7 +272,11 @@ namespace Hrm.Api.Controllers
                 Title = "Check-in (legacy)",
                 Message = "Bạn đã điểm danh (check-in)",
                 Type = "Attendance",
-                MetaJson = JsonSerializer.Serialize(new { type = "attendance:checkin", data = attendance })
+                MetaJson = JsonSerializer.Serialize(new {
+                    messageKey = "attendance.checkin",
+                    messageParams = new { attendanceId = attendance.Id },
+                    fallback = "Bạn đã điểm danh (check-in)"
+                })
             };
             await _notificationService.CreateAndSendAsync(legUserNotif);
 
@@ -296,7 +313,11 @@ namespace Hrm.Api.Controllers
                 Title = "Check-out (legacy)",
                 Message = "Bạn đã điểm danh (check-out)",
                 Type = "Attendance",
-                MetaJson = JsonSerializer.Serialize(new { type = "attendance:checkout", data = attendance })
+                MetaJson = JsonSerializer.Serialize(new {
+                    messageKey = "attendance.checkout",
+                    messageParams = new { attendanceId = attendance.Id },
+                    fallback = "Bạn đã điểm danh (check-out)"
+                })
             };
             await _notificationService.CreateAndSendAsync(legUserNotifOut);
 

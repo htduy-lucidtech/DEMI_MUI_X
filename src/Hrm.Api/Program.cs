@@ -78,6 +78,19 @@ builder.Services.AddAuthentication(options =>
         ValidAudience = jwtSettings["Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(key)
     };
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            var accessToken = context.Request.Query["access_token"].FirstOrDefault();
+            var path = context.HttpContext.Request.Path;
+            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/notificationHub"))
+            {
+                context.Token = accessToken;
+            }
+            return Task.CompletedTask;
+        }
+    };
 });
 
 // 3. Register Services
@@ -114,6 +127,60 @@ if (builder.Configuration.GetValue<bool>("SeedDatabase"))
             var logger = services.GetRequiredService<ILogger<Program>>();
             logger.LogError(ex, "An error occurred while seeding the database.");
         }
+    }
+}
+
+// Startup checks: verify database connection, pending migrations and Notification.MetaJson column
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var logger = services.GetRequiredService<ILogger<Program>>();
+    try
+    {
+        var context = services.GetRequiredService<HrmDbContext>();
+        logger.LogInformation("Running startup checks...");
+
+        var canConnect = await context.Database.CanConnectAsync();
+        if (!canConnect)
+        {
+            logger.LogError("Database connection failed during startup checks.");
+        }
+
+        var pending = (await context.Database.GetPendingMigrationsAsync()).ToList();
+        if (pending.Any())
+        {
+            logger.LogWarning("There are {Count} pending EF Core migrations.", pending.Count);
+            if (builder.Configuration.GetValue<bool>("ApplyMigrationsOnStartup"))
+            {
+                logger.LogInformation("ApplyMigrationsOnStartup=true — applying migrations now.");
+                await context.Database.MigrateAsync();
+                logger.LogInformation("Migrations applied.");
+            }
+            else
+            {
+                logger.LogWarning("ApplyMigrationsOnStartup is false — pending migrations were not applied.");
+            }
+        }
+        else
+        {
+            logger.LogInformation("No pending migrations.");
+        }
+
+        // Quick check that Notifications.MetaJson column exists (will throw if missing)
+        try
+        {
+            await context.Database.ExecuteSqlRawAsync("SELECT \"MetaJson\" FROM \"Notifications\" LIMIT 1;");
+            logger.LogInformation("Verified Notifications.MetaJson column exists.");
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Notifications.MetaJson column check failed. If you recently added the field, create/apply migration.");
+        }
+    }
+    catch (Exception ex)
+    {
+        var logger2 = services.GetRequiredService<ILogger<Program>>();
+        logger2.LogError(ex, "Startup checks failed.");
     }
 }
 

@@ -32,6 +32,7 @@ import recruitmentVi from "./app/(authenticated)/dashboard/recruitment/locales/v
 import recruitmentEn from "./app/(authenticated)/dashboard/recruitment/locales/en";
 import performanceVi from "./app/(authenticated)/dashboard/performance/locales/vi";
 import performanceEn from "./app/(authenticated)/dashboard/performance/locales/en";
+import { notificationMessages } from "./lib/notification-i18n";
 
 const messagesMap = {
   vi: {
@@ -50,6 +51,7 @@ const messagesMap = {
     Payroll: payrollVi,
     Recruitment: recruitmentVi,
     Performance: performanceVi,
+    Notifications: notificationMessages.vi,
   },
   en: {
     Login: loginEn,
@@ -67,6 +69,7 @@ const messagesMap = {
     Payroll: payrollEn,
     Recruitment: recruitmentEn,
     Performance: performanceEn,
+    Notifications: notificationMessages.en,
   }
 };
 
