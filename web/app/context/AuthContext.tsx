@@ -11,6 +11,9 @@ interface UserInfo {
   fullName: string;
   role: Role;
   email: string;
+  phone?: string;
+  securityScore?: number;
+  employeeId?: number;
 }
 
 interface AuthContextType {

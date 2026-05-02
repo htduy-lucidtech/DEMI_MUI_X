@@ -63,7 +63,7 @@ export default function NavLinks({ type }: { type: "main" | "footer" }) {
               href={item.href}
               selected={isActive}
               sx={{
-                borderRadius: 2,
+                borderRadius: 1,
                 mb: 0.5,
                 "&.Mui-selected": {
                   bgcolor: "primary.light",

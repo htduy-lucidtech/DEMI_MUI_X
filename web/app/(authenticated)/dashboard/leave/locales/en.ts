@@ -9,12 +9,13 @@ const leaveEn = {
     reason: "Reason",
     status: "Status",
     actions: "Actions",
-    fullName: "Employee"
+    fullName: "Employee",
+    approvedBy: "Approved By",
   },
   common: {
     refresh: "Refresh",
     approve: "Approve",
-    reject: "Reject"
+    reject: "Reject",
   },
   dialog: {
     title: "Create Leave Request",
@@ -29,7 +30,7 @@ const leaveEn = {
     success: "Request submitted successfully!",
     error: "An error occurred, please try again.",
     updateSuccess: "Status updated successfully!",
-    updateError: "Failed to update status."
+    updateError: "Failed to update status.",
   },
   data: {
     type: {
@@ -38,15 +39,15 @@ const leaveEn = {
       Personal: "Personal Leave",
       Holiday: "Holiday",
       "Annual Leave": "Annual Leave",
-      "Sick Leave": "Sick Leave"
+      "Sick Leave": "Sick Leave",
     },
     status: {
       Pending: "Pending",
       Approved: "Approved",
       Rejected: "Rejected",
-      Cancelled: "Cancelled"
-    }
-  }
+      Cancelled: "Cancelled",
+    },
+  },
 };
 
 export default leaveEn;

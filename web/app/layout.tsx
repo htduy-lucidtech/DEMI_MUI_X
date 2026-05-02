@@ -12,16 +12,20 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "Hệ thống HRM",
-  description: "Quản lý nhân sự và chấm công",
-};
-
-import { NextIntlClientProvider } from 'next-intl';
-import { getMessages, getLocale } from 'next-intl/server';
+import { NextIntlClientProvider } from "next-intl";
+import { getMessages, getLocale, getTranslations } from "next-intl/server";
 import { Providers } from "@/app/components/Providers";
 
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
+
+export async function generateMetadata() {
+  const t = await getTranslations("Layout.metadata");
+
+  return {
+    title: t("title"),
+    description: t("description"),
+  };
+}
 
 export default async function RootLayout({
   children,
@@ -40,9 +44,7 @@ export default async function RootLayout({
       <body className="min-h-full flex flex-col">
         <NextIntlClientProvider messages={messages}>
           <AppRouterCacheProvider>
-            <Providers>
-              {children}
-            </Providers>
+            <Providers>{children}</Providers>
           </AppRouterCacheProvider>
         </NextIntlClientProvider>
       </body>

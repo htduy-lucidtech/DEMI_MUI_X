@@ -1,8 +1,9 @@
-const payrollEn = {
+﻿const payrollEn = {
   title: "Payroll",
   subtitle: "Automatic calculation based on actual work days",
   month: "Month",
   year: "Year",
+  records: "records",
   actions: "Actions",
   downloadPdf: "Download PDF",
   calculate: "Calculate",
@@ -16,3 +17,4 @@ const payrollEn = {
 };
 
 export default payrollEn;
+

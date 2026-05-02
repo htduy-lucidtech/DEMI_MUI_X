@@ -1,18 +1,16 @@
 "use client";
 
 import React from "react";
-import { Box, CssBaseline, Toolbar, Breadcrumbs, Typography, Link } from "@mui/material";
+import { NotificationProvider } from "./context/NotificationContext";
+import { Box, CssBaseline, useMediaQuery, useTheme } from "@mui/material";
 import Sidebar from "@/app/components/layout/Sidebar";
 import Navbar from "@/app/components/layout/Navbar";
 import { usePathname, useRouter } from "next/navigation";
-import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import { useTranslations } from "next-intl";
 import { useAuth } from "@/app/context/AuthContext";
 import { useEffect, useState } from "react";
 import * as signalR from "@microsoft/signalr";
 import { Snackbar, Alert } from "@mui/material";
-import NextLink from "next/link";
-
 
 export default function AuthenticatedLayout({
   children,
@@ -21,27 +19,43 @@ export default function AuthenticatedLayout({
 }) {
   const pathname = usePathname();
   const router = useRouter();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const { isAuthenticated, isLoading } = useAuth();
-  const t = useTranslations("Layout.breadcrumbs");
-  const pathArray = pathname.split("/").filter((x) => x);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
-  const [notification, setNotification] = useState<{ open: boolean; message: string; user: string } | null>(null);
+  const [notification, setNotification] = useState<{
+    open: boolean;
+    message: string;
+    user: string;
+  } | null>(null);
+
+  const { token } = useAuth();
 
   useEffect(() => {
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5181/api';
-    const hubUrl = baseUrl.replace(/\/api\/?$/, '') + "/notificationHub";
+    if (!token) return; // wait until token available
+
+    const baseUrl =
+      process.env.NEXT_PUBLIC_API_URL || "http://localhost:5181/api";
+    const hubUrl = baseUrl.replace(/\/api\/?$/, "") + "/notificationHub";
 
     const newConnection = new signalR.HubConnectionBuilder()
       .withUrl(hubUrl, {
+        accessTokenFactory: () => token ?? "",
         skipNegotiation: false,
-        transport: signalR.HttpTransportType.WebSockets | signalR.HttpTransportType.LongPolling
+        transport:
+          signalR.HttpTransportType.WebSockets |
+          signalR.HttpTransportType.LongPolling,
       })
       .withAutomaticReconnect()
       .build();
 
+    let mounted = true;
+
     const startConnection = async () => {
       try {
+        if (!mounted) return;
         if (newConnection.state === signalR.HubConnectionState.Disconnected) {
           await newConnection.start();
           console.log("SignalR Connected to:", hubUrl);
@@ -49,22 +63,45 @@ export default function AuthenticatedLayout({
           newConnection.on("ReceiveNotification", (user, message) => {
             setNotification({ open: true, user, message });
           });
+          // Short and full notifications — show short as snackbar and dispatch events for pages to refresh
+          newConnection.on("ReceiveNotificationShort", (message) => {
+            setNotification({ open: true, user: "Hệ thống", message });
+            try {
+              window.dispatchEvent(
+                new CustomEvent("notification:short", { detail: { message } }),
+              );
+            } catch {}
+          });
+
+          newConnection.on("ReceiveNotificationFull", (message) => {
+            // show snackbar for full notifications as well and also emit short event so pages using "short" refresh
+            setNotification({ open: true, user: "Hệ thống", message: message?.type || "Thông báo" });
+            try {
+              window.dispatchEvent(
+                new CustomEvent("notification:full", { detail: { message } }),
+              );
+            } catch {}
+            try {
+              window.dispatchEvent(
+                new CustomEvent("notification:short", { detail: { message } }),
+              );
+            } catch {}
+          });
         }
       } catch (err) {
         console.error("SignalR Connection Error: ", err);
-        // Retry logic is handled by withAutomaticReconnect() if it started once, 
-        // but if it fails to start initially, we might want a manual retry.
       }
     };
 
     startConnection();
 
     return () => {
+      mounted = false;
       if (newConnection.state !== signalR.HubConnectionState.Disconnected) {
         newConnection.stop();
       }
     };
-  }, []);
+  }, [token]);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -73,48 +110,75 @@ export default function AuthenticatedLayout({
   }, [isAuthenticated, isLoading, router]);
 
   if (isLoading || !isAuthenticated) {
-    return null; // Hoặc một màn hình loading đẹp
+    return null;
   }
 
+  // On mobile: sidebar is a temporary overlay (open/closed via toggle)
+  // On desktop: sidebar is permanent (collapsed/expanded)
+  const handleToggleSidebar = () => {
+    if (isMobile) {
+      setIsSidebarOpen(!isSidebarOpen);
+    } else {
+      setIsSidebarCollapsed(!isSidebarCollapsed);
+    }
+  };
+
+  // Desktop: sidebar shifts content via margin; Mobile: sidebar overlays
+  const desktopSidebarWidth = isSidebarCollapsed ? 64 : 240;
+
   return (
-    <Box sx={{ display: "flex", minHeight: "100vh", backgroundColor: "background.default" }}>
+    <Box
+      sx={{
+        display: "flex",
+        minHeight: "100vh",
+        backgroundColor: "background.default",
+      }}
+    >
       <CssBaseline />
 
-      {/* 1. Sidebar - Far Left, Full Height */}
-      <Sidebar isSidebarCollapsed={isSidebarCollapsed} />
+      {/* Sidebar */}
+      <Sidebar
+        isSidebarCollapsed={isMobile ? !isSidebarOpen : isSidebarCollapsed}
+        onClose={() => setIsSidebarOpen(false)}
+      />
 
-      {/* 2. Right Side: Header + Content */}
-      <Box 
-        sx={{ 
-          flexGrow: 1, 
-          display: "flex", 
+      {/* Right Side: Header + Content */}
+      <Box
+        sx={{
+          flexGrow: 1,
+          display: "flex",
           flexDirection: "column",
-          minWidth: 0, // Prevent flex items from overflowing
-          ml: { xs: 0, sm: 0 }, // Sidebar is already in the flex row
+          minWidth: 0,
+          // On desktop, sidebar is permanent so we don't need extra margin (flex handles it)
+          // On mobile, sidebar is overlay so this fills full width
         }}
       >
-        {/* Header (Navbar) */}
-        <Box 
-          sx={{ 
-            position: "fixed", 
-            top: 0, 
-            right: 0, 
-            left: { xs: 0, sm: `${isSidebarCollapsed ? 64 : 240}px` },
-            zIndex: (theme) => theme.zIndex.appBar, // Lower than Drawer (1200)
-            transition: (theme) => theme.transitions.create(['left'], {
-              easing: theme.transitions.easing.sharp,
-              duration: theme.transitions.duration.leavingScreen,
-            }),
+        {/* Fixed Navbar */}
+        <Box
+          sx={{
+            position: "fixed",
+            top: 0,
+            right: 0,
+            // Desktop: offset by sidebar width. Mobile: full width (left: 0)
+            left: {
+              xs: 0,
+              md: `${desktopSidebarWidth}px`,
+            },
+            zIndex: (theme) => theme.zIndex.appBar,
+            transition: (theme) =>
+              theme.transitions.create(["left"], {
+                easing: theme.transitions.easing.sharp,
+                duration: theme.transitions.duration.leavingScreen,
+              }),
           }}
         >
-
           <Navbar
-            isSidebarCollapsed={isSidebarCollapsed}
-            onToggleSidebar={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+            isSidebarCollapsed={isMobile ? !isSidebarOpen : isSidebarCollapsed}
+            onToggleSidebar={handleToggleSidebar}
           />
         </Box>
 
-        {/* Main Content Wrapper */}
+        {/* Main Content */}
         <Box
           component="main"
           sx={{
@@ -123,25 +187,28 @@ export default function AuthenticatedLayout({
             flexDirection: "column",
             minHeight: "100vh",
             overflowX: "hidden",
-            pt: "56px", // Space for fixed Navbar
+            pt: "56px",
             pb: 4,
           }}
         >
-          {/* Page Content - Trải rộng toàn màn hình */}
-          <Box sx={{ flexGrow: 1, px: { xs: 2, md: 3 }, pt: 3 }}>
-            {children}
+          <Box sx={{ flexGrow: 1, p: { xs: 1.5, sm: 2, md: 2.5 } }}>
+            <NotificationProvider>{children}</NotificationProvider>
           </Box>
         </Box>
       </Box>
 
-
       <Snackbar
         open={notification?.open}
         autoHideDuration={6000}
-        onClose={() => setNotification(prev => prev ? { ...prev, open: false } : null)}
-        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+        onClose={() =>
+          setNotification((prev) => (prev ? { ...prev, open: false } : null))
+        }
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
       >
-        <Alert severity="info" sx={{ width: '100%', borderRadius: 2, fontWeight: 700 }}>
+        <Alert
+          severity="info"
+          sx={{ width: "100%", borderRadius: 1, fontWeight: 700 }}
+        >
           {notification?.user}: {notification?.message}
         </Alert>
       </Snackbar>

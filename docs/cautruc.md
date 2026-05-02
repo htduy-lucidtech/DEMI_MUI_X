@@ -90,3 +90,4 @@ Dưới đây là danh sách toàn bộ các folder và file trong dự án kèm
 - `web/app/components/layout/` : Các thành phần UI của layout (Sidebar, Navbar).
 - `web/app/login/page.tsx` : Giao diện trang đăng nhập.
 - `web/app/login/locales/` : Bản dịch đa ngôn ngữ cho trang login.
+- `web/app/(authenticated)/dashboard/[module]/locales/` : Bản dịch đa ngôn ngữ riêng cho từng module (nhân sự, chấm công, lương, ...).

@@ -37,8 +37,33 @@ export const recruitmentService = {
     return response.data;
   },
 
+  updateJob: async (id: number, data: Partial<JobPosting>) => {
+    const response = await api.put(`/Recruitment/jobs/${id}`, data);
+    return response.data;
+  },
+
+  deleteJob: async (id: number) => {
+    const response = await api.delete(`/Recruitment/jobs/${id}`);
+    return response.data;
+  },
+
   getCandidates: async (): Promise<Candidate[]> => {
     const response = await api.get("/Recruitment/candidates");
+    return response.data;
+  },
+
+  createCandidate: async (data: Candidate) => {
+    const response = await api.post("/Recruitment/candidates", data);
+    return response.data;
+  },
+
+  updateCandidate: async (id: number, data: Partial<Candidate>) => {
+    const response = await api.put(`/Recruitment/candidates/${id}`, data);
+    return response.data;
+  },
+
+  deleteCandidate: async (id: number) => {
+    const response = await api.delete(`/Recruitment/candidates/${id}`);
     return response.data;
   },
 

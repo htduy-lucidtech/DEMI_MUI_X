@@ -1,4 +1,4 @@
-export default {
+﻿export default {
   sidebar: {
     dashboard: "Bảng điều khiển",
     attendance: "Chấm công",
@@ -23,6 +23,10 @@ export default {
     notificationsTitle: "Thông báo",
     markAllRead: "Đánh dấu đã đọc",
     noNewNotif: "Không có thông báo mới.",
+  },
+  metadata: {
+    title: "Hệ thống HRM",
+    description: "Quản lý nhân sự và chấm công chuyên nghiệp",
   },
   roles: {
     Admin: "Quản trị viên",
@@ -51,6 +55,11 @@ export default {
     cancel: "Hủy",
     delete: "Xóa",
     edit: "Sửa",
-    view: "Xem"
-  }
+    view: "Xem",
+  },
+  loadingSteps: {
+    compiling: "Đang biên dịch...",
+    building: "Đang xây dựng modules...",
+    almostReady: "Gần xong rồi...",
+  },
 };

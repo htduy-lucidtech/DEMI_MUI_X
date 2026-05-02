@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import useRealtimeRefresh from '@/lib/useRealtime';
 import {
   Box,
   Typography,
@@ -52,7 +53,7 @@ export default function PayrollPage() {
       a.click();
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      alert("Failed to export Excel");
+      alert(t("failedToCalculate"));
     }
   };
 
@@ -69,22 +70,25 @@ export default function PayrollPage() {
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      alert("Failed to export PDF");
+      alert(t("failedToCalculate"));
     }
   };
 
+  // Recalculate payroll when realtime notifications arrive
+  useRealtimeRefresh(() => handleCalculate(), ["short"]);
+
   const columns: GridColDef[] = [
-    { field: "fullName", headerName: "Nhân viên", flex: 1 },
+    { field: "fullName", headerName: t("employee"), flex: 1 },
     {
       field: "baseSalary",
-      headerName: "Lương cơ bản",
+      headerName: t("baseSalary"),
       width: 150,
       renderCell: (params: GridRenderCellParams) => params.value.toLocaleString() + " ₫"
     },
-    { field: "workDays", headerName: "Ngày công", width: 120 },
+    { field: "workDays", headerName: t("workDays"), width: 120 },
     {
       field: "totalSalary",
-      headerName: "Thành tiền",
+      headerName: t("totalAmount"),
       width: 180,
       renderCell: (params: GridRenderCellParams) => (
         <Typography sx={{ fontWeight: 800, color: "primary.main" }}>

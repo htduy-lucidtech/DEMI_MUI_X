@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useMemo } from "react";
+import useRealtimeRefresh from '@/lib/useRealtime';
 import {
   Box,
   Typography,
@@ -78,6 +79,9 @@ export default function UsersPage() {
   useEffect(() => {
     fetchUsers();
   }, []);
+
+  // Refresh users list on realtime notifications
+  useRealtimeRefresh(fetchUsers, ["short"]);
 
   const handleOpen = (u?: UserData) => {
     if (u) {

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import useRealtimeRefresh from '@/lib/useRealtime';
 import {
   AppBar,
   Toolbar,
@@ -70,13 +71,24 @@ export default function Navbar({ isSidebarCollapsed, onToggleSidebar }: NavbarPr
   const [notifAnchorEl, setNotifAnchorEl] = useState<null | HTMLElement>(null);
   const [notifications, setNotifications] = useState<any[]>([]);
 
-  React.useEffect(() => {
+  const fetchNotifications = async () => {
     if (user?.id) {
-      import('@/services/notification.service').then(({ notificationService }) => {
-        notificationService.getUserNotifications(user.id).then(setNotifications).catch(console.error);
-      });
+      const { notificationService } = await import('@/services/notification.service');
+      try {
+        const data = await notificationService.getUserNotifications(user.id);
+        setNotifications(data);
+      } catch (err) {
+        console.error(err);
+      }
     }
+  };
+
+  React.useEffect(() => {
+    fetchNotifications();
   }, [user]);
+
+  // Refresh notifications on realtime events
+  useRealtimeRefresh(fetchNotifications, ["short"]);
 
   const handleNotifMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setNotifAnchorEl(event.currentTarget);
@@ -135,7 +147,7 @@ export default function Navbar({ isSidebarCollapsed, onToggleSidebar }: NavbarPr
               fontSize: "1.125rem",
               px: 1,
               ml: -1,
-              borderRadius: 2,
+              borderRadius: 1,
               "&:hover": {
                 backgroundColor: "rgba(0, 0, 0, 0.04)",
               },
@@ -212,7 +224,7 @@ export default function Navbar({ isSidebarCollapsed, onToggleSidebar }: NavbarPr
                 label={t("preview_role")}
                 onChange={(e) => setActiveRole(e.target.value as Role)}
                 sx={{ 
-                  borderRadius: 2, 
+                  borderRadius: 1, 
                   height: 38,
                   fontSize: "0.875rem",
                   fontWeight: 600,
@@ -229,7 +241,7 @@ export default function Navbar({ isSidebarCollapsed, onToggleSidebar }: NavbarPr
           )}
 
           {/* Language Toggle */}
-          <IconButton onClick={handleLanguageChange} sx={{ color: "text.secondary", bgcolor: "background.default", borderRadius: 2 }}>
+          <IconButton onClick={handleLanguageChange} sx={{ color: "text.secondary", bgcolor: "background.default", borderRadius: 1 }}>
             <LanguageIcon fontSize="small" />
             <Typography variant="caption" sx={{ ml: 0.5, fontWeight: 800 }}>
               {currentLocale}
@@ -237,7 +249,7 @@ export default function Navbar({ isSidebarCollapsed, onToggleSidebar }: NavbarPr
           </IconButton>
 
           {/* Notifications */}
-          <IconButton onClick={handleNotifMenuOpen} sx={{ color: "text.secondary", bgcolor: "background.default", borderRadius: 2 }}>
+          <IconButton onClick={handleNotifMenuOpen} sx={{ color: "text.secondary", bgcolor: "background.default", borderRadius: 1 }}>
             <Badge badgeContent={unreadCount} color="error" variant={unreadCount > 0 ? "standard" : "dot"}>
               <NotificationsIcon fontSize="small" />
             </Badge>
@@ -253,7 +265,7 @@ export default function Navbar({ isSidebarCollapsed, onToggleSidebar }: NavbarPr
             anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
             slotProps={{
               paper: {
-                sx: { borderRadius: 3, minWidth: 300, maxWidth: 350, maxHeight: 400, overflow: 'auto' }
+                sx: { borderRadius: 1.5, minWidth: 300, maxWidth: 350, maxHeight: 400, overflow: 'auto' }
               }
             }}
           >
@@ -336,7 +348,7 @@ export default function Navbar({ isSidebarCollapsed, onToggleSidebar }: NavbarPr
               cursor: "pointer",
               p: 0.5,
               pr: { sm: 1.5 },
-              borderRadius: 3,
+              borderRadius: 1.5,
               transition: "all 0.2s",
               '&:hover': { bgcolor: 'primary.light' }
             }}
@@ -375,18 +387,18 @@ export default function Navbar({ isSidebarCollapsed, onToggleSidebar }: NavbarPr
             slotProps={{
               paper: {
                 sx: {
-                  borderRadius: 3,
+                  borderRadius: 1.5,
                   minWidth: 200,
                   p: 1
                 }
               }
             }}
           >
-            <MenuItem onClick={() => { handleMenuClose(); router.push("/profile"); }} sx={{ borderRadius: 2, gap: 1.5, py: 1.2 }}>
+            <MenuItem onClick={() => { handleMenuClose(); router.push("/profile"); }} sx={{ borderRadius: 1, gap: 1.5, py: 1.2 }}>
               <PersonIcon fontSize="small" color="action" />
               <Typography variant="body2" sx={{ fontWeight: 600 }}>{t("profile")}</Typography>
             </MenuItem>
-            <MenuItem onClick={() => { handleMenuClose(); router.push("/settings"); }} sx={{ borderRadius: 2, gap: 1.5, py: 1.2 }}>
+            <MenuItem onClick={() => { handleMenuClose(); router.push("/settings"); }} sx={{ borderRadius: 1, gap: 1.5, py: 1.2 }}>
               <SettingsIcon fontSize="small" color="action" />
               <Typography variant="body2" sx={{ fontWeight: 600 }}>{t("settings")}</Typography>
             </MenuItem>
@@ -397,7 +409,7 @@ export default function Navbar({ isSidebarCollapsed, onToggleSidebar }: NavbarPr
                 logout();
                 window.location.href = "/login";
               }}
-              sx={{ borderRadius: 2, gap: 1.5, py: 1.2, color: "error.main" }}
+              sx={{ borderRadius: 1, gap: 1.5, py: 1.2, color: "error.main" }}
             >
               <LogoutIcon fontSize="small" />
               <Typography variant="body2" sx={{ fontWeight: 700 }}>{t("logout")}</Typography>

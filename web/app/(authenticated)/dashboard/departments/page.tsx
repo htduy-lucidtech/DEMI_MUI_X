@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import useRealtimeRefresh from '@/lib/useRealtime';
 import {
   Box,
   Typography,
@@ -31,10 +32,6 @@ export default function DepartmentsPage() {
   const [editingDept, setEditingDept] = useState<Department | null>(null);
   const [formData, setFormData] = useState<Department>({ name: "", description: "" });
 
-  useEffect(() => {
-    fetchDepts();
-  }, []);
-
   const fetchDepts = async () => {
     setLoading(true);
     try {
@@ -46,6 +43,13 @@ export default function DepartmentsPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchDepts();
+  }, []);
+
+  // Refresh departments when notifications arrive
+  useRealtimeRefresh(fetchDepts, ["short"]);
 
   const handleOpen = (dept?: Department) => {
     if (dept) {

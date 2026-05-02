@@ -63,7 +63,7 @@ export default function LoginPage() {
       }}
     >
       <Container maxWidth="sm">
-        <Card sx={{ boxShadow: 3, borderRadius: 2 }}>
+        <Card sx={{ boxShadow: 3, borderRadius: 1.5 }}>
           <CardContent sx={{ p: 4 }}>
             <Box sx={{ textAlign: "center", mb: 4 }}>
               <Typography variant="h4" component="h1" sx={{ fontWeight: "bold", color: "primary.main" }}>

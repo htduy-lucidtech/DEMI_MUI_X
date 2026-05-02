@@ -280,7 +280,7 @@ export default function MainLayout({
                   gap: 1.5, 
                   cursor: "pointer",
                   p: 0.5,
-                  borderRadius: 2,
+                  borderRadius: 1,
                   '&:hover': { bgcolor: 'rgba(0,0,0,0.04)' }
                 }}
                 onClick={handleProfileMenuOpen}

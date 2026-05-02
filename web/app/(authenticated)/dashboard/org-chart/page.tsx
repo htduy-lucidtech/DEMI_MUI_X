@@ -52,44 +52,45 @@ const nodeTypes = {
   orgNode: OrgNode,
 };
 
-const initialNodes = [
+const getInitialNodes = (t: any) => [
   {
     id: '1',
     type: 'orgNode',
-    data: { label: 'Ban Giám đốc', role: 'CEO & Founder', isRoot: true },
+    data: { label: t('nodes.ceo'), role: t('roles.ceo'), isRoot: true },
     position: { x: 250, y: 0 },
   },
   {
     id: '2',
     type: 'orgNode',
-    data: { label: 'Phòng Nhân sự', role: 'Personnel Dept', isRoot: false },
+    data: { label: t('nodes.personnel'), role: t('roles.personnel'), isRoot: false },
     position: { x: 0, y: 150 },
   },
   {
     id: '3',
     type: 'orgNode',
-    data: { label: 'Phòng Kỹ thuật', role: 'Engineering Dept', isRoot: false },
+    data: { label: t('nodes.engineering'), role: t('roles.engineering'), isRoot: false },
     position: { x: 250, y: 150 },
   },
   {
     id: '4',
     type: 'orgNode',
-    data: { label: 'Phòng Kinh doanh', role: 'Sales Dept', isRoot: false },
+    data: { label: t('nodes.sales'), role: t('roles.sales'), isRoot: false },
     position: { x: 500, y: 150 },
   },
   {
     id: '5',
     type: 'orgNode',
-    data: { label: 'Nhóm Frontend', role: 'React Team', isRoot: false },
+    data: { label: t('nodes.frontend'), role: t('roles.frontend'), isRoot: false },
     position: { x: 150, y: 300 },
   },
   {
     id: '6',
     type: 'orgNode',
-    data: { label: 'Nhóm Backend', role: '.NET Team', isRoot: false },
+    data: { label: t('nodes.backend'), role: t('roles.backend'), isRoot: false },
     position: { x: 350, y: 300 },
   },
 ];
+
 
 const initialEdges = [
   { id: 'e1-2', source: '1', target: '2', animated: true },
@@ -101,7 +102,7 @@ const initialEdges = [
 
 export default function OrgChartPage() {
   const t = useTranslations('OrgChart');
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
+  const [nodes, setNodes, onNodesChange] = useNodesState(getInitialNodes(t));
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
   const onConnect = useCallback(
@@ -135,7 +136,7 @@ export default function OrgChartPage() {
           <Background color="#cbd5e1" gap={20} />
           <Panel position="top-right">
             <Paper sx={{ p: 1, px: 2, borderRadius: 2, fontWeight: 700, fontSize: '0.75rem', bgcolor: 'primary.light', color: 'white' }}>
-              Interactive Mode
+              {t('interactiveMode')}
             </Paper>
           </Panel>
         </ReactFlow>

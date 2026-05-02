@@ -5,4 +5,21 @@ export default {
   zoom_out: "Zoom Out",
   fit_view: "Fit View",
   root_node: "Board of Directors",
+  nodes: {
+    ceo: "Board of Directors",
+    personnel: "Personnel Dept",
+    engineering: "Engineering Dept",
+    sales: "Sales Dept",
+    frontend: "Frontend Team",
+    backend: "Backend Team",
+  },
+  roles: {
+    ceo: "CEO & Founder",
+    personnel: "Personnel Dept",
+    engineering: "Engineering Dept",
+    sales: "Sales Dept",
+    frontend: "React Team",
+    backend: ".NET Team",
+  },
+  interactiveMode: "Interactive Mode"
 };

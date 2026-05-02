@@ -24,6 +24,14 @@ namespace Hrm.Api.Controllers
             return await _context.SystemSettings.ToListAsync();
         }
 
+        [HttpPost]
+        public async Task<ActionResult<SystemSetting>> CreateSetting(SystemSetting setting)
+        {
+            _context.SystemSettings.Add(setting);
+            await _context.SaveChangesAsync();
+            return CreatedAtAction(nameof(GetSettings), new { id = setting.Id }, setting);
+        }
+
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateSetting(int id, SystemSetting setting)
         {
@@ -50,6 +58,16 @@ namespace Hrm.Api.Controllers
                 }
             }
 
+            return NoContent();
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteSetting(int id)
+        {
+            var setting = await _context.SystemSettings.FindAsync(id);
+            if (setting == null) return NotFound();
+            _context.SystemSettings.Remove(setting);
+            await _context.SaveChangesAsync();
             return NoContent();
         }
 

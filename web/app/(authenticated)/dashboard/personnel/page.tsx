@@ -1,6 +1,7 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import useRealtimeRefresh from '@/lib/useRealtime';
 import {
   Box,
   Typography,
@@ -108,6 +109,9 @@ export default function PersonnelPage() {
   useEffect(() => {
     fetchEmployees();
   }, []);
+
+  // Refresh personnel list on realtime notifications
+  useRealtimeRefresh(fetchEmployees, ["short"]);
 
 
 
@@ -225,7 +229,7 @@ export default function PersonnelPage() {
   const columns: GridColDef[] = React.useMemo(() => [
     {
       field: "fullName",
-      headerName: t("table.columns.fullName") || "Họ tên",
+      headerName: t("table.columns.fullName"),
       flex: 1.5,
       renderCell: (params: GridRenderCellParams) => (
         <Stack component="div" direction="row" spacing={1.5} sx={{ alignItems: "center", height: "100%" }}>
@@ -238,11 +242,11 @@ export default function PersonnelPage() {
         </Stack>
       )
     },
-    { field: "email", headerName: t("table.columns.email") || "Email", flex: 1.5 },
-    { field: "position", headerName: t("table.columns.position") || "Chức vụ", flex: 1 },
+    { field: "email", headerName: t("table.columns.email"), flex: 1.5 },
+    { field: "position", headerName: t("table.columns.position"), flex: 1 },
     {
       field: "department",
-      headerName: t("table.columns.department") || "Phòng ban",
+      headerName: t("table.columns.department"),
       flex: 1,
       renderCell: (params: GridRenderCellParams) => (
         <Typography variant="body2">{params.row?.department?.name || "N/A"}</Typography>
@@ -250,7 +254,7 @@ export default function PersonnelPage() {
     },
     {
       field: "actions",
-      headerName: t("table.columns.actions") || "Thao tác",
+      headerName: t("table.columns.actions"),
       width: 180,
       sortable: false,
       renderCell: (params: GridRenderCellParams) => (
@@ -260,7 +264,7 @@ export default function PersonnelPage() {
               <EditIcon fontSize="small" />
             </IconButton>
           </Tooltip>
-          <Tooltip title="Xem chi tiết">
+          <Tooltip title="Xem chi tiáº¿t">
             <IconButton size="small" onClick={() => handleViewDetails(params.row)}>
               <ViewIcon fontSize="small" />
             </IconButton>
@@ -389,7 +393,7 @@ export default function PersonnelPage() {
                 <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.5 }}>
                   <Box>
                     <Typography variant="caption" color="text.secondary">{t("details.fields.gender")}</Typography>
-                    <Typography sx={{ fontWeight: 600 }}>{selectedEmployee.gender === "Male" ? "Nam" : selectedEmployee.gender === "Female" ? "Nữ" : "Khác"}</Typography>
+                    <Typography sx={{ fontWeight: 600 }}>{selectedEmployee.gender === "Male" ? "Nam" : selectedEmployee.gender === "Female" ? "Ná»¯" : "KhÃ¡c"}</Typography>
                   </Box>
                   <Box>
                     <Typography variant="caption" color="text.secondary">{t("details.fields.dob")}</Typography>
@@ -537,11 +541,11 @@ export default function PersonnelPage() {
 
               <Box sx={{ display: 'grid', gridTemplateColumns: '1fr', gap: 1.5, textAlign: "left" }}>
                 <Box>
-                  <Typography variant="caption" color="text.secondary">Mã nhân viên:</Typography>
+                  <Typography variant="caption" color="text.secondary">MÃ£ nhÃ¢n viÃªn:</Typography>
                   <Typography variant="body2" sx={{ fontWeight: 600 }}>NV{selectedEmployee?.id?.toString().padStart(3, '0')}</Typography>
                 </Box>
                 <Box>
-                  <Typography variant="caption" color="text.secondary">Phòng ban:</Typography>
+                  <Typography variant="caption" color="text.secondary">PhÃ²ng ban:</Typography>
                   <Typography variant="body2" sx={{ fontWeight: 600 }}>{selectedEmployee?.department?.name || "N/A"}</Typography>
                 </Box>
                 <Box>
@@ -581,3 +585,4 @@ export default function PersonnelPage() {
     </Box>
   );
 }
+

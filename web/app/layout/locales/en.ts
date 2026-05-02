@@ -24,6 +24,10 @@ export default {
     markAllRead: "Mark all as read",
     noNewNotif: "No new notifications.",
   },
+  metadata: {
+    title: "HRM System",
+    description: "Professional personnel and attendance management",
+  },
   roles: {
     Admin: "Administrator",
     Manager: "Manager",
@@ -52,5 +56,11 @@ export default {
     delete: "Delete",
     edit: "Edit",
     view: "View"
+  },
+  loadingSteps: {
+    compiling: "Compiling...",
+    building: "Building modules...",
+    almostReady: "Almost ready..."
   }
 };
+

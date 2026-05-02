@@ -54,6 +54,16 @@ export const attendanceService = {
     return response.data;
   },
 
+  update: async (id: number, data: Partial<AttendanceRecord>) => {
+    const response = await api.put(`/Attendance/${id}`, data);
+    return response.data;
+  },
+
+  delete: async (id: number) => {
+    const response = await api.delete(`/Attendance/${id}`);
+    return response.data;
+  },
+
   getRegulations: async (): Promise<SystemSetting[]> => {
     const response = await api.get("/Attendance/regulations");
     return response.data;

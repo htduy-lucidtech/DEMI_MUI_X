@@ -57,5 +57,45 @@ namespace Hrm.Api.Controllers
 
             return CreatedAtAction(nameof(GetPerformanceReviews), new { id = review.Id }, review);
         }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdatePerformanceReview(int id, PerformanceReview review)
+        {
+            if (id != review.Id) return BadRequest();
+
+            // Recalculate total score
+            review.TotalScore = Math.Round((decimal)(review.WorkQuality + review.Teamwork + review.Punctuality) / 3, 2);
+
+            _context.Entry(review).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!PerformanceReviewExists(id)) return NotFound();
+                throw;
+            }
+
+            return NoContent();
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeletePerformanceReview(int id)
+        {
+            var review = await _context.PerformanceReviews.FindAsync(id);
+            if (review == null) return NotFound();
+
+            _context.PerformanceReviews.Remove(review);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        private bool PerformanceReviewExists(int id)
+        {
+            return _context.PerformanceReviews.Any(e => e.Id == id);
+        }
     }
 }

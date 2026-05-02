@@ -13,7 +13,8 @@ export default {
     not_checked_in: "Chưa điểm danh",
     leave_pending: "{count} đơn chờ duyệt",
     leave_approved_all: "Đã duyệt hết",
-    total_leave_days: "{count} ngày đã nghỉ"
+    total_leave_days: "{count} ngày đã nghỉ",
+    total: "Tổng"
   },
   recent_attendance: "Quản lý chấm công gần đây",
   recent_attendance_personal: "Chấm công gần đây của tôi",

@@ -24,7 +24,7 @@ const theme = createTheme({
     },
   },
   shape: {
-    borderRadius: 8, // Giảm từ 12 xuống 8 theo mẫu
+    borderRadius: 6, // Giảm từ 8 xuống 6 để gọn hơn
   },
   typography: {
     fontFamily: "Inter, Roboto, sans-serif",
@@ -41,6 +41,14 @@ const theme = createTheme({
         root: {
           boxShadow: "0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)",
           border: "1px solid #e2e8f0",
+          borderRadius: 6, // Đồng bộ với theme
+        },
+      },
+    },
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          borderRadius: 6, // Đồng bộ với theme
         },
       },
     },
@@ -59,7 +67,7 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           boxShadow: "none",
-          borderRadius: 6,
+          borderRadius: 4, // Giảm từ 6 xuống 4
           "&:hover": { boxShadow: "none" },
         },
       },

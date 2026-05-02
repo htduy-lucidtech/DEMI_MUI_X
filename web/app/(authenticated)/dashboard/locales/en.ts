@@ -13,7 +13,8 @@ export default {
     not_checked_in: "Not yet",
     leave_pending: "{count} pending requests",
     leave_approved_all: "All approved",
-    total_leave_days: "{count} days taken"
+    total_leave_days: "{count} days taken",
+    total: "Total"
   },
   recent_attendance: "Recent Attendance Management",
   recent_attendance_personal: "My Recent Attendance",

@@ -34,5 +34,15 @@ export const leaveService = {
   updateStatus: async (id: number, status: string, approvedBy: string, comment?: string) => {
     const response = await api.patch(`/LeaveRequests/${id}/status`, { status, approvedBy, comment });
     return response.data;
-  }
+  },
+
+  update: async (id: number, data: Partial<LeaveRequest>) => {
+    const response = await api.put(`/LeaveRequests/${id}`, data);
+    return response.data;
+  },
+
+  delete: async (id: number) => {
+    const response = await api.delete(`/LeaveRequests/${id}`);
+    return response.data;
+  },
 };

@@ -3,6 +3,7 @@ using System;
 using Hrm.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Hrm.Infrastructure.Migrations
 {
     [DbContext(typeof(HrmDbContext))]
-    partial class HrmDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260430153836_AddUserSecurityFields")]
+    partial class AddUserSecurityFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -30,35 +33,14 @@ namespace Hrm.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("ApprovalComment")
-                        .HasColumnType("text");
-
-                    b.Property<string>("ApprovedBy")
-                        .HasColumnType("text");
-
                     b.Property<DateTime>("CheckInTime")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime?>("CheckOutTime")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("DeviceId")
-                        .HasColumnType("text");
-
-                    b.Property<int?>("EarlyMinutes")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("GeoJson")
-                        .HasColumnType("text");
-
                     b.Property<bool>("IsLate")
                         .HasColumnType("boolean");
-
-                    b.Property<int?>("LateMinutes")
-                        .HasColumnType("integer");
 
                     b.Property<string>("LateReason")
                         .HasColumnType("text");
@@ -66,121 +48,14 @@ namespace Hrm.Infrastructure.Migrations
                     b.Property<string>("Note")
                         .HasColumnType("text");
 
-                    b.Property<int?>("OtMinutes")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("ShiftId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Source")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Status")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<int>("UserId")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("WorkedMinutes")
-                        .HasColumnType("integer");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("ShiftId");
 
                     b.HasIndex("UserId");
 
                     b.ToTable("Attendances");
-                });
-
-            modelBuilder.Entity("Hrm.Domain.Entities.AttendanceConfig", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("DefaultGraceMinutes")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("DefaultRoundMinutes")
-                        .HasColumnType("integer");
-
-                    b.Property<bool>("GeoFenceEnabled")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("GeoFenceJson")
-                        .HasColumnType("text");
-
-                    b.Property<int>("OtThresholdMinutes")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("PostWindowMinutes")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("PreWindowMinutes")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("AttendanceConfigs");
-                });
-
-            modelBuilder.Entity("Hrm.Domain.Entities.AttendanceCorrection", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("ApproverComment")
-                        .HasColumnType("text");
-
-                    b.Property<int?>("ApproverId")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("AttendanceId")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Reason")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("RequestedCheckIn")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("RequestedCheckOut")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AttendanceId");
-
-                    b.ToTable("AttendanceCorrections");
                 });
 
             modelBuilder.Entity("Hrm.Domain.Entities.Candidate", b =>
@@ -531,47 +406,6 @@ namespace Hrm.Infrastructure.Migrations
                     b.ToTable("PerformanceReviews");
                 });
 
-            modelBuilder.Entity("Hrm.Domain.Entities.Shift", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("BreaksJson")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<TimeSpan>("EndTime")
-                        .HasColumnType("interval");
-
-                    b.Property<int>("GraceMinutes")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("RoundMinutes")
-                        .HasColumnType("integer");
-
-                    b.Property<TimeSpan>("StartTime")
-                        .HasColumnType("interval");
-
-                    b.Property<string>("Timezone")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Shifts");
-                });
-
             modelBuilder.Entity("Hrm.Domain.Entities.SystemSetting", b =>
                 {
                     b.Property<int>("Id")
@@ -646,28 +480,13 @@ namespace Hrm.Infrastructure.Migrations
 
             modelBuilder.Entity("Hrm.Domain.Entities.Attendance", b =>
                 {
-                    b.HasOne("Hrm.Domain.Entities.Shift", "Shift")
-                        .WithMany()
-                        .HasForeignKey("ShiftId");
-
                     b.HasOne("Hrm.Domain.Entities.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Shift");
-
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Hrm.Domain.Entities.AttendanceCorrection", b =>
-                {
-                    b.HasOne("Hrm.Domain.Entities.Attendance", "Attendance")
-                        .WithMany()
-                        .HasForeignKey("AttendanceId");
-
-                    b.Navigation("Attendance");
                 });
 
             modelBuilder.Entity("Hrm.Domain.Entities.Candidate", b =>

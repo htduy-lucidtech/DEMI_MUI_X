@@ -215,21 +215,20 @@ i18n sẽ lòng vào từng fodel trong page theo cấu trúc: login/locales/vi.
 | 5.5  | Đánh giá KPI & Performance                       | Hệ thống đánh giá hiệu suất         | ✅ Hoàn thành |
 | 5.6  | Cài đặt Hệ thống (Admin Settings)                | Cấu hình giờ giấc, lịch nghỉ lễ     | ✅ Hoàn thành |
 
-### Giai đoạn 6: Tối ưu hóa Kiến trúc & Báo cáo nâng cao
-
+### Giai đoạn 6: Tối ưu hóa Kiến trúc & UX/UI
 | Bước | Công việc                                        | Output                              | Trạng thái |
 | ---- | ------------------------------------------------ | ----------------------------------- | ---------- |
 | 6.1  | Service-Oriented Architecture                    | Di dời API calls sang `services/`   | ✅ Hoàn thành |
 | 6.2  | Xuất Báo cáo Server-side (Excel & PDF)           | Bảng lương, Nhân sự, Payslip        | ✅ Hoàn thành |
 | 6.3  | Hệ thống Thông báo (SignalR) & Smart Routing     | UI Navbar chuông thông báo          | ✅ Hoàn thành |
 | 6.4  | Dashboard Dữ liệu thực & i18n toàn diện          | Biểu đồ kết nối DB, i18n 100%       | ✅ Hoàn thành |
+| 6.5  | Chuẩn hóa UI & UX (Density & Radius)             | Đồng bộ 6px radius, Compact UI      | ✅ Hoàn thành |
 
 ### Giai đoạn 7: Bảo mật, Biểu đồ & DevOps
-
 | Bước | Công việc                                        | Output                              | Trạng thái |
 | ---- | ------------------------------------------------ | ----------------------------------- | ---------- |
-| 7.1  | API Security & RBAC chặt chẽ                     | Phân quyền Endpoint `[Authorize]`   | ⏳ Sắp tới   |
+| 7.1  | API Security & RBAC chặt chẽ                     | Phân quyền Endpoint `[Authorize]`   | ⏳ Đang làm   |
 | 7.2  | Quản lý Quyền (Roles & Permissions)              | Giao diện Settings tùy chỉnh quyền  | ⏳ Sắp tới   |
-| 7.3  | Trực quan hóa dữ liệu (Advanced Charts)          | Recharts/Chart.js cho Dashboard     | ⏳ Sắp tới   |
+| 7.3  | Trực quan hóa dữ liệu (Advanced Charts)          | MUI X Charts cho Dashboard          | ⏳ Sắp tới   |
 | 7.4  | Luồng duyệt Performance 3 bước                   | Self-review -> Manager -> System    | ⏳ Sắp tới   |
 | 7.5  | Dockerize & Triển khai (CI/CD)                   | Đóng gói Docker, Staging deploy     | ⏳ Dự kiến  |

@@ -25,5 +25,15 @@ export const performanceService = {
     create: async (data: Partial<PerformanceReview>): Promise<PerformanceReview> => {
         const response = await api.post('/PerformanceReviews', data);
         return response.data;
-    }
+    },
+
+    update: async (id: number, data: Partial<PerformanceReview>) => {
+        const response = await api.put(`/PerformanceReviews/${id}`, data);
+        return response.data;
+    },
+
+    delete: async (id: number) => {
+        const response = await api.delete(`/PerformanceReviews/${id}`);
+        return response.data;
+    },
 };

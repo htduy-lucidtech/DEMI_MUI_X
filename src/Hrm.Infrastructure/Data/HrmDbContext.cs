@@ -8,6 +8,9 @@ namespace Hrm.Infrastructure.Data {
         public DbSet<User> Users { get; set; }           
         public DbSet<Employee> Employees { get; set; }     
         public DbSet<Attendance> Attendances { get; set; } 
+        public DbSet<Shift> Shifts { get; set; }
+        public DbSet<AttendanceCorrection> AttendanceCorrections { get; set; }
+        public DbSet<AttendanceConfig> AttendanceConfigs { get; set; }
         public DbSet<LeaveRequest> LeaveRequests { get; set; }
         public DbSet<Department> Departments { get; set; } 
         public DbSet<JobPosting> JobPostings { get; set; }
