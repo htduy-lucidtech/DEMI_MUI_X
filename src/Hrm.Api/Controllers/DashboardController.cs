@@ -159,9 +159,22 @@ namespace Hrm.Api.Controllers
         }
         
         [HttpGet("test-notification")]
-        public async Task<IActionResult> TestNotification([FromServices] IHubContext<Hrm.Api.Hubs.NotificationHub> hubContext)
+        public async Task<IActionResult> TestNotification([FromServices] Hrm.Service.Interfaces.INotificationService notificationService)
         {
-            await hubContext.Clients.All.SendAsync("ReceiveNotification", "Hệ thống", "Chào mừng bạn đến với HRM Pro! Đây là thông báo realtime.");
+            var notif = new Hrm.Domain.Entities.Notification
+            {
+                UserId = null,
+                Title = "Hệ thống",
+                Message = "Chào mừng bạn đến với HRM Pro! Đây là thông báo realtime.",
+                Type = "System"
+            };
+
+            // send to common roles as a basic broadcast
+            await notificationService.CreateAndSendAsync(notif, "Admin");
+            await notificationService.CreateAndSendAsync(notif, "Personnel");
+            await notificationService.CreateAndSendAsync(notif, "Manager");
+            await notificationService.CreateAndSendAsync(notif, "Employee");
+
             return Ok(new { message = "Notification sent" });
         }
     }
