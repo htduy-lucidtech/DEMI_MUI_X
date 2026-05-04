@@ -3,14 +3,14 @@ import { useEffect, useRef } from "react";
 
 type NotificationType = "short" | "full";
 
-export function useRealtimeRefresh(onNotify: () => void, types: NotificationType[] = ["short"]) {
+export function useRealtimeRefresh(onNotify: (detail?: any) => void, types: NotificationType[] = ["short"]) {
   const onNotifyRef = useRef(onNotify);
   onNotifyRef.current = onNotify;
 
   useEffect(() => {
-    function handler(e: Event) {
+    function handler(e: any) {
       try {
-        onNotifyRef.current();
+        onNotifyRef.current(e?.detail);
       } catch (err) {
         console.error("realtime refresh handler error", err);
       }

@@ -18,7 +18,6 @@ namespace Hrm.Infrastructure.Data {
         public DbSet<PerformanceReview> PerformanceReviews { get; set; }
         public DbSet<SystemSetting> SystemSettings { get; set; }
         public DbSet<Notification> Notifications { get; set; }
-        public DbSet<Contract> Contracts { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

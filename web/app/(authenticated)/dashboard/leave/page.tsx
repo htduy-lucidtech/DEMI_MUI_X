@@ -1,6 +1,7 @@
-﻿"use client";
+"use client";
 
 import React, { useState, useEffect } from "react";
+import useRealtimeRefresh from "@/lib/useRealtime";
 import {
   Box,
   Typography,
@@ -63,18 +64,7 @@ export default function LeaveRequestsPage() {
     fetchRequests();
   }, [user]);
 
-  useEffect(() => {
-    const handler = (e: any) => {
-      // Refresh list on any short notification (could filter by message if needed)
-      fetchRequests();
-    };
-    window.addEventListener("notification:short", handler as EventListener);
-    return () =>
-      window.removeEventListener(
-        "notification:short",
-        handler as EventListener,
-      );
-  }, [user]);
+  useRealtimeRefresh(() => fetchRequests(), ["short"]);
 
   const handleSubmit = async () => {
     const toUtcIso = (dateStr: string) => {

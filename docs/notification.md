@@ -1,55 +1,37 @@
-Mô tả luồng thông báo (send/receive) theo role và account
+# Hệ thống Thông báo (Notifications)
 
-Mục tiêu: định nghĩa rõ ràng cách sinh, lưu, phát và nhận thông báo realtime và persistent
-đối với các Role (ví dụ: Admin, Manager, Employee, ...) và các account (user).
+Tài liệu này định nghĩa luồng sinh, lưu trữ và truyền phát thông báo trong hệ thống HRM, bao gồm cả thông báo bền vững (persistent) và thời gian thực (realtime).
 
-1. Khái niệm chính
+## 1. Tóm tắt và Cách hoạt động
 
-- **Notification (entity)**: bản ghi persistent trong DB dùng để hiện trong UI (bell, history).
-  - Fields gợi ý: `Id`, `UserId` (nullable nếu gửi cho role), `Role` (nullable), `Title`, `Message`, `Type`, `IsRead`, `CreatedAt`, `Meta` (JSON).
-- **Realtime short / full**:
-  - `short`: thông báo ngắn (snackbar) chỉ cần message/tóm tắt, dùng để hiển thị nhanh.
-  - `full`: payload đầy đủ, dùng để mở modal/chi tiết hoặc điều hướng.
+### Khái niệm chính
+- **Persistent Notification**: Bản ghi được lưu trong Database (bảng `Notifications`), cho phép xem lại lịch sử trong danh sách thông báo hoặc chuông thông báo.
+- **Realtime Notification**: Sử dụng SignalR để đẩy thông báo ngay lập tức tới trình duyệt của người dùng mà không cần tải lại trang.
+- **Nhóm đối tượng**: Thông báo có thể gửi cho một cá nhân cụ thể (`UserId`) hoặc một vai trò cụ thể (`Role`).
 
-2. Nhóm SignalR (grouping)
+### Luồng hoạt động
+1. **Phát sinh sự kiện**: Một hành động nghiệp vụ xảy ra (ví dụ: nhân viên nộp đơn nghỉ phép, quản lý duyệt lương).
+2. **Lưu Database**: Service tạo bản ghi `Notification` mới với các thông tin: Tiêu đề, Nội dung, Loại (`Type`), và Đối tượng nhận.
+3. **Phát SignalR**: Backend gọi `IHubContext` để đẩy event tới các "Groups" tương ứng (`user-{id}` hoặc `role-{name}`).
+4. **Xử lý tại Frontend**:
+   - `layout.tsx` lắng nghe các event từ `NotificationHub`.
+   - Hiển thị Snackbar (thông báo nhanh) cho các sự kiện `ReceiveNotificationShort`.
+   - Cập nhật danh sách thông báo và badge cho các sự kiện `ReceiveNotificationFull`.
 
-- `user-{userId}`: nhóm cho từng người dùng (kết nối cá nhân).
-- `role-{roleName}`: nhóm cho từng role (ví dụ: `role-Manager`).
+---
 
-3. Các event SignalR (server -> client)
+## 2. Chi tiết triển khai vào code
 
-- `ReceiveNotificationShort` (payload: `{ type, title, message, meta? }`) — dùng để hiển thị snackbar.
-- `ReceiveNotificationFull` (payload: `{ id, type, title, message, meta? }`) — dùng để cập nhật UI chi tiết và lịch sử.
-- (tuỳ chọn) `ReceiveNotificationCount` (payload: `{ unread: number }`) — cập nhật badge.
-
-4. Luồng gửi thông báo (tổng quát)
-
-- 1. Một hành động hệ thống xảy ra (ví dụ: leave approved).
-- 2. Service nghiệp vụ tạo `Notification` record trong DB (gán `UserId` hoặc `Role`).
-- 3. Service gọi `IHubContext<NotificationHub>` gửi:
-  - Nếu gửi đến user: `_hubContext.Clients.Group($"user-{userId}").SendAsync("ReceiveNotificationShort", shortPayload);`
-  - Nếu gửi đến role: `_hubContext.Clients.Group($"role-{roleName}").SendAsync("ReceiveNotificationShort", shortPayload);`
-- 4. Client nhận event: hiển thị snackbar, gọi API lấy danh sách notification (tuỳ cấu hình) hoặc đồng bộ cục bộ.
-
-5. Lưu ý hiện tại trong repo
-
-- `src/Hrm.Api/Hubs/NotificationHub.cs` đã thêm connection vào nhóm `user-{id}` và `role-{roleName}`.
-- `src/Hrm.Api/Controllers/NotificationsController.cs` tạo record và hiện đang broadcast với `Clients.All.SendAsync("ReceiveNotification", ...)`.
-  - Đề xuất: gửi thẳng vào nhóm cụ thể thay vì `All`.
-- FE có `web/services/notification.service.ts` và `useRealtime.ts` / context để nhận events.
-
-6. Đề xuất API & snippets
-
-- Notification entity (C#) gợi ý:
-
-```
+### Cấu trúc dữ liệu (Backend)
+Thực thể `Notification` trong `Hrm.Domain/Entities/Notification.cs`:
+```csharp
 public class Notification {
 		public int Id { get; set; }
-		public int? UserId { get; set; }
-		public string? Role { get; set; }
+    public int? UserId { get; set; }     // Gửi cho cá nhân
+    public string? Role { get; set; }    // Gửi cho nhóm vai trò
 		public string Title { get; set; }
 		public string Message { get; set; }
-		public string Type { get; set; } // e.g. "LeaveApproved", "Payroll"
+    public string Type { get; set; }      // Ví dụ: "Leave", "Payroll", "Attendance"
 		public bool IsRead { get; set; }
 		public DateTime CreatedAt { get; set; }
 		public string? MetaJson { get; set; }

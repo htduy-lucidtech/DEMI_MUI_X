@@ -34,11 +34,16 @@
 │   ├── services/                # API Service Layer
 │   ├── lib/                     # Utilities
 │   ├── i18n.ts                  # i18n Config
-│   ├── middleware.ts            # Auth & i18n Middleware
 │   └── package.json
 └── docs/                        # [FOLDER] Documentation
+    ├── attendance.md
     ├── cautruc.md
-    └── kehoach.md
+    ├── i18n.md
+    ├── kehoach.md
+    ├── layout.md
+    ├── models.md
+    ├── notification.md
+    └── realtime.md
 ```
 
 ---
@@ -75,8 +80,8 @@ Dưới đây là danh sách toàn bộ các folder và file trong dự án kèm
 ## 6. web (Next.js Frontend)
 - `web/package.json` : Danh sách thư viện và scripts chạy frontend.
 - `web/i18n.ts` : Cấu hình load đa ngôn ngữ cho ứng dụng.
-- `web/middleware.ts` : Middleware xử lý routing và bảo mật đa ngôn ngữ.
 - `web/lib/api.ts` : Cấu hình Axios instance để gọi API backend.
+- `docs/i18n.md` : Hướng dẫn chi tiết về cơ chế đa ngôn ngữ.
 - `web/app/layout.tsx` : Layout gốc của toàn bộ ứng dụng web.
 - `web/app/page.tsx` : Trang điều hướng mặc định.
 - `web/app/context/AuthContext.tsx` : Quản lý trạng thái đăng nhập toàn cục.

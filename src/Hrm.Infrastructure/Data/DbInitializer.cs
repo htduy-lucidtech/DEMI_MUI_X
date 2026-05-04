@@ -69,10 +69,6 @@ namespace Hrm.Infrastructure.Data
             var notifications = GetPreconfiguredNotifications(employees);
             context.Notifications.AddRange(notifications);
 
-            // 10. Seed Contracts
-            var contracts = GetPreconfiguredContracts(employees);
-            context.Contracts.AddRange(contracts);
-
             await context.SaveChangesAsync();
         }
 
@@ -299,26 +295,6 @@ namespace Hrm.Infrastructure.Data
             };
         }
 
-        private static List<Contract> GetPreconfiguredContracts(List<Employee> employees)
-        {
-            return new List<Contract>
-            {
-                new Contract { 
-                    ContractNumber = "HD-001", Type = "Indefinite", 
-                    StartDate = DateTime.UtcNow.AddYears(-1), Salary = 50000000, 
-                    Status = "Active", EmployeeId = employees[0].Id 
-                },
-                new Contract { 
-                    ContractNumber = "HD-002", Type = "Fixed-term", 
-                    StartDate = DateTime.UtcNow.AddMonths(-6), EndDate = DateTime.UtcNow.AddMonths(6),
-                    Salary = 35000000, Status = "Active", EmployeeId = employees[1].Id 
-                },
-                new Contract { 
-                    ContractNumber = "HD-003", Type = "Fixed-term", 
-                    StartDate = DateTime.UtcNow.AddMonths(-3), EndDate = DateTime.UtcNow.AddMonths(9),
-                    Salary = 20000000, Status = "Active", EmployeeId = employees[4].Id 
-                }
-            };
         }
     }
 }

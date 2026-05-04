@@ -17,12 +17,9 @@ import {
 } from "@mui/material";
 import { Check, Close } from "@mui/icons-material";
 import api from "@/lib/api";
-import { useNotifications } from "@/app/(authenticated)/context/NotificationContext";
-
-export default function CorrectionsPanel() {
-  const [open, setOpen] = useState(false);
+import useRealtimeRefresh from "@/lib/useRealtime";
+...
   const [items, setItems] = useState<any[]>([]);
-  const { subscribeShort } = useNotifications();
 
   const fetch = async () => {
     try {
@@ -35,15 +32,15 @@ export default function CorrectionsPanel() {
 
   useEffect(() => {
     fetch();
-    const unsub = subscribeShort((d) => {
-      if (d?.type && d.type.startsWith("attendance:correction")) {
-        // open panel and refresh
-        setOpen(true);
-        fetch();
-      }
-    });
-    return unsub;
   }, []);
+
+  useRealtimeRefresh((d) => {
+    if (d?.type && d.type.startsWith("attendance:correction")) {
+      // open panel and refresh
+      setOpen(true);
+      fetch();
+    }
+  }, ["short"]);
 
   const handleApprove = async (id: number, approve: boolean) => {
     try {
