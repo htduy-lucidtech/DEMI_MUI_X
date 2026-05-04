@@ -18,7 +18,9 @@ import {
 import { Check, Close } from "@mui/icons-material";
 import api from "@/lib/api";
 import useRealtimeRefresh from "@/lib/useRealtime";
-...
+
+export default function CorrectionsPanel() {
+  const [open, setOpen] = useState(false);
   const [items, setItems] = useState<any[]>([]);
 
   const fetch = async () => {

@@ -45,4 +45,9 @@ export const leaveService = {
     const response = await api.delete(`/LeaveRequests/${id}`);
     return response.data;
   },
+
+  bulkDelete: async (ids: number[]) => {
+    const response = await api.post("/LeaveRequests/bulk-delete", ids);
+    return response.data;
+  },
 };

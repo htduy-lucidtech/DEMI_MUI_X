@@ -17,6 +17,8 @@ import {
   MenuItem,
   IconButton,
   Tooltip,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -35,6 +37,7 @@ export default function LeaveRequestsPage() {
   const [requests, setRequests] = useState<LeaveRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [formData, setFormData] = useState<LeaveRequest>({
     userId: user?.id || 0,
     leaveType: "Annual",
@@ -43,6 +46,68 @@ export default function LeaveRequestsPage() {
     reason: "",
     status: "Pending",
   });
+
+  const formatLocal = (dateStr: string | number | Date) => {
+    const d = new Date(dateStr);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  };
+
+  const handleOpenDialog = (request?: LeaveRequest) => {
+    if (request) {
+      setEditingId(request.id!);
+      setFormData({
+        ...formData,
+        leaveType: request.leaveType,
+        startDate: formatLocal(request.startDate),
+        endDate: formatLocal(request.endDate),
+        reason: request.reason,
+        status: request.status,
+      });
+    } else {
+      setEditingId(null);
+      setFormData({
+        userId: user?.id || 0,
+        leaveType: "Annual",
+        startDate: formatLocal(new Date()),
+        endDate: formatLocal(new Date()),
+        reason: "",
+        status: "Pending",
+      });
+    }
+    setOpen(true);
+  };
+
+  // Selection state
+  const [selectionModel, setSelectionModel] = useState<any>([]);
+  const [bulkDeleteConfirmOpen, setBulkDeleteConfirmOpen] = useState(false);
+
+  const getSelectedIds = (): number[] => {
+    if (!selectionModel) return [];
+    if (Array.isArray(selectionModel)) return selectionModel as number[];
+    if (typeof selectionModel === "object") {
+      if ("ids" in selectionModel && selectionModel.ids) {
+        const ids = selectionModel.ids;
+        return Array.isArray(ids) ? (ids as number[]) : Array.from(ids as any);
+      }
+      if (selectionModel instanceof Set) return Array.from(selectionModel) as number[];
+    }
+    return [];
+  };
+  const selectedCount = getSelectedIds().length;
+
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean;
+    message: string;
+    severity: "success" | "error" | "info" | "warning";
+  }>({
+    open: false,
+    message: "",
+    severity: "success",
+  });
+
+  const showSnackbar = (message: string, severity: "success" | "error" | "info" | "warning" = "success") => {
+    setSnackbar({ open: true, message, severity });
+  };
 
   const fetchRequests = async () => {
     setLoading(true);
@@ -84,7 +149,7 @@ export default function LeaveRequestsPage() {
       };
 
       await leaveService.create(payload as LeaveRequest);
-      alert(t("messages.success"));
+      showSnackbar(t("messages.success"), "success");
       setOpen(false);
       fetchRequests();
       try {
@@ -101,14 +166,14 @@ export default function LeaveRequestsPage() {
       } catch {}
     } catch (error) {
       console.error(error);
-      alert(t("messages.error"));
+      showSnackbar(t("messages.error"), "error");
     }
   };
 
   const handleUpdateStatus = async (id: number, status: string) => {
     try {
       await leaveService.updateStatus(id, status, user?.fullName || "System");
-      alert(t("messages.updateSuccess"));
+      showSnackbar(t("messages.updateSuccess"), "success");
       // Refresh list immediately so manager sees update
       fetchRequests();
       try {
@@ -118,7 +183,20 @@ export default function LeaveRequestsPage() {
         );
       } catch {}
     } catch (error) {
-      alert(t("messages.updateError"));
+      showSnackbar(t("messages.updateError"), "error");
+    }
+  };
+
+  const handleBulkDeleteConfirm = async () => {
+    try {
+      await leaveService.bulkDelete(getSelectedIds());
+      fetchRequests();
+      setSelectionModel([]);
+      setBulkDeleteConfirmOpen(false);
+      showSnackbar(t("messages.deleteSuccess") || "Xóa thành công", "success");
+    } catch (error) {
+      console.error("Failed to bulk delete leaves:", error);
+      showSnackbar(t("messages.deleteError") || "Lỗi khi xóa", "error");
     }
   };
 
@@ -149,8 +227,20 @@ export default function LeaveRequestsPage() {
       width: 150,
       renderCell: (params) => t(`data.type.${params.value}`),
     },
-    { field: "startDate", headerName: t("columns.startDate"), width: 130 },
-    { field: "endDate", headerName: t("columns.endDate"), width: 130 },
+    {
+      field: "startDate",
+      headerName: t("columns.startDate"),
+      width: 130,
+      renderCell: (params) =>
+        params.value ? new Date(params.value).toLocaleDateString() : "-",
+    },
+    {
+      field: "endDate",
+      headerName: t("columns.endDate"),
+      width: 130,
+      renderCell: (params) =>
+        params.value ? new Date(params.value).toLocaleDateString() : "-",
+    },
     {
       field: "status",
       headerName: t("columns.status"),
@@ -217,17 +307,28 @@ export default function LeaveRequestsPage() {
       <Box
         sx={{
           display: "flex",
-          justifyContent: "flex-end",
+          justifyContent: { xs: "stretch", sm: "flex-end" },
           alignItems: "center",
         }}
       >
-        <Stack direction="row" spacing={1}>
+        <Stack direction="row" spacing={1} sx={{ width: { xs: "100%", sm: "auto" } }}>
+          {(user?.role === "Admin" || user?.role === "Personnel") && selectedCount > 0 && (
+            <Button
+              variant="contained"
+              color="error"
+              size="small"
+              onClick={() => setBulkDeleteConfirmOpen(true)}
+              sx={{ borderRadius: 2 }}
+            >
+              {t("common.delete_all") || `Xóa (${selectedCount})`}
+            </Button>
+          )}
           <Button
             variant="outlined"
             size="small"
             startIcon={<RefreshIcon />}
             onClick={fetchRequests}
-            sx={{ borderRadius: 2 }}
+            sx={{ borderRadius: 2, flex: 1 }}
           >
             {t("common.refresh")}
           </Button>
@@ -236,7 +337,7 @@ export default function LeaveRequestsPage() {
             size="small"
             startIcon={<AddIcon />}
             onClick={() => setOpen(true)}
-            sx={{ borderRadius: 2 }}
+            sx={{ borderRadius: 2, flex: 1 }}
           >
             {t("createRequest")}
           </Button>
@@ -256,10 +357,32 @@ export default function LeaveRequestsPage() {
           rows={requests}
           columns={columns}
           loading={loading}
+          getRowId={(row) => row?.id ?? `fallback-${row.userId}-${row.startDate}`}
           disableRowSelectionOnClick
+          checkboxSelection={user?.role === "Admin" || user?.role === "Personnel"}
+          onRowSelectionModelChange={(newSelection) => setSelectionModel(newSelection)}
           sx={{ border: "none" }}
         />
       </Paper>
+
+      {/* Bulk Delete Confirm */}
+      <Dialog
+        open={bulkDeleteConfirmOpen}
+        onClose={() => setBulkDeleteConfirmOpen(false)}
+      >
+        <DialogTitle>{t("dialog.delete_bulk_title") || "Xác nhận xóa hàng loạt"}</DialogTitle>
+        <DialogContent>
+          {t("dialog.delete_bulk_confirm", { count: selectedCount }) || `Bạn có chắc muốn xóa ${selectedCount} bản ghi đã chọn?`}
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button onClick={() => setBulkDeleteConfirmOpen(false)} variant="outlined">
+            {t("dialog.cancel") || "Hủy"}
+          </Button>
+          <Button onClick={handleBulkDeleteConfirm} variant="contained" color="error">
+            {t("common.delete_all") || "Xóa"}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <Dialog
         open={open}
@@ -324,6 +447,22 @@ export default function LeaveRequestsPage() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+      >
+        <Alert
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+          severity={snackbar.severity}
+          variant="filled"
+          sx={{ width: "100%", borderRadius: 2 }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

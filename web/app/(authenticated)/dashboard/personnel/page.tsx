@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useState, useEffect, useRef } from "react";
 import useRealtimeRefresh from "@/lib/useRealtime";
@@ -336,8 +336,10 @@ export default function PersonnelPage() {
         <Box
           sx={{
             display: "flex",
+            flexDirection: { xs: "column", md: "row" },
             justifyContent: "space-between",
-            alignItems: "center",
+            alignItems: { xs: "stretch", md: "center" },
+            gap: 1.5,
           }}
         >
           {/* Left Side: Search */}
@@ -346,7 +348,7 @@ export default function PersonnelPage() {
             size="small"
             value={searchText}
             onChange={(e) => setSearchText(e.target.value)}
-            sx={{ width: 320 }}
+            sx={{ width: { xs: "100%", md: 320 } }}
             slotProps={{
               input: {
                 startAdornment: (
@@ -360,41 +362,51 @@ export default function PersonnelPage() {
           />
 
           {/* Right Side: Action Buttons & Refresh */}
-          <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
-            {selectedCount > 0 && (
+          <Stack 
+            direction="row" 
+            spacing={1} 
+            sx={{ 
+              alignItems: "center", 
+              justifyContent: { xs: "space-between", md: "flex-end" },
+              width: { xs: "100%", md: "auto" } 
+            }}
+          >
+            <Stack direction="row" spacing={1}>
+              {selectedCount > 0 && (
+                <Button
+                  variant="contained"
+                  color="error"
+                  size="small"
+                  startIcon={<DeleteIcon />}
+                  onClick={() => setBulkDeleteConfirmOpen(true)}
+                  sx={{ borderRadius: 2 }}
+                >
+                  {selectedCount}
+                </Button>
+              )}
               <Button
-                variant="contained"
-                color="error"
+                variant="outlined"
                 size="small"
-                startIcon={<DeleteIcon />}
-                onClick={() => setBulkDeleteConfirmOpen(true)}
+                startIcon={<ExportIcon />}
+                onClick={handleExportExcel}
                 sx={{ borderRadius: 2 }}
               >
-                {t("dialog.delete")} ({selectedCount})
+                {t("table.export_excel")}
               </Button>
-            )}
-            <Button
-              variant="outlined"
-              size="small"
-              startIcon={<ExportIcon />}
-              onClick={handleExportExcel}
-              sx={{ borderRadius: 2 }}
-            >
-              {t("table.export_excel")}
-            </Button>
-            <Button
-              variant="contained"
-              size="small"
-              startIcon={<AddIcon />}
-              onClick={handleOpenAdd}
-              sx={{ borderRadius: 2, px: 2 }}
-            >
-              {t("table.add_new")}
-            </Button>
+              <Button
+                variant="contained"
+                size="small"
+                startIcon={<AddIcon />}
+                onClick={handleOpenAdd}
+                sx={{ borderRadius: 2, px: 2 }}
+              >
+                {t("table.add_new")}
+              </Button>
+            </Stack>
             <Divider
               orientation="vertical"
               flexItem
-              sx={{ height: 24, my: "auto" }}
+              sx={{ height: 24, my: "auto", display: { xs: "none", md: "block" } }}
             />
             <IconButton
               onClick={fetchEmployees}
@@ -421,8 +433,16 @@ export default function PersonnelPage() {
           rows={filteredEmployees || []}
           columns={columns}
           loading={loading}
-          pageSizeOptions={[10, 25, 50]}
+          initialState={{
+            pagination: {
+              paginationModel: { pageSize: 25 },
+            },
+          }}
+          pageSizeOptions={[10, 25, 50, 100]}
           disableRowSelectionOnClick
+          checkboxSelection
+          getRowId={(row) => row?.id ?? `fallback-${row.email}-${row.fullName}`}
+          onRowSelectionModelChange={(newSelection) => setSelectionModel(newSelection)}
           density="compact"
           sx={{ border: "none" }}
         />
@@ -434,7 +454,7 @@ export default function PersonnelPage() {
         open={detailDrawerOpen}
         onClose={() => setDetailDrawerOpen(false)}
         sx={{
-          "& .MuiDrawer-paper": { width: 500, p: 2 },
+          "& .MuiDrawer-paper": { width: { xs: "100%", sm: 500 }, p: { xs: 1.5, sm: 2 } },
         }}
       >
         {selectedEmployee && (
@@ -455,11 +475,19 @@ export default function PersonnelPage() {
               </IconButton>
             </Box>
 
-            <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
+            <Box 
+              sx={{ 
+                display: "flex", 
+                flexDirection: { xs: "column", sm: "row" },
+                alignItems: { xs: "flex-start", sm: "center" }, 
+                gap: 2, 
+                mb: 2 
+              }}
+            >
               <Avatar
                 sx={{
-                  width: 80,
-                  height: 80,
+                  width: { xs: 64, sm: 80 },
+                  height: { xs: 64, sm: 80 },
                   bgcolor: "primary.main",
                   fontSize: "2rem",
                 }}
@@ -479,18 +507,22 @@ export default function PersonnelPage() {
                   sx={{ mt: 1 }}
                 />
               </Box>
-              <Stack direction="row" spacing={1} sx={{ ml: "auto" }}>
+              <Stack direction="row" spacing={1} sx={{ ml: { xs: 0, sm: "auto" }, width: { xs: "100%", sm: "auto" } }}>
                 <Button
                   variant="outlined"
+                  size="small"
                   startIcon={<BadgeIcon />}
                   onClick={() => setIdCardOpen(true)}
+                  fullWidth
                 >
                   {t("dialog.print_card")}
                 </Button>
                 <Button
                   variant="contained"
+                  size="small"
                   startIcon={<EditIcon />}
                   onClick={() => handleOpenEdit(selectedEmployee)}
+                  fullWidth
                 >
                   {t("dialog.edit_title")}
                 </Button>
@@ -512,7 +544,7 @@ export default function PersonnelPage() {
                 <Box
                   sx={{
                     display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
+                    gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
                     gap: 1.5,
                   }}
                 >

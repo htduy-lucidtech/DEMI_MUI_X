@@ -67,6 +67,24 @@ export default function UsersPage() {
     isActive: true,
   });
 
+  // Selection state
+  const [selectionModel, setSelectionModel] = useState<any>([]);
+  const [bulkDeleteConfirmOpen, setBulkDeleteConfirmOpen] = useState(false);
+
+  const getSelectedIds = (): number[] => {
+    if (!selectionModel) return [];
+    if (Array.isArray(selectionModel)) return selectionModel as number[];
+    if (typeof selectionModel === "object") {
+      if ("ids" in selectionModel && selectionModel.ids) {
+        const ids = selectionModel.ids;
+        return Array.isArray(ids) ? (ids as number[]) : Array.from(ids as any);
+      }
+      if (selectionModel instanceof Set) return Array.from(selectionModel) as number[];
+    }
+    return [];
+  };
+  const selectedCount = getSelectedIds().length;
+
   const fetchUsers = async () => {
     try {
       const data = await userService.getAll();
@@ -137,6 +155,18 @@ export default function UsersPage() {
       }
     } catch (error) {
       alert("Failed to toggle status");
+    }
+  };
+
+  const handleBulkDeleteConfirm = async () => {
+    try {
+      await userService.bulkDelete(getSelectedIds());
+      fetchUsers();
+      setSelectionModel([]);
+      setBulkDeleteConfirmOpen(false);
+    } catch (error) {
+      console.error("Failed to bulk delete users:", error);
+      alert("Failed to bulk delete users");
     }
   };
 
@@ -285,7 +315,19 @@ export default function UsersPage() {
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
       {/* Actions Row */}
-      <Box sx={{ display: "flex", justifyContent: "flex-end", alignItems: "center" }}>
+      <Box sx={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 1 }}>
+        {isAdmin && selectedCount > 0 && (
+          <Button
+            variant="contained"
+            color="error"
+            size="small"
+            startIcon={<DeleteIcon />}
+            onClick={() => setBulkDeleteConfirmOpen(true)}
+            sx={{ borderRadius: 2, px: 2 }}
+          >
+            {t("delete") || "Xóa"} ({selectedCount})
+          </Button>
+        )}
         <Button
           variant="contained"
           size="small"
@@ -348,8 +390,11 @@ export default function UsersPage() {
           initialState={{
             pagination: { paginationModel: { pageSize: 10 } },
           }}
-          pageSizeOptions={[5, 10, 20, 50]}
+          pageSizeOptions={[5, 10, 20, 50, 100]}
           disableRowSelectionOnClick
+          getRowId={(row) => row?.id ?? `fallback-${row.username}`}
+          checkboxSelection={isAdmin}
+          onRowSelectionModelChange={(newSelection) => setSelectionModel(newSelection)}
           slots={{
             toolbar: CustomToolbar,
           }}
@@ -379,6 +424,25 @@ export default function UsersPage() {
           </Typography>
         </Paper>
       )}
+
+      {/* Bulk Delete Confirm */}
+      <Dialog
+        open={bulkDeleteConfirmOpen}
+        onClose={() => setBulkDeleteConfirmOpen(false)}
+      >
+        <DialogTitle>{t("delete_bulk_title") || "Xác nhận xóa hàng loạt"}</DialogTitle>
+        <DialogContent>
+          {t("delete_bulk_confirm", { count: selectedCount }) || `Bạn có chắc muốn xóa ${selectedCount} bản ghi đã chọn?`}
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button onClick={() => setBulkDeleteConfirmOpen(false)} variant="outlined">
+            {t("cancel") || "Hủy"}
+          </Button>
+          <Button onClick={handleBulkDeleteConfirm} variant="contained" color="error">
+            {t("delete") || "Xóa"}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* Dialog: Add/Edit User */}
       <Dialog

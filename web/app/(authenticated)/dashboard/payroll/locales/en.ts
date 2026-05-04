@@ -1,6 +1,6 @@
-﻿const payrollEn = {
+const payrollEn = {
   title: "Payroll",
-  subtitle: "Automatic calculation based on actual work days",
+  subtitle: "Automatic calculation based on work hours and overtime",
   month: "Month",
   year: "Year",
   records: "records",
@@ -11,7 +11,9 @@
   export: "Export Excel",
   employee: "Employee",
   baseSalary: "Base Salary",
-  workDays: "Work Days",
+  hourlyRate: "Rate/Hr",
+  workHours: "Work Hours",
+  otHours: "OT Hours",
   totalAmount: "Total Amount",
   failedToCalculate: "Failed to calculate payroll",
 };

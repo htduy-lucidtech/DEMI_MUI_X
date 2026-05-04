@@ -18,6 +18,8 @@ export default {
   restricted_personnel: "Ghi chú: Với quyền Nhân sự, bạn chỉ có thể tạo tài khoản có vai trò 'Nhân viên'.",
   edit_user: "Chỉnh sửa tài khoản",
   delete_confirm: "Bạn có chắc chắn muốn xóa tài khoản này?",
+  delete_bulk_title: "Xác nhận xóa hàng loạt",
+  delete_bulk_confirm: "Bạn có chắc chắn muốn xóa {count} tài khoản đã chọn?",
   status: "Trạng thái",
   active: "Đang hoạt động",
   locked: "Đang bị khóa",

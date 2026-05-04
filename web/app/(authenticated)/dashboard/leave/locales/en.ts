@@ -16,6 +16,7 @@ const leaveEn = {
     refresh: "Refresh",
     approve: "Approve",
     reject: "Reject",
+    delete_all: "Delete Selected",
   },
   dialog: {
     title: "Create Leave Request",
@@ -25,12 +26,16 @@ const leaveEn = {
     endDate: "End Date",
     cancel: "Cancel",
     submit: "Submit",
+    delete_bulk_title: "Confirm Bulk Delete",
+    delete_bulk_confirm: "Are you sure you want to delete {count} selected records?",
   },
   messages: {
     success: "Request submitted successfully!",
     error: "An error occurred, please try again.",
     updateSuccess: "Status updated successfully!",
     updateError: "Failed to update status.",
+    deleteSuccess: "Deleted successfully!",
+    deleteError: "Failed to delete records.",
   },
   data: {
     type: {

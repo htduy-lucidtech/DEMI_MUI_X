@@ -85,11 +85,18 @@ export default function PayrollPage() {
       width: 150,
       renderCell: (params: GridRenderCellParams) => params.value.toLocaleString() + " ₫"
     },
-    { field: "workDays", headerName: t("workDays"), width: 120 },
+    {
+      field: "hourlyRate",
+      headerName: t("hourlyRate"),
+      width: 130,
+      renderCell: (params: GridRenderCellParams) => params.value.toLocaleString() + " ₫"
+    },
+    { field: "workHours", headerName: t("workHours"), width: 110 },
+    { field: "otHours", headerName: t("otHours"), width: 110 },
     {
       field: "totalSalary",
       headerName: t("totalAmount"),
-      width: 180,
+      width: 160,
       renderCell: (params: GridRenderCellParams) => (
         <Typography sx={{ fontWeight: 800, color: "primary.main" }}>
           {params.value.toLocaleString()} ₫
@@ -117,37 +124,57 @@ export default function PayrollPage() {
 
       <Card sx={{ mb: 3, borderRadius: 3, border: '1px solid #e2e8f0' }}>
         <CardContent>
-          <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
-            <TextField
-              select
-              label={t("month")}
-              size="small"
-              sx={{ width: 120 }}
-              value={month}
-              onChange={(e) => setMonth(Number(e.target.value))}
-            >
-              {[...Array(12)].map((_, i) => (
-                <MenuItem key={i + 1} value={i + 1}>{t("month")} {i + 1}</MenuItem>
-              ))}
-            </TextField>
-            <TextField
-              select
-              label={t("year")}
-              size="small"
-              sx={{ width: 120 }}
-              value={year}
-              onChange={(e) => setYear(Number(e.target.value))}
-            >
-              {[2024, 2025, 2026].map((y) => (
-                <MenuItem key={y} value={y}>{y}</MenuItem>
-              ))}
-            </TextField>
-            <Button variant="contained" startIcon={<CalcIcon />} onClick={handleCalculate} disabled={loading}>
-              {loading ? t("calculating") : t("calculate")}
-            </Button>
-            <Button variant="outlined" startIcon={<DownloadIcon />} onClick={handleExportExcel} disabled={records.length === 0}>
-              {t("export")} Excel
-            </Button>
+          <Stack 
+            direction={{ xs: "column", sm: "row" }} 
+            spacing={2} 
+            sx={{ alignItems: { xs: "stretch", sm: "center" } }}
+          >
+            <Stack direction="row" spacing={2}>
+              <TextField
+                select
+                label={t("month")}
+                size="small"
+                sx={{ flex: 1, minWidth: { sm: 120 } }}
+                value={month}
+                onChange={(e) => setMonth(Number(e.target.value))}
+              >
+                {[...Array(12)].map((_, i) => (
+                  <MenuItem key={i + 1} value={i + 1}>{t("month")} {i + 1}</MenuItem>
+                ))}
+              </TextField>
+              <TextField
+                select
+                label={t("year")}
+                size="small"
+                sx={{ flex: 1, minWidth: { sm: 120 } }}
+                value={year}
+                onChange={(e) => setYear(Number(e.target.value))}
+              >
+                {[2024, 2025, 2026].map((y) => (
+                  <MenuItem key={y} value={y}>{y}</MenuItem>
+                ))}
+              </TextField>
+            </Stack>
+            <Stack direction="row" spacing={2} sx={{ flex: 1 }}>
+              <Button 
+                variant="contained" 
+                startIcon={<CalcIcon />} 
+                onClick={handleCalculate} 
+                disabled={loading}
+                fullWidth
+              >
+                {loading ? t("calculating") : t("calculate")}
+              </Button>
+              <Button 
+                variant="outlined" 
+                startIcon={<DownloadIcon />} 
+                onClick={handleExportExcel} 
+                disabled={records.length === 0}
+                fullWidth
+              >
+                Excel
+              </Button>
+            </Stack>
           </Stack>
         </CardContent>
       </Card>

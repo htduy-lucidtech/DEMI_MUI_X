@@ -4,8 +4,10 @@ export interface PayrollRecord {
   userId: number;
   fullName: string;
   baseSalary: number;
+  hourlyRate: number;
   allowance: number;
-  workDays: number;
+  workHours: number;
+  otHours: number;
   totalSalary: number;
 }
 

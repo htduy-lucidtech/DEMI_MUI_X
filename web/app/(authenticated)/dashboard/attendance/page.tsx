@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useState, useEffect, useRef } from "react";
 import useRealtimeRefresh from "@/lib/useRealtime";
@@ -50,11 +50,30 @@ import CheckInOut from "./CheckInOut";
 export default function AttendancePage() {
   const t = useTranslations("Attendance");
   const { user } = useAuth();
+  const isHR = user?.role === "Admin" || user?.role === "Personnel" || user?.role === "Manager";
   const [history, setHistory] = useState<AttendanceRecord[]>([]);
   const [status, setStatus] = useState<TodayStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [mounted, setMounted] = useState(false);
+
+  // Selection state
+  const [selectionModel, setSelectionModel] = useState<any>([]);
+  const [bulkDeleteConfirmOpen, setBulkDeleteConfirmOpen] = useState(false);
+
+  const getSelectedIds = (): number[] => {
+    if (!selectionModel) return [];
+    if (Array.isArray(selectionModel)) return selectionModel as number[];
+    if (typeof selectionModel === "object") {
+      if ("ids" in selectionModel && selectionModel.ids) {
+        const ids = selectionModel.ids;
+        return Array.isArray(ids) ? (ids as number[]) : Array.from(ids as any);
+      }
+      if (selectionModel instanceof Set) return Array.from(selectionModel) as number[];
+    }
+    return [];
+  };
+  const selectedCount = getSelectedIds().length;
 
   const fetchData = async () => {
     if (!user) return;
@@ -175,7 +194,7 @@ export default function AttendancePage() {
       setHistory((prev) =>
         prev.map((h) =>
           h.userId === attendance.userId &&
-          new Date(h.checkInTime).toDateString() ===
+            new Date(h.checkInTime).toDateString() ===
             new Date(attendance.checkInTime).toDateString()
             ? (attendance as any)
             : h,
@@ -190,19 +209,10 @@ export default function AttendancePage() {
   };
 
   const formatUTCHourToLocal = (utcStr: string) => {
-    if (!utcStr) return "--:--";
-    try {
-      const [h, m] = utcStr.split(":").map(Number);
-      const d = new Date();
-      d.setUTCHours(h, m, 0, 0);
-      return d.toLocaleTimeString("vi-VN", {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false,
-      });
-    } catch (e) {
-      return utcStr;
-    }
+    // Backend returns "08:30" which is ALREADY in local format.
+    // Treating it as UTC and shifting by +7 causes the UI to show "15:30".
+    // Therefore, we just return the string as is.
+    return utcStr || "--:--";
   };
 
   const calculateDuration = (checkIn?: string | null) => {
@@ -237,6 +247,18 @@ export default function AttendancePage() {
       alert(t("messages.error"));
     }
   };
+
+  const handleBulkDeleteConfirm = async () => {
+    try {
+      await attendanceService.bulkDelete(getSelectedIds());
+      fetchData();
+      setSelectionModel([]);
+      setBulkDeleteConfirmOpen(false);
+    } catch (error) {
+      console.error("Failed to bulk delete attendances:", error);
+    }
+  };
+
   const columns: GridColDef[] = [
     {
       field: "fullName",
@@ -299,6 +321,26 @@ export default function AttendancePage() {
       ),
     },
     {
+      field: "workedMinutes",
+      headerName: t("columns.workHours"),
+      width: 100,
+      renderCell: (params: GridRenderCellParams) => (
+        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+          {params.value ? (params.value / 60.0).toFixed(1) : "-"}
+        </Typography>
+      ),
+    },
+    {
+      field: "otMinutes",
+      headerName: t("columns.otHours"),
+      width: 100,
+      renderCell: (params: GridRenderCellParams) => (
+        <Typography variant="body2" sx={{ color: "secondary.main" }}>
+          {params.value ? (params.value / 60.0).toFixed(1) : "-"}
+        </Typography>
+      ),
+    },
+    {
       field: "isLate",
       headerName: t("columns.status"),
       width: 130,
@@ -337,10 +379,7 @@ export default function AttendancePage() {
         ) : null,
     },
   ];
-  const isHR =
-    user?.role === "Admin" ||
-    user?.role === "Personnel" ||
-    user?.role === "Manager";
+
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
@@ -365,13 +404,13 @@ export default function AttendancePage() {
             <CardContent
               sx={{ textAlign: "center", py: 1.5, "&:last-child": { pb: 1.5 } }}
             >
-              <Typography variant="h4" sx={{ fontWeight: 800, mb: 0.5 }}>
+              <Typography variant="h4" sx={{ fontWeight: 800, mb: 0.5, fontSize: { xs: "1.75rem", sm: "2.125rem" } }}>
                 {mounted
                   ? currentTime.toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      second: "2-digit",
-                    })
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    second: "2-digit",
+                  })
                   : "--:--:--"}
               </Typography>
               <Typography
@@ -380,11 +419,11 @@ export default function AttendancePage() {
               >
                 {mounted
                   ? currentTime.toLocaleDateString("vi-VN", {
-                      weekday: "short",
-                      year: "numeric",
-                      month: "short",
-                      day: "numeric",
-                    })
+                    weekday: "short",
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                  })
                   : "..."}
               </Typography>
 
@@ -439,8 +478,8 @@ export default function AttendancePage() {
                     <Typography variant="caption" sx={{ opacity: 0.9 }}>
                       {status?.checkOutTime
                         ? new Date(status.checkOutTime).toLocaleTimeString(
-                            "vi-VN",
-                          )
+                          "vi-VN",
+                        )
                         : "--:--"}
                     </Typography>
                   </Box>
@@ -480,7 +519,7 @@ export default function AttendancePage() {
               <Box
                 sx={{
                   display: "grid",
-                  gridTemplateColumns: "repeat(4, 1fr)",
+                  gridTemplateColumns: { xs: "1fr 1fr", sm: "repeat(4, 1fr)" },
                   gap: 1.5,
                 }}
               >
@@ -491,9 +530,9 @@ export default function AttendancePage() {
                   <Typography variant="body1" sx={{ fontWeight: 700 }}>
                     {status?.checkInTime
                       ? new Date(status.checkInTime).toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })
                       : "--:--"}
                   </Typography>
                   {status?.isLate && (
@@ -512,13 +551,13 @@ export default function AttendancePage() {
                   <Typography variant="body1" sx={{ fontWeight: 700 }}>
                     {status?.checkOutTime
                       ? new Date(status.checkOutTime).toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })
                       : "--:--"}
                   </Typography>
                 </Box>
-                <Divider orientation="vertical" flexItem />
+                <Divider orientation="vertical" flexItem sx={{ display: { xs: "none", sm: "block" } }} />
                 <Box>
                   <Typography variant="caption" color="text.secondary">
                     {t("regulations.shortTitle")}
@@ -592,6 +631,51 @@ export default function AttendancePage() {
                   }}
                 >
                   <Typography variant="caption">
+                    {t("stats.workingHours")}:
+                  </Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 700 }}>
+                    {history
+                      .filter(
+                        (h) =>
+                          new Date(h.checkInTime).getMonth() ===
+                          new Date().getMonth(),
+                      )
+                      .reduce((acc, h) => acc + (h.workedMinutes || 0), 0) / 60}
+                    h
+                  </Typography>
+                </Box>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <Typography variant="caption">
+                    {t("stats.otHours")}:
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{ fontWeight: 700, color: "secondary.main" }}
+                  >
+                    {history
+                      .filter(
+                        (h) =>
+                          new Date(h.checkInTime).getMonth() ===
+                          new Date().getMonth(),
+                      )
+                      .reduce((acc, h) => acc + (h.otMinutes || 0), 0) / 60}
+                    h
+                  </Typography>
+                </Box>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <Typography variant="caption">
                     {t("stats.lateDays")}:
                   </Typography>
                   <Typography
@@ -603,7 +687,7 @@ export default function AttendancePage() {
                         (h) =>
                           h.isLate &&
                           new Date(h.checkInTime).getMonth() ===
-                            new Date().getMonth(),
+                          new Date().getMonth(),
                       ).length
                     }
                   </Typography>
@@ -636,6 +720,17 @@ export default function AttendancePage() {
           <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
             {t("history")}
           </Typography>
+          {isHR && selectedCount > 0 && (
+            <Button
+              variant="contained"
+              color="error"
+              size="small"
+              onClick={() => setBulkDeleteConfirmOpen(true)}
+              sx={{ borderRadius: 2 }}
+            >
+              {t("dialog.delete_all") || `Delete (${selectedCount})`}
+            </Button>
+          )}
         </Box>
         <Box sx={{ height: 400, width: "100%" }}>
           <DataGrid
@@ -644,7 +739,9 @@ export default function AttendancePage() {
             loading={loading}
             density="compact"
             disableRowSelectionOnClick
-            pageSizeOptions={[10, 25, 50]}
+            checkboxSelection={user?.role === "Admin" || user?.role === "Personnel"}
+            onRowSelectionModelChange={(newSelection) => setSelectionModel(newSelection)}
+            pageSizeOptions={[10, 25, 50, 100]}
             initialState={{
               pagination: { paginationModel: { pageSize: 10 } },
             }}
@@ -662,6 +759,25 @@ export default function AttendancePage() {
           />
         </Box>
       </Paper>
+
+      {/* Bulk Delete Confirm */}
+      <Dialog
+        open={bulkDeleteConfirmOpen}
+        onClose={() => setBulkDeleteConfirmOpen(false)}
+      >
+        <DialogTitle>{t("dialog.delete_bulk_title") || "Xác nhận xóa hàng loạt"}</DialogTitle>
+        <DialogContent>
+          {t("dialog.delete_bulk_confirm", { count: selectedCount }) || `Bạn có chắc muốn xóa ${selectedCount} bản ghi đã chọn?`}
+        </DialogContent>
+        <DialogActions sx={{ p: 2 }}>
+          <Button onClick={() => setBulkDeleteConfirmOpen(false)} variant="outlined">
+            {t("dialog.cancel") || "Hủy"}
+          </Button>
+          <Button onClick={handleBulkDeleteConfirm} variant="contained" color="error">
+            {t("dialog.delete_all") || "Xóa"}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* Late Reason Dialog */}
       <Dialog

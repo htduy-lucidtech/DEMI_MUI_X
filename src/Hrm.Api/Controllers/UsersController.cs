@@ -100,6 +100,18 @@ namespace Hrm.Api.Controllers
             return NoContent();
         }
 
+        [HttpPost("bulk-delete")]
+        public async Task<IActionResult> DeleteUsers([FromBody] List<int> ids)
+        {
+            var users = await _context.Users.Where(u => ids.Contains(u.Id)).ToListAsync();
+            if (!users.Any()) return NotFound();
+
+            _context.Users.RemoveRange(users);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
         [HttpPatch("{id}/toggle-active")]
         public async Task<IActionResult> ToggleActive(int id)
         {

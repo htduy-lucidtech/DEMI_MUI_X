@@ -106,8 +106,10 @@ export default function PerformancePage() {
         sx={{
           mb: 4,
           display: "flex",
+          flexDirection: { xs: "column", sm: "row" },
           justifyContent: "space-between",
-          alignItems: "center",
+          alignItems: { xs: "flex-start", sm: "center" },
+          gap: 2,
         }}
       >
         <Box>
@@ -122,6 +124,7 @@ export default function PerformancePage() {
           variant="contained"
           startIcon={<AddIcon />}
           onClick={() => setOpenDialog(true)}
+          sx={{ width: { xs: "100%", sm: "auto" } }}
         >
           {t("createReview")}
         </Button>
@@ -196,7 +199,7 @@ export default function PerformancePage() {
               ))}
             </TextField>
 
-            <Box sx={{ display: "flex", gap: 2 }}>
+            <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, gap: 2 }}>
               <TextField
                 type="number"
                 label={t("workQuality")}

@@ -15,6 +15,8 @@ export default {
   stats: {
     monthly: "Monthly Stats",
     workingDays: "Working Days",
+    workingHours: "Total Hours",
+    otHours: "OT Hours",
     lateDays: "Late Days"
   },
   regulations: {
@@ -38,13 +40,18 @@ export default {
     date: "Date",
     checkIn: "Check In",
     checkOut: "Check Out",
+    workHours: "Hours",
+    otHours: "OT",
     duration: "Duration",
     status: "Status",
     lateReason: "Late Reason"
   },
   dialog: {
     save: "Save Changes",
-    cancel: "Cancel"
+    cancel: "Cancel",
+    delete_bulk_title: "Confirm Bulk Delete",
+    delete_bulk_confirm: "Are you sure you want to delete {count} selected records?",
+    delete_all: "Delete Selected"
   },
   messages: {
     successIn: "Check-in successful!",

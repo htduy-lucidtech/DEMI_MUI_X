@@ -37,24 +37,32 @@ namespace Hrm.Api.Controllers
             {
                 if (user.Employee == null) continue;
 
-                // Đếm số ngày đi làm trong tháng
-                var workDays = await _context.Attendances
-                    .CountAsync(a => a.UserId == user.Id && a.CheckInTime >= startDate && a.CheckInTime <= endDate);
+                // Tổng số phút làm việc trong tháng
+                var attendances = await _context.Attendances
+                    .Where(a => a.UserId == user.Id && a.CheckInTime >= startDate && a.CheckInTime <= endDate && a.CheckOutTime != null)
+                    .ToListAsync();
 
-                // Tính toán: Lương = (Lương cơ bản / 22 ngày công) * Số ngày thực tế + Phụ cấp
-                decimal baseSalary = user.Employee.BaseSalary;
+                int totalWorkedMinutes = attendances.Sum(a => a.WorkedMinutes ?? 0);
+                int totalOtMinutes = attendances.Sum(a => a.OtMinutes ?? 0);
+                int totalStandardMinutes = totalWorkedMinutes - totalOtMinutes;
+
+                decimal hourlyRate = user.Employee.HourlyRate > 0 ? user.Employee.HourlyRate : (user.Employee.BaseSalary / 176);
+                decimal hourlyRateOT = user.Employee.HourlyRateOT > 0 ? user.Employee.HourlyRateOT : (hourlyRate * 1.5m);
                 decimal allowance = user.Employee.Allowance;
                 
-                decimal dailyRate = baseSalary / 22;
-                decimal totalSalary = (workDays * dailyRate) + allowance;
+                decimal standardSalary = (totalStandardMinutes / 60m) * hourlyRate;
+                decimal otSalary = (totalOtMinutes / 60m) * hourlyRateOT;
+                decimal totalSalary = standardSalary + otSalary + allowance;
 
                 payrollList.Add(new
                 {
                     UserId = user.Id,
                     FullName = user.Employee!.FullName,
-                    BaseSalary = baseSalary,
+                    BaseSalary = user.Employee.BaseSalary,
+                    HourlyRate = hourlyRate,
                     Allowance = allowance,
-                    WorkDays = workDays,
+                    WorkHours = Math.Round(totalStandardMinutes / 60.0, 1),
+                    OtHours = Math.Round(totalOtMinutes / 60.0, 1),
                     TotalSalary = Math.Round(totalSalary, 0)
                 });
             }
@@ -78,10 +86,11 @@ namespace Hrm.Api.Controllers
             
             // Header
             worksheet.Cell(1, 1).Value = "Nhân viên";
-            worksheet.Cell(1, 2).Value = "Lương cơ bản";
+            worksheet.Cell(1, 2).Value = "Lương/Giờ";
             worksheet.Cell(1, 3).Value = "Phụ cấp";
-            worksheet.Cell(1, 4).Value = "Ngày công";
-            worksheet.Cell(1, 5).Value = "Thành tiền";
+            worksheet.Cell(1, 4).Value = "Giờ công";
+            worksheet.Cell(1, 5).Value = "Giờ OT";
+            worksheet.Cell(1, 6).Value = "Thành tiền";
             var headerRow = worksheet.Row(1);
             headerRow.Style.Font.Bold = true;
             headerRow.Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.LightGray;
@@ -90,19 +99,28 @@ namespace Hrm.Api.Controllers
             foreach (var user in users)
             {
                 if (user.Employee == null) continue;
-                var workDays = await _context.Attendances
-                    .CountAsync(a => a.UserId == user.Id && a.CheckInTime >= startDate && a.CheckInTime <= endDate);
+                var attendances = await _context.Attendances
+                    .Where(a => a.UserId == user.Id && a.CheckInTime >= startDate && a.CheckInTime <= endDate && a.CheckOutTime != null)
+                    .ToListAsync();
 
-                decimal baseSalary = user.Employee.BaseSalary;
+                int totalWorkedMinutes = attendances.Sum(a => a.WorkedMinutes ?? 0);
+                int totalOtMinutes = attendances.Sum(a => a.OtMinutes ?? 0);
+                int totalStandardMinutes = totalWorkedMinutes - totalOtMinutes;
+
+                decimal hourlyRate = user.Employee.HourlyRate > 0 ? user.Employee.HourlyRate : (user.Employee.BaseSalary / 176);
+                decimal hourlyRateOT = user.Employee.HourlyRateOT > 0 ? user.Employee.HourlyRateOT : (hourlyRate * 1.5m);
                 decimal allowance = user.Employee.Allowance;
-                decimal dailyRate = baseSalary / 22;
-                decimal totalSalary = Math.Round((workDays * dailyRate) + allowance, 0);
+                
+                decimal standardSalary = (totalStandardMinutes / 60m) * hourlyRate;
+                decimal otSalary = (totalOtMinutes / 60m) * hourlyRateOT;
+                decimal totalSalary = Math.Round(standardSalary + otSalary + allowance, 0);
 
                 worksheet.Cell(row, 1).Value = user.Employee.FullName;
-                worksheet.Cell(row, 2).Value = baseSalary;
+                worksheet.Cell(row, 2).Value = hourlyRate;
                 worksheet.Cell(row, 3).Value = allowance;
-                worksheet.Cell(row, 4).Value = workDays;
-                worksheet.Cell(row, 5).Value = totalSalary;
+                worksheet.Cell(row, 4).Value = Math.Round(totalStandardMinutes / 60.0, 1);
+                worksheet.Cell(row, 5).Value = Math.Round(totalOtMinutes / 60.0, 1);
+                worksheet.Cell(row, 6).Value = totalSalary;
                 row++;
             }
 
@@ -126,13 +144,21 @@ namespace Hrm.Api.Controllers
             var startDate = new DateTime(year, month, 1, 0, 0, 0, DateTimeKind.Utc);
             var endDate = startDate.AddMonths(1).AddDays(-1);
 
-            var workDays = await _context.Attendances
-                .CountAsync(a => a.UserId == user.Id && a.CheckInTime >= startDate && a.CheckInTime <= endDate);
+            var attendances = await _context.Attendances
+                .Where(a => a.UserId == user.Id && a.CheckInTime >= startDate && a.CheckInTime <= endDate && a.CheckOutTime != null)
+                .ToListAsync();
 
-            decimal baseSalary = user.Employee.BaseSalary;
+            int totalWorkedMinutes = attendances.Sum(a => a.WorkedMinutes ?? 0);
+            int totalOtMinutes = attendances.Sum(a => a.OtMinutes ?? 0);
+            int totalStandardMinutes = totalWorkedMinutes - totalOtMinutes;
+
+            decimal hourlyRate = user.Employee.HourlyRate > 0 ? user.Employee.HourlyRate : (user.Employee.BaseSalary / 176);
+            decimal hourlyRateOT = user.Employee.HourlyRateOT > 0 ? user.Employee.HourlyRateOT : (hourlyRate * 1.5m);
             decimal allowance = user.Employee.Allowance;
-            decimal dailyRate = baseSalary / 22;
-            decimal totalSalary = Math.Round((workDays * dailyRate) + allowance, 0);
+            
+            decimal standardSalary = (totalStandardMinutes / 60m) * hourlyRate;
+            decimal otSalary = (totalOtMinutes / 60m) * hourlyRateOT;
+            decimal totalSalary = Math.Round(standardSalary + otSalary + allowance, 0);
 
             var document = QuestPDF.Fluent.Document.Create(container =>
             {
@@ -150,8 +176,10 @@ namespace Hrm.Api.Controllers
                     {
                         x.Item().Text($"Nhân viên: {user.Employee.FullName}").SemiBold();
                         x.Item().Text($"Phòng ban: {user.Employee.DepartmentId}");
-                        x.Item().Text($"Số ngày công: {workDays}");
-                        x.Item().PaddingTop(10).Text($"Lương cơ bản: {baseSalary:N0} VNĐ");
+                        x.Item().Text($"Số giờ công: {totalStandardMinutes / 60.0:N1}");
+                        x.Item().Text($"Số giờ OT: {totalOtMinutes / 60.0:N1}");
+                        x.Item().PaddingTop(10).Text($"Lương mỗi giờ: {hourlyRate:N0} VNĐ");
+                        x.Item().Text($"Lương OT/giờ: {hourlyRateOT:N0} VNĐ");
                         x.Item().Text($"Phụ cấp: {allowance:N0} VNĐ");
                         x.Item().PaddingTop(10).Text($"THỰC LÃNH: {totalSalary:N0} VNĐ")
                             .Bold().FontSize(14).FontColor(QuestPDF.Helpers.Colors.Green.Darken2);

@@ -123,7 +123,9 @@ export default function AuthenticatedLayout({
           });
         }
       } catch (err) {
-        console.error("SignalR Connection Error: ", err);
+        if (mounted) {
+          console.error("SignalR Connection Error: ", err);
+        }
       }
     };
 
@@ -131,8 +133,9 @@ export default function AuthenticatedLayout({
 
     return () => {
       mounted = false;
-      if (newConnection.state !== signalR.HubConnectionState.Disconnected) {
-        newConnection.stop();
+      if (newConnection.state === signalR.HubConnectionState.Connected || 
+          newConnection.state === signalR.HubConnectionState.Connecting) {
+        newConnection.stop().catch(() => {});
       }
     };
   }, [token]);

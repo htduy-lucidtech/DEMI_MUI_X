@@ -32,6 +32,8 @@ namespace Hrm.Domain.Entities
         // Salary
         public decimal BaseSalary { get; set; }
         public decimal Allowance { get; set; }
+        public decimal HourlyRate { get; set; }
+        public decimal HourlyRateOT { get; set; }
 
         // Account (Account is child of Personnel)
         public User? Account { get; set; }

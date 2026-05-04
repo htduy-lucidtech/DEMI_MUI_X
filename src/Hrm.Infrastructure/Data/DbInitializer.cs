@@ -69,6 +69,10 @@ namespace Hrm.Infrastructure.Data
             var notifications = GetPreconfiguredNotifications(employees);
             context.Notifications.AddRange(notifications);
 
+            // 10. Seed Attendance Corrections
+            var corrections = GetPreconfiguredCorrections(users);
+            context.AttendanceCorrections.AddRange(corrections);
+
             await context.SaveChangesAsync();
         }
 
@@ -92,6 +96,7 @@ namespace Hrm.Infrastructure.Data
                 { 
                     FullName = "Nguyễn Văn Admin", Email = "admin@hrm.com", Position = "Giám đốc hệ thống", 
                     DepartmentId = departments[0].Id, BaseSalary = 50000000, Allowance = 10000000,
+                    HourlyRate = 284090, HourlyRateOT = 426136, // 50M / 176
                     PhoneNumber = "0901234567", Address = "Hà Nội", Gender = "Male",
                     DateOfBirth = new DateTime(1985, 1, 1, 0, 0, 0, DateTimeKind.Utc), IdentityCardNumber = "ID-ADMIN-001"
                 },
@@ -99,6 +104,7 @@ namespace Hrm.Infrastructure.Data
                 { 
                     FullName = "Trần Thị Quản Lý", Email = "manager@hrm.com", Position = "Quản lý dự án", 
                     DepartmentId = departments[2].Id, BaseSalary = 35000000, Allowance = 5000000,
+                    HourlyRate = 198863, HourlyRateOT = 298295,
                     PhoneNumber = "0901112222", Address = "TP.HCM", Gender = "Female",
                     DateOfBirth = new DateTime(1988, 5, 12, 0, 0, 0, DateTimeKind.Utc)
                 },
@@ -106,25 +112,28 @@ namespace Hrm.Infrastructure.Data
                 { 
                     FullName = "Lê Thị Nhân Sự", Email = "personnel@hrm.com", Position = "Trưởng phòng Nhân sự", 
                     DepartmentId = departments[1].Id, BaseSalary = 28000000, Allowance = 4000000,
+                    HourlyRate = 159090, HourlyRateOT = 238636,
                     PhoneNumber = "0903334444", Address = "Hải Phòng", Gender = "Female"
                 },
                 new Employee 
                 { 
                     FullName = "Phạm Văn Chấm Công", Email = "attendance@hrm.com", Position = "Chuyên viên chấm công", 
                     DepartmentId = departments[1].Id, BaseSalary = 15000000, Allowance = 2000000,
+                    HourlyRate = 85227, HourlyRateOT = 127840,
                     PhoneNumber = "0905556666", Address = "Đà Nẵng", Gender = "Male"
                 },
                 new Employee 
                 { 
                     FullName = "Hoàng Văn Nhân Viên", Email = "employee@hrm.com", Position = "Lập trình viên", 
                     DepartmentId = departments[2].Id, BaseSalary = 20000000, Allowance = 1000000,
+                    HourlyRate = 113636, HourlyRateOT = 170454,
                     PhoneNumber = "0907778888", Address = "Cần Thơ", Gender = "Male"
                 },
-                new Employee { FullName = "Bùi Văn Kế Toán", Email = "ketoan@hrm.com", Position = "Kế toán trưởng", DepartmentId = departments[4].Id, BaseSalary = 22000000 },
-                new Employee { FullName = "Đỗ Thị Kinh Doanh", Email = "sales1@hrm.com", Position = "Nhân viên kinh doanh", DepartmentId = departments[3].Id, BaseSalary = 12000000 },
-                new Employee { FullName = "Ngô Văn Bảo Vệ", Email = "security@hrm.com", Position = "Bảo vệ", DepartmentId = departments[0].Id, BaseSalary = 8000000 },
-                new Employee { FullName = "Vũ Thị Tạp Vụ", Email = "cleaner@hrm.com", Position = "Tạp vụ", DepartmentId = departments[0].Id, BaseSalary = 7500000 },
-                new Employee { FullName = "Lý Văn Lái Xe", Email = "driver@hrm.com", Position = "Lái xe", DepartmentId = departments[0].Id, BaseSalary = 10000000 }
+                new Employee { FullName = "Bùi Văn Kế Toán", Email = "ketoan@hrm.com", Position = "Kế toán trưởng", DepartmentId = departments[4].Id, BaseSalary = 22000000, HourlyRate = 125000, HourlyRateOT = 187500 },
+                new Employee { FullName = "Đỗ Thị Kinh Doanh", Email = "sales1@hrm.com", Position = "Nhân viên kinh doanh", DepartmentId = departments[3].Id, BaseSalary = 12000000, HourlyRate = 68181, HourlyRateOT = 102272 },
+                new Employee { FullName = "Ngô Văn Bảo Vệ", Email = "security@hrm.com", Position = "Bảo vệ", DepartmentId = departments[0].Id, BaseSalary = 8000000, HourlyRate = 45454, HourlyRateOT = 68181 },
+                new Employee { FullName = "Vũ Thị Tạp Vụ", Email = "cleaner@hrm.com", Position = "Tạp vụ", DepartmentId = departments[0].Id, BaseSalary = 7500000, HourlyRate = 42613, HourlyRateOT = 63919 },
+                new Employee { FullName = "Lý Văn Lái Xe", Email = "driver@hrm.com", Position = "Lái xe", DepartmentId = departments[0].Id, BaseSalary = 10000000, HourlyRate = 56818, HourlyRateOT = 85227 }
             };
         }
 
@@ -154,16 +163,23 @@ namespace Hrm.Infrastructure.Data
                     if (date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday) continue;
 
                     var checkIn = date.AddHours(1).AddMinutes(random.Next(0, 60));
+                    var checkOut = date.AddHours(10).AddMinutes(random.Next(30, 60));
                     var isLate = checkIn.TimeOfDay > new TimeSpan(1, 30, 0);
+
+                    // Calc worked minutes (approx 8-9 hours)
+                    int workedMinutes = (int)(checkOut - checkIn).TotalMinutes;
+                    int otMinutes = workedMinutes > 480 ? workedMinutes - 480 : 0; // standard 8h = 480m
 
                     attendances.Add(new Attendance
                     {
                         UserId = u.Id,
                         CheckInTime = checkIn,
-                        CheckOutTime = date.AddHours(10).AddMinutes(random.Next(30, 60)),
+                        CheckOutTime = checkOut,
                         IsLate = isLate,
                         LateReason = isLate ? "Kẹt xe đường Nguyễn Trãi" : null,
-                        Note = isLate ? "Đi muộn" : "Đúng giờ"
+                        Note = isLate ? "Đi muộn" : "Đúng giờ",
+                        WorkedMinutes = workedMinutes,
+                        OtMinutes = otMinutes
                     });
                 }
 
@@ -284,6 +300,29 @@ namespace Hrm.Infrastructure.Data
             };
         }
 
+        private static List<AttendanceCorrection> GetPreconfiguredCorrections(List<User> users)
+        {
+            return new List<AttendanceCorrection>
+            {
+                new AttendanceCorrection { 
+                    UserId = users[4].Id, 
+                    RequestedCheckIn = DateTime.UtcNow.Date.AddHours(1).AddMinutes(30), 
+                    Reason = "Quên checkin do vội họp", 
+                    Status = "Pending", 
+                    CreatedAt = DateTime.UtcNow 
+                },
+                new AttendanceCorrection { 
+                    UserId = users[1].Id, 
+                    RequestedCheckOut = DateTime.UtcNow.Date.AddHours(10).AddMinutes(45), 
+                    Reason = "Quên checkout khi về muộn", 
+                    Status = "Approved", 
+                    ApproverId = users[0].Id,
+                    ApproverComment = "Đã xác nhận làm thêm giờ",
+                    CreatedAt = DateTime.UtcNow.AddDays(-1) 
+                }
+            };
+        }
+
         private static List<Notification> GetPreconfiguredNotifications(List<Employee> employees)
         {
             return new List<Notification>
@@ -297,4 +336,3 @@ namespace Hrm.Infrastructure.Data
 
         }
     }
-}

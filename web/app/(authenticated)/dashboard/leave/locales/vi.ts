@@ -16,6 +16,7 @@ const leaveVi = {
     refresh: "Tải lại",
     approve: "Duyệt",
     reject: "Từ chối",
+    delete_all: "Xóa",
   },
   dialog: {
     title: "Tạo yêu cầu nghỉ phép",
@@ -25,12 +26,16 @@ const leaveVi = {
     endDate: "Đến ngày",
     cancel: "Hủy",
     submit: "Gửi đơn",
+    delete_bulk_title: "Xác nhận xóa hàng loạt",
+    delete_bulk_confirm: "Bạn có chắc muốn xóa {count} bản ghi đã chọn?",
   },
   messages: {
     success: "Gửi yêu cầu thành công!",
     error: "Có lỗi xảy ra, vui lòng thử lại.",
     updateSuccess: "Cập nhật trạng thái thành công!",
     updateError: "Lỗi khi cập nhật trạng thái.",
+    deleteSuccess: "Xóa thành công!",
+    deleteError: "Lỗi khi xóa bản ghi.",
   },
   data: {
     type: {

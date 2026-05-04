@@ -51,6 +51,11 @@ export const userService = {
     return response.data;
   },
 
+  bulkDelete: async (ids: number[]) => {
+    const response = await api.post("/Users/bulk-delete", ids);
+    return response.data;
+  },
+
   changePassword: async (id: number, data: any) => {
     const response = await api.post(`/Users/${id}/change-password`, data);
     return response.data;

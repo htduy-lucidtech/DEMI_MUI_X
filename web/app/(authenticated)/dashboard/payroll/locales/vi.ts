@@ -1,6 +1,6 @@
 const payrollVi = {
   title: "Bảng lương",
-  subtitle: "Tính lương tự động dựa trên ngày công thực tế",
+  subtitle: "Tính lương tự động dựa trên giờ công và tăng ca thực tế",
   month: "Tháng",
   year: "Năm",
   records: "dữ liệu",
@@ -11,7 +11,9 @@ const payrollVi = {
   export: "Xuất Excel",
   employee: "Nhân viên",
   baseSalary: "Lương cơ bản",
-  workDays: "Ngày công",
+  hourlyRate: "Lương/Giờ",
+  workHours: "Giờ công",
+  otHours: "Giờ OT",
   totalAmount: "Thành tiền",
   failedToCalculate: "Không thể tính lương",
 };

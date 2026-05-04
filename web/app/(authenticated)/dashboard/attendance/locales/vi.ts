@@ -15,6 +15,8 @@ export default {
   stats: {
     monthly: "Thống kê tháng",
     workingDays: "Số ngày công",
+    workingHours: "Tổng giờ công",
+    otHours: "Giờ tăng ca (OT)",
     lateDays: "Đi muộn"
   },
   regulations: {
@@ -38,13 +40,17 @@ export default {
     date: "Ngày",
     checkIn: "Giờ vào",
     checkOut: "Giờ ra",
-    duration: "Tổng giờ",
+    workHours: "Giờ làm",
+    otHours: "Giờ OT",
     status: "Trạng thái",
     lateReason: "Lý do đi muộn"
   },
   dialog: {
     save: "Lưu thay đổi",
-    cancel: "Hủy bỏ"
+    cancel: "Hủy bỏ",
+    delete_bulk_title: "Xác nhận xóa hàng loạt",
+    delete_bulk_confirm: "Bạn có chắc muốn xóa {count} bản ghi đã chọn?",
+    delete_all: "Xóa"
   },
   messages: {
     successIn: "Check-in thành công!",

@@ -8,15 +8,25 @@ using System.Security.Claims;
 
 namespace Hrm.Api.Controllers
 {
+    public class CreateLeaveRequestDto
+    {
+        public string LeaveType { get; set; } = "Annual";
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
+        public string Reason { get; set; } = string.Empty;
+    }
+
     [ApiController]
     [Route("api/[controller]")]
     public class LeaveRequestsController : ControllerBase
     {
         private readonly HrmDbContext _context;
+        private readonly Hrm.Service.Interfaces.INotificationService _notificationService;
 
-        public LeaveRequestsController(HrmDbContext context)
+        public LeaveRequestsController(HrmDbContext context, Hrm.Service.Interfaces.INotificationService notificationService)
         {
             _context = context;
+            _notificationService = notificationService;
         }
 
         [HttpGet]
@@ -70,74 +80,83 @@ namespace Hrm.Api.Controllers
 
         [Authorize]
         [HttpPost]
-        public async Task<ActionResult<LeaveRequest>> CreateLeaveRequest(LeaveRequest request, [FromServices] Hrm.Service.Interfaces.INotificationService notificationService)
+        public async Task<IActionResult> CreateLeaveRequest([FromBody] CreateLeaveRequestDto dto)
         {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var claimUserId))
+            try
             {
-                return Unauthorized();
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var claimUserId))
+                {
+                    return Unauthorized(new { message = "Invalid user identity" });
+                }
+
+                // 1. Map DTO to Entity
+                var request = new LeaveRequest
+                {
+                    UserId = claimUserId,
+                    LeaveType = dto.LeaveType,
+                    StartDate = DateTime.SpecifyKind(dto.StartDate, DateTimeKind.Utc),
+                    EndDate = DateTime.SpecifyKind(dto.EndDate, DateTimeKind.Utc),
+                    Reason = dto.Reason ?? "",
+                    Status = "Pending",
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                // 2. Save to Database
+                _context.LeaveRequests.Add(request);
+                await _context.SaveChangesAsync();
+
+                // 3. Load user info for notification (safe load)
+                var author = await _context.Users.Include(u => u.Employee).FirstOrDefaultAsync(u => u.Id == claimUserId);
+                var senderName = (author != null && author.Employee != null) ? author.Employee.FullName : (author != null ? author.Username : "Nhân viên");
+
+                // 4. Fire notifications (wrap in try-catch to not block the response)
+                try {
+                    var roleFull = $"Đơn nghỉ mới - Người gửi: {senderName}";
+                    var notif = new Notification
+                    {
+                        Title = "Yêu cầu nghỉ mới",
+                        Message = roleFull,
+                        Type = "LeaveRequest",
+                        MetaJson = System.Text.Json.JsonSerializer.Serialize(new {
+                            messageKey = "leave.request.created",
+                            messageParams = new {
+                                id = request.Id,
+                                userId = request.UserId,
+                                startDate = request.StartDate,
+                                endDate = request.EndDate
+                            },
+                            fallback = roleFull
+                        })
+                    };
+
+                    // Send to multiple roles
+                    await _notificationService.CreateAndSendAsync(notif, "Admin");
+                    await _notificationService.CreateAndSendAsync(notif, "Personnel");
+                    await _notificationService.CreateAndSendAsync(notif, "Manager");
+                }
+                catch (Exception ex) {
+                    Console.WriteLine($"[Notification Error] {ex.Message}");
+                }
+
+                // 5. Return success
+                return Ok(new {
+                    request.Id,
+                    request.UserId,
+                    request.LeaveType,
+                    request.StartDate,
+                    request.EndDate,
+                    request.Reason,
+                    request.Status,
+                    request.CreatedAt,
+                    FullName = senderName
+                });
             }
-
-            request.UserId = claimUserId;
-            // Ensure date kinds are UTC for PostgreSQL timestamptz
-            if (request.StartDate != default)
-                request.StartDate = DateTime.SpecifyKind(request.StartDate, DateTimeKind.Utc);
-            if (request.EndDate != default)
-                request.EndDate = DateTime.SpecifyKind(request.EndDate, DateTimeKind.Utc);
-
-            request.CreatedAt = DateTime.UtcNow;
-            request.Status = "Pending";
-            _context.LeaveRequests.Add(request);
-            await _context.SaveChangesAsync();
-
-            // Load the author (with Employee) to avoid null dereference of navigation properties
-            var author = await _context.Users.Include(u => u.Employee).FirstOrDefaultAsync(u => u.Id == request.UserId);
-            var senderName = (author != null && author.Employee != null) ? author.Employee.FullName : (author != null ? author.Username : $"User {request.UserId}");
-
-            // Notify Admin/Personnel/Manager roles that a new leave request was created
-            var roleShort = $"Yêu cầu nghỉ mới từ user {senderName}";
-            var roleFull = $"Đơn nghỉ mới - Người gửi: {senderName}";
-
-            var notif = new Notification
+            catch (Exception ex)
             {
-                UserId = null,
-                Role = null,
-                Title = "Yêu cầu nghỉ mới",
-                // fallback message (kept for older clients)
-                Message = roleFull,
-                Type = "LeaveRequest",
-                MetaJson = System.Text.Json.JsonSerializer.Serialize(new {
-                    messageKey = "leave.request.created",
-                    messageParams = new {
-                        id = request.Id,
-                        userId = request.UserId,
-                        startDate = request.StartDate,
-                        endDate = request.EndDate
-                    },
-                    fallback = roleFull
-                })
-            };
-
-            // Send to multiple roles (server provides key+params; FE localizes)
-            await notificationService.CreateAndSendAsync(notif, "Admin");
-            await notificationService.CreateAndSendAsync(notif, "Personnel");
-            await notificationService.CreateAndSendAsync(notif, "Manager");
-
-            var result = new {
-                request.Id,
-                request.UserId,
-                request.LeaveType,
-                request.StartDate,
-                request.EndDate,
-                request.ApprovedBy,
-                request.Comment,
-                request.Reason,
-                request.Status,
-                request.CreatedAt,
-                FullName = (request.User != null && request.User.Employee != null) ? request.User.Employee.FullName : (request.User != null ? request.User.Username : "N/A")
-            };
-
-            return CreatedAtAction(nameof(GetLeaveRequest), new { id = request.Id }, result);
+                Console.WriteLine($"[CreateLeaveRequest Error] {ex}");
+                return StatusCode(500, new { message = "Lỗi hệ thống khi tạo đơn nghỉ", error = ex.Message });
+            }
         }
 
         [HttpGet("{id}")]
@@ -255,6 +274,18 @@ namespace Hrm.Api.Controllers
             if (request == null) return NotFound();
 
             _context.LeaveRequests.Remove(request);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        [HttpPost("bulk-delete")]
+        public async Task<IActionResult> DeleteLeaveRequests([FromBody] List<int> ids)
+        {
+            var requests = await _context.LeaveRequests.Where(r => ids.Contains(r.Id)).ToListAsync();
+            if (!requests.Any()) return NotFound();
+
+            _context.LeaveRequests.RemoveRange(requests);
             await _context.SaveChangesAsync();
 
             return NoContent();

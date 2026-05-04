@@ -172,7 +172,7 @@ export default function RecruitmentPage() {
       <Box
         sx={{
           display: "flex",
-          justifyContent: "flex-end",
+          justifyContent: { xs: "stretch", sm: "flex-end" },
           alignItems: "center",
         }}
       >
@@ -181,7 +181,7 @@ export default function RecruitmentPage() {
           size="small"
           startIcon={<AddIcon />}
           onClick={() => setOpenJobDialog(true)}
-          sx={{ borderRadius: 2, px: 2 }}
+          sx={{ borderRadius: 2, px: 2, width: { xs: "100%", sm: "auto" } }}
         >
           {t("postNew")}
         </Button>

@@ -9,6 +9,8 @@ export interface AttendanceRecord {
   checkOutTime?: string;
   isLate: boolean;
   lateReason?: string;
+  workedMinutes?: number;
+  otMinutes?: number;
   note?: string;
 }
 
@@ -19,6 +21,8 @@ export interface TodayStatus {
   checkOutTime?: string;
   isLate: boolean;
   lateReason?: string;
+  workedMinutes?: number;
+  otMinutes?: number;
   regulations: {
     checkIn: string;
     checkOut: string;
@@ -61,6 +65,11 @@ export const attendanceService = {
 
   delete: async (id: number) => {
     const response = await api.delete(`/Attendance/${id}`);
+    return response.data;
+  },
+
+  bulkDelete: async (ids: number[]) => {
+    const response = await api.post("/Attendance/bulk-delete", ids);
     return response.data;
   },
 
