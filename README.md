@@ -6,11 +6,10 @@ Dự án quản lý nhân sự (HRM) được xây dựng trên nền tảng **A
 
 Vui lòng tham khảo bộ tài liệu được chuẩn hóa dưới đây:
 
-1. **[01. Kiến trúc Hệ thống](docs/01-Architecture.md)**: Tổng quan về cấu trúc thư mục, mô hình dữ liệu và sơ đồ khối.
+1. **[01. Kiến trúc Hệ thống](docs/01-Architecture.md)**: Tổng quan về cấu trúc thư mục (Tree View chi tiết), mô hình dữ liệu và sơ đồ khối.
 2. **[02. Hướng dẫn Phát triển](docs/02-Development.md)**: Tiêu chuẩn lập trình, quy tắc đa ngôn ngữ và quy trình thêm module mới.
 3. **[03. Tính năng & Nghiệp vụ](docs/03-Features.md)**: Chi tiết về Chấm công, Nghỉ phép, Tuyển dụng và SignalR Realtime.
-4. **[04. Cấu hình Hệ thống](docs/04-Configuration.md)**: Hướng dẫn thiết lập biến môi trường và kết nối API.
-5. **[05. Kế hoạch & Roadmap](docs/05-Roadmap.md)**: Trạng thái dự án và các đầu việc sắp tới.
+4. **[04. Kế hoạch & Roadmap](docs/04-Roadmap.md)**: Trạng thái dự án và các đầu việc sắp tới.
 
 ## 🛠 Công nghệ cốt lõi
 
