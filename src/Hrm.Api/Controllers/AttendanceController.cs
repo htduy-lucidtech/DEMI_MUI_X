@@ -95,7 +95,7 @@ namespace Hrm.Api.Controllers
             {
                 UserId = null,
                 Title = "Nhân viên điểm danh",
-                Message = $"User {userId} đã check-out (ID: {attendance.Id})",
+                Message = $"User {userId} đã check-out",
                 Type = "Attendance"
             };
             await _notificationService.CreateAndSendAsync(roleNotifOut, "Manager");
@@ -112,7 +112,7 @@ namespace Hrm.Api.Controllers
             {
                 UserId = null,
                 Title = "Yêu cầu sửa chấm công",
-                Message = $"User {userId} đã gửi yêu cầu sửa chấm công (ID: {correction.Id})",
+                Message = $"User {userId} đã gửi yêu cầu sửa chấm công",
                 Type = "Attendance"
             };
             await _notificationService.CreateAndSendAsync(corrRoleNotif, "Manager");
@@ -159,7 +159,7 @@ namespace Hrm.Api.Controllers
             {
                 UserId = corr.UserId,
                 Title = "Kết quả sửa chấm công",
-                Message = $"Yêu cầu sửa chấm công (ID: {corr.Id}) đã được {corr.Status}",
+                Message = $"Yêu cầu sửa chấm công đã được {corr.Status}",
                 Type = "Attendance",
                 MetaJson = JsonSerializer.Serialize(new { type = "attendance:correction:result", data = corr })
             };
@@ -169,7 +169,7 @@ namespace Hrm.Api.Controllers
             {
                 UserId = null,
                 Title = "Kết quả sửa chấm công",
-                Message = $"Yêu cầu sửa chấm công (ID: {corr.Id}) đã được {corr.Status}",
+                Message = $"Yêu cầu sửa chấm công đã được {corr.Status}",
                 Type = "Attendance"
             };
             await _notificationService.CreateAndSendAsync(personnelNotif, "Personnel");
@@ -194,8 +194,6 @@ namespace Hrm.Api.Controllers
                     a.IsLate,
                     a.LateReason,
                     a.Note,
-                    a.WorkedMinutes,
-                    a.OtMinutes,
                     FullName = (a.User != null && a.User.Employee != null) ? a.User.Employee.FullName : (a.User != null ? a.User.Username : "N/A")
                 })
                 .ToListAsync();
@@ -222,8 +220,6 @@ namespace Hrm.Api.Controllers
                 CheckOutTime = attendance?.CheckOutTime,
                 IsLate = attendance?.IsLate ?? false,
                 LateReason = attendance?.LateReason,
-                WorkedMinutes = attendance?.WorkedMinutes,
-                OtMinutes = attendance?.OtMinutes,
                 Regulations = new {
                     CheckIn = settings.GetValueOrDefault("StandardCheckInTime", "08:30"),
                     CheckOut = settings.GetValueOrDefault("StandardCheckOutTime", "17:30")
@@ -255,11 +251,7 @@ namespace Hrm.Api.Controllers
             var now = DateTime.UtcNow;
             var standardTime = TimeSpan.Parse(standardTimeStr);
             
-            // Convert UTC to SE Asia Standard Time (Vietnam +7)
-            var vnZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
-            var nowVn = TimeZoneInfo.ConvertTimeFromUtc(now, vnZone);
-            
-            var isLate = nowVn.TimeOfDay > standardTime;
+            var isLate = now.TimeOfDay > standardTime;
 
             var attendance = new Hrm.Domain.Entities.Attendance
             {
@@ -292,7 +284,7 @@ namespace Hrm.Api.Controllers
             {
                 UserId = null,
                 Title = "Nhân viên điểm danh",
-                Message = $"User {userId} đã check-in (ID: {attendance.Id})",
+                Message = $"User {userId} đã check-in",
                 Type = "Attendance"
             };
             await _notificationService.CreateAndSendAsync(legRoleNotif, "Manager");
@@ -333,51 +325,12 @@ namespace Hrm.Api.Controllers
             {
                 UserId = null,
                 Title = "Nhân viên điểm danh",
-                Message = $"User {userId} đã check-out (ID: {attendance.Id})",
+                Message = $"User {userId} đã check-out",
                 Type = "Attendance"
             };
             await _notificationService.CreateAndSendAsync(legRoleNotifOut, "Manager");
 
             return Ok(attendance);
-        }
-
-        [HttpPost("bulk-delete")]
-        [Authorize(Roles = "Admin,Personnel,Manager")]
-        public async Task<IActionResult> DeleteAttendances([FromBody] List<int> ids)
-        {
-            var attendances = await _context.Attendances.Where(a => ids.Contains(a.Id)).ToListAsync();
-            if (!attendances.Any()) return NotFound();
-
-            _context.Attendances.RemoveRange(attendances);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
-        }
-
-        [HttpGet("regulations")]
-        [Authorize(Roles = "Admin,Personnel,Manager")]
-        public async Task<IActionResult> GetRegulations()
-        {
-            var settings = await _context.SystemSettings
-                .Where(s => s.Category == "Attendance" || s.Key == "StandardCheckInTime" || s.Key == "StandardCheckOutTime")
-                .ToListAsync();
-            return Ok(settings);
-        }
-
-        [HttpPost("regulations")]
-        [Authorize(Roles = "Admin,Personnel,Manager")]
-        public async Task<IActionResult> UpdateRegulations([FromBody] List<SystemSetting> settings)
-        {
-            foreach (var setting in settings)
-            {
-                var existing = await _context.SystemSettings.FindAsync(setting.Id);
-                if (existing != null)
-                {
-                    existing.Value = setting.Value;
-                }
-            }
-            await _context.SaveChangesAsync();
-            return Ok(settings);
         }
     }
 

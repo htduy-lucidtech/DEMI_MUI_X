@@ -8,6 +8,8 @@ using Microsoft.OpenApi.Models;
 using System.Text;
 using System.Text.Json.Serialization;
 
+using Hrm.Api.Extensions;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -21,85 +23,18 @@ builder.Services.AddControllers()
 builder.Services.AddAuthorization();
 builder.Services.AddSignalR();
 
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "HRM API", Version = "v1" });
-    
-    // Cấu hình nút Authorize trên Swagger UI
-    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-    {
-        Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
-        Name = "Authorization",
-        In = ParameterLocation.Header,
-        Type = SecuritySchemeType.ApiKey,
-        Scheme = "Bearer"
-    });
 
-    c.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
-        {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
-                {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
-            },
-            new string[] {}
-        }
-    });
-});
+// 1. Swagger Configuration
+builder.Services.AddSwaggerConfiguration();
 
-// 1. Kết nối Database (Lấy chuỗi connection từ appsettings.json)
-builder.Services.AddDbContext<HrmDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+// 2. Register Application Services & Database
+builder.Services.AddApplicationServices(builder.Configuration);
 
-// 2. Cấu hình JWT Authentication
-var jwtSettings = builder.Configuration.GetSection("Jwt");
-var key = Encoding.ASCII.GetBytes(jwtSettings["Key"]!);
+// 3. JWT Authentication Configuration
+builder.Services.AddJwtAuthentication(builder.Configuration);
 
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options =>
-{
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
-        ValidIssuer = jwtSettings["Issuer"],
-        ValidAudience = jwtSettings["Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(key)
-    };
-    options.Events = new JwtBearerEvents
-    {
-        OnMessageReceived = context =>
-        {
-            var accessToken = context.Request.Query["access_token"].FirstOrDefault();
-            var path = context.HttpContext.Request.Path;
-            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/notificationHub"))
-            {
-                context.Token = accessToken;
-            }
-            return Task.CompletedTask;
-        }
-    };
-});
-
-// 3. Register Services
-builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<Hrm.Service.Interfaces.IAttendanceService, Hrm.Service.Implementations.AttendanceService>();
-// Notification service (implementation lives in Hrm.Api.Services)
-builder.Services.AddScoped<Hrm.Service.Interfaces.INotificationService, Hrm.Api.Services.NotificationService>();
-
-// 4. Cấu hình CORS (Cho phép Next.js truy cập)
+// 4. CORS Configuration
 builder.Services.AddCors(options => {
     options.AddPolicy("HrmPolicy", policy => {
         policy.WithOrigins("http://localhost:3000") // Port của hrm.web
