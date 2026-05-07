@@ -51,7 +51,14 @@ export default {
       manager: "Người quản lý",
       baseSalary: "Lương cơ bản",
       allowance: "Phụ cấp",
+      hourlyRate: "Lương theo giờ",
+      hourlyRateOT: "Lương tăng ca (OT)",
       idCard: "Thẻ nhân viên"
+    },
+    genders: {
+      male: "Nam",
+      female: "Nữ",
+      other: "Khác"
     }
   },
   dialog: {
@@ -67,6 +74,11 @@ export default {
     cancel: "Hủy",
     export_pdf: "Xuất PDF",
     print_card: "In thẻ",
-    id_card_title: "Thẻ nhân viên"
+    id_card_title: "Thẻ nhân viên",
+    sections: {
+      basic: "Thông tin cơ bản",
+      work_salary: "Công việc & Lương",
+      other: "Khác"
+    }
   }
 };

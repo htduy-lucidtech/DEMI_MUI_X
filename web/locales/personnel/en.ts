@@ -51,7 +51,14 @@ export default {
       manager: "Manager",
       baseSalary: "Base Salary",
       allowance: "Allowance",
+      hourlyRate: "Hourly Rate",
+      hourlyRateOT: "Overtime Rate",
       idCard: "ID Card"
+    },
+    genders: {
+      male: "Male",
+      female: "Female",
+      other: "Other"
     }
   },
   dialog: {
@@ -67,6 +74,11 @@ export default {
     cancel: "Cancel",
     export_pdf: "Export PDF",
     print_card: "Print Card",
-    id_card_title: "Employee ID Card"
+    id_card_title: "Employee ID Card",
+    sections: {
+      basic: "Basic Information",
+      work_salary: "Work & Salary",
+      other: "Other"
+    }
   }
 };
