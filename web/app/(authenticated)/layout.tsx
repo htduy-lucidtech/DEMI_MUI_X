@@ -11,7 +11,7 @@ import { useAuth } from "@/app/context/AuthContext";
 import { useEffect, useState } from "react";
 import * as signalR from "@microsoft/signalr";
 import { Snackbar, Alert } from "@mui/material";
-import { translate } from "@/locales/notification-i18n";
+
 
 export default function AuthenticatedLayout({
   children,
@@ -19,6 +19,7 @@ export default function AuthenticatedLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const t = useTranslations("Notifications");
   const router = useRouter();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
@@ -79,7 +80,7 @@ export default function AuthenticatedLayout({
                 }
               }
               if (meta?.messageKey) {
-                return translate(meta.messageKey, meta.messageParams);
+                return t(meta.messageKey as any, meta.messageParams);
               }
               if (typeof msg.message === "string") return msg.message;
               if (typeof msg.title === "string") return msg.title;
