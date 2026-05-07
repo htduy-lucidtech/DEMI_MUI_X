@@ -3,14 +3,17 @@
 ## 1. Kiến trúc dự án
 
 Sử dụng MUI cho giao diện frontend
-i18n viết theo cấu trúc :
+Đồng nhất cấu trúc i18n: Tất cả các module dùng chung thư mục `web/locales/`.
 Ví dụ:
-    login
-    ├── locales
-    │    ├──vi.ts
-    │    └──en.ts
-    └── page.tsx
 
+├── app/
+│   └──login
+|      └──page.tsx
+├── locales/
+|   └── login/
+|       ├──vi.ts
+|       └──en.ts
+└── i18n.ts
 .
 ├── src/                        # File Solution quản lý 4 Project Backend
 │   ├── Hrm.slnx
