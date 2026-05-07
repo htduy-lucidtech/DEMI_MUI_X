@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import useRealtimeRefresh from "@/lib/useRealtime";
+import useRealtimeRefresh from "@/hooks/useRealtime";
 import {
   Box,
   Typography,

@@ -32,7 +32,8 @@ import recruitmentVi from "./locales/recruitment/vi";
 import recruitmentEn from "./locales/recruitment/en";
 import performanceVi from "./locales/performance/vi";
 import performanceEn from "./locales/performance/en";
-import { notificationMessages } from "./lib/notification-i18n";
+import notificationVi from "./locales/notification/vi";
+import notificationEn from "./locales/notification/en";
 
 const messagesMap = {
   vi: {
@@ -51,7 +52,7 @@ const messagesMap = {
     Payroll: payrollVi,
     Recruitment: recruitmentVi,
     Performance: performanceVi,
-    Notifications: notificationMessages.vi,
+    Notifications: notificationVi,
   },
   en: {
     Login: loginEn,
@@ -69,7 +70,7 @@ const messagesMap = {
     Payroll: payrollEn,
     Recruitment: recruitmentEn,
     Performance: performanceEn,
-    Notifications: notificationMessages.en,
+    Notifications: notificationEn,
   }
 };
 

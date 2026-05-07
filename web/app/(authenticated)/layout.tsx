@@ -11,7 +11,7 @@ import { useAuth } from "@/app/context/AuthContext";
 import { useEffect, useState } from "react";
 import * as signalR from "@microsoft/signalr";
 import { Snackbar, Alert } from "@mui/material";
-import { translate } from "@/lib/notification-i18n";
+import { translate } from "@/locales/notification-i18n";
 
 export default function AuthenticatedLayout({
   children,

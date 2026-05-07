@@ -16,8 +16,8 @@ import {
   IconButton,
 } from "@mui/material";
 import { Check, Close } from "@mui/icons-material";
-import api from "@/lib/api";
-import useRealtimeRefresh from "@/lib/useRealtime";
+import api from "@/services/api";
+import useRealtimeRefresh from "@/hooks/useRealtime";
 
 export default function CorrectionsPanel() {
   const [open, setOpen] = useState(false);
