@@ -1,55 +1,94 @@
-# 💻 Hướng dẫn Phát triển (Development Guide)
+# Hướng dẫn Đa ngôn ngữ (i18n)
 
-Tài liệu này quy định các tiêu chuẩn lập trình, quy trình thêm mới tính năng và cách vận hành hệ thống HRM Pro dành cho lập trình viên.
+Hệ thống HRM sử dụng thư viện `next-intl` để triển khai đa ngôn ngữ với chiến lược "Không tiền tố" (No-prefix strategy), trong đó ngôn ngữ được xác định dựa trên Cookie.
 
-## 1. Tiêu chuẩn Backend (API Standards)
+## 1. Tóm tắt và Cách hoạt động
 
-- **DTO First**: Tuyệt đối không trả về Entity trực tiếp. Luôn sử dụng DTO để tránh lỗi vòng lặp JSON và bảo mật thông tin.
-- **Dependency Injection**: Luôn đăng ký Service vào file `DependencyInjection.cs` của Project tương ứng. Giữ `Program.cs` sạch nhất có thể.
-- **Response**: Trả về đúng mã lỗi HTTP (400 cho lỗi logic, 401 cho Auth, 404 cho dữ liệu không tồn tại).
-- **DateTime**: Luôn sử dụng định dạng UTC (ISO 8601) khi lưu trữ và trả về API.
+### Tổng quan
+- **Thư viện**: `next-intl` (phiên bản mới nhất tương thích Next.js 15 App Router).
+- **Ngôn ngữ hỗ trợ**: Tiếng Việt (`vi`) và Tiếng Anh (`en`). Ngôn ngữ mặc định là `vi`.
+- **Cơ chế lưu trữ**: Ngôn ngữ được lưu trong Cookie có tên `NEXT_LOCALE`.
+- **Phạm vi**: Áp dụng cho cả Server Components và Client Components.
 
----
-
-## 2. Tiêu chuẩn Frontend (UI Standards)
-
-- **No Hardcoded Text**: Tuyệt đối không viết chữ trực tiếp vào file `.tsx`. Mọi nội dung hiển thị phải thông qua `next-intl`.
-- **Component Reuse**: Nếu một thành phần UI xuất hiện ở 2 trang trở lên, hãy đưa nó vào `web/components/`.
-- **API Services**: Không gọi Axios trực tiếp trong Component. Luôn khai báo hàm trong `web/services/` và sử dụng tại Component.
-
----
-
-## 3. Hệ thống Đa ngôn ngữ (i18n)
-
-Chúng ta sử dụng `next-intl` với cấu trúc tập trung:
-- **Vị trí**: `web/locales/[module]/[vi|en].ts`.
-- **Sử dụng**: 
-  ```tsx
-  const t = useTranslations("Personnel");
-  return <span>{t("fullName")}</span>;
-  ```
-- **Lưu ý**: Khi thêm module mới, bắt buộc phải khai báo file locale và đăng ký vào `web/i18n.ts`.
+### Luồng hoạt động
+1. Người dùng thay đổi ngôn ngữ trên giao diện (Navbar).
+2. Hệ thống cập nhật giá trị `vi` hoặc `en` vào Cookie `NEXT_LOCALE`.
+3. Trang web được tải lại (`window.location.reload()`).
+4. File `web/i18n.ts` đọc giá trị từ Cookie và cung cấp bộ tin nhắn (messages) tương ứng cho toàn bộ ứng dụng thông qua `NextIntlClientProvider` (trong `layout.tsx`).
 
 ---
 
-## 4. Quy trình thêm Module mới
+## 2. Chi tiết triển khai vào code
 
-Để thêm một module chức năng mới (Ví dụ: `Insurance` - Bảo hiểm):
+### Cấu trúc thư mục locales (Centralized)
+Để quản lý dễ dàng và tránh phân mảnh, toàn bộ các bản dịch được tập trung tại thư mục `web/locales/`.
 
-1. **Backend**: 
-   - Tạo Entity trong `Hrm.Domain`.
-   - Tạo Service/Interface trong `Hrm.Service`.
-   - Tạo Controller trong `Hrm.Api`.
-2. **Frontend Service**: Tạo `web/services/insurance.service.ts`.
-3. **Frontend Locales**: Tạo `web/locales/insurance/` (vi.ts, en.ts) và đăng ký vào `i18n.ts`.
-4. **Frontend UI**:
-   - Tạo folder `web/components/insurance/` cho các Dialog/Table.
-   - Tạo Page tại `web/app/(authenticated)/dashboard/insurance/page.tsx`.
-5. **Navigation**: Cập nhật `web/components/layout/NavLinks.tsx` để hiển thị trên Sidebar.
+Cấu trúc:
+```text
+web/locales/
+├── personnel/           # Module Nhân sự
+│   ├── vi.ts
+│   └── en.ts
+├── attendance/          # Module Chấm công
+├── notification/        # Thông báo Realtime
+└── ...
+```
+
+### Đăng ký module mới trong `web/i18n.ts`
+Khi tạo module mới, bạn phải import và đăng ký vào `messagesMap` trong `web/i18n.ts`:
+
+```typescript
+// 1. Import (Luôn dùng đường dẫn tương đối từ gốc locales)
+import myModuleVi from "./locales/my-module/vi";
+import myModuleEn from "./locales/my-module/en";
+
+// 2. Thêm vào messagesMap
+const messagesMap = {
+  vi: {
+    // ... các module khác
+    MyModule: myModuleVi,
+  },
+  en: {
+    // ... các module khác
+    MyModule: myModuleEn,
+  }
+};
+```
+
+### Sử dụng trong Code
+
+#### A. Trong Client Components
+Sử dụng hook `useTranslations`:
+
+```tsx
+"use client";
+import { useTranslations } from "next-intl";
+
+export default function MyComponent() {
+  const t = useTranslations("MyModule"); // Key đã đăng ký trong messagesMap
+  
+  return <h1>{t("title")}</h1>;
+}
+```
+
+#### B. Trong Server Components
+Sử dụng hàm async `getTranslations`:
+
+```tsx
+import { getTranslations } from "next-intl/server";
+
+export default async function MyServerPage() {
+  const t = await getTranslations("MyModule");
+  
+  return <div>{t("description")}</div>;
+}
+```
+
+### Cách thêm bản dịch mới
+1. Tìm thư mục tương ứng trong `web/locales/` (hoặc tạo mới nếu là module mới).
+2. Thêm key-value vào file `vi.ts`.
+3. Thêm key tương tự vào file `en.ts` với giá trị tiếng Anh.
+4. Sử dụng `t("key_vừa_thêm")` trong component.
 
 ---
-
-## 5. Kết nối BE - FE
-
-- **API URL**: Cấu hình tại `web/.env.local` thông qua biến `NEXT_PUBLIC_API_URL`.
-- **Authentication**: Token JWT được tự động đính kèm vào Header của mọi request thông qua cấu hình trong `web/services/api.ts`.
+*Lưu ý: Luôn đảm bảo tất cả các text hiển thị trên UI (nhãn, nút, thông báo, placeholder) đều được bọc qua hàm `t()` để đảm bảo tính nhất quán của hệ thống.*

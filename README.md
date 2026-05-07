@@ -4,38 +4,35 @@ Dự án quản lý nhân sự (HRM) được xây dựng trên nền tảng **A
 
 ## 📚 Tài liệu Hệ thống
 
-Vui lòng tham khảo các tài liệu chuyên sâu dưới đây để nắm vững dự án:
+Vui lòng tham khảo bộ tài liệu được chuẩn hóa dưới đây:
 
-1. **[01. Kiến trúc Hệ thống](docs/01-architecture.md)**: Tổng quan về Tech Stack, sơ đồ thư mục và mô hình dữ liệu (BE & FE).
-2. **[02. Hướng dẫn Phát triển](docs/02-development.md)**: Các tiêu chuẩn lập trình, quy tắc đa ngôn ngữ và quy trình thêm tính năng mới.
-3. **[03. Tính năng & Nghiệp vụ](docs/03-features.md)**: Chi tiết về Chấm công, Nghỉ phép, Tuyển dụng và cơ chế Realtime SignalR.
-4. **[04. Kế hoạch & Roadmap](docs/04-roadmap.md)**: Trạng thái triển khai và các hạng mục công việc trong tương lai.
+1. **[01. Kiến trúc Hệ thống](docs/01-Architecture.md)**: Tổng quan về cấu trúc thư mục, mô hình dữ liệu và sơ đồ khối.
+2. **[02. Hướng dẫn Phát triển](docs/02-Development.md)**: Tiêu chuẩn lập trình, quy tắc đa ngôn ngữ và quy trình thêm module mới.
+3. **[03. Tính năng & Nghiệp vụ](docs/03-Features.md)**: Chi tiết về Chấm công, Nghỉ phép, Tuyển dụng và SignalR Realtime.
+4. **[04. Cấu hình Hệ thống](docs/04-Configuration.md)**: Hướng dẫn thiết lập biến môi trường và kết nối API.
+5. **[05. Kế hoạch & Roadmap](docs/05-Roadmap.md)**: Trạng thái dự án và các đầu việc sắp tới.
 
 ## 🛠 Công nghệ cốt lõi
 
 ### Backend (.NET 9)
 - Clean Architecture (Domain, Infrastructure, Service, API).
-- Entity Framework Core (SQL Server).
-- SignalR (Realtime Communication).
-- JWT Authentication.
+- Entity Framework Core & SQL Server.
+- SignalR Realtime Communication.
 
 ### Frontend (Next.js 15)
-- App Router & Server Components.
-- Material UI (MUI) v6.
-- next-intl (Centralized Localization).
+- App Router & Material UI v6.
+- next-intl (Centralized Locales).
 - Axios (Centralized API Service).
 
 ## 🚀 Cách chạy dự án
 
 ### Backend
 1. Mở `src/Hrm.slnx` bằng Visual Studio.
-2. Cấu hình Connection String trong `appsettings.json`.
-3. Chạy Project `Hrm.Api`.
+2. Chạy Project `Hrm.Api`.
 
 ### Frontend
 1. Mở thư mục `web/`.
-2. Chạy `npm install`.
-3. Chạy `npm run dev` (truy cập `localhost:3000`).
+2. Chạy `npm install` và `npm run dev`.
 
 ---
 *Duy trì và phát triển bởi Đội ngũ Kỹ thuật HRM Pro.*
