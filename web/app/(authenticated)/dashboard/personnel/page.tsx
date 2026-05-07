@@ -42,8 +42,8 @@ import {
 import { DataGrid, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 import { useTranslations } from "next-intl";
 import { employeeService, Employee } from "@/services/employee.service";
-import CustomNoRowsOverlay from "@/app/components/CustomNoRowsOverlay";
-import EmployeeDialog from "./components/EmployeeDialog";
+import CustomNoRowsOverlay from "@/components/CustomNoRowsOverlay";
+import EmployeeDialog from "@/components/personnel/EmployeeDialog";
 // Heavy libraries will be imported dynamically
 
 export default function PersonnelPage() {
@@ -291,7 +291,7 @@ export default function PersonnelPage() {
                 <EditIcon fontSize="small" />
               </IconButton>
             </Tooltip>
-            <Tooltip title="Xem chi tiáº¿t">
+            <Tooltip title={t("details.title")}>
               <IconButton
                 size="small"
                 onClick={() => handleViewDetails(params.row)}
@@ -362,13 +362,13 @@ export default function PersonnelPage() {
           />
 
           {/* Right Side: Action Buttons & Refresh */}
-          <Stack 
-            direction="row" 
-            spacing={1} 
-            sx={{ 
-              alignItems: "center", 
+          <Stack
+            direction="row"
+            spacing={1}
+            sx={{
+              alignItems: "center",
               justifyContent: { xs: "space-between", md: "flex-end" },
-              width: { xs: "100%", md: "auto" } 
+              width: { xs: "100%", md: "auto" }
             }}
           >
             <Stack direction="row" spacing={1}>
@@ -475,13 +475,13 @@ export default function PersonnelPage() {
               </IconButton>
             </Box>
 
-            <Box 
-              sx={{ 
-                display: "flex", 
+            <Box
+              sx={{
+                display: "flex",
                 flexDirection: { xs: "column", sm: "row" },
-                alignItems: { xs: "flex-start", sm: "center" }, 
-                gap: 2, 
-                mb: 2 
+                alignItems: { xs: "flex-start", sm: "center" },
+                gap: 2,
+                mb: 2
               }}
             >
               <Avatar
@@ -554,10 +554,10 @@ export default function PersonnelPage() {
                     </Typography>
                     <Typography sx={{ fontWeight: 600 }}>
                       {selectedEmployee.gender === "Male"
-                        ? "Nam"
+                        ? t("details.genders.male")
                         : selectedEmployee.gender === "Female"
-                          ? "Ná»¯"
-                          : "KhÃ¡c"}
+                          ? t("details.genders.female")
+                          : t("details.genders.other")}
                     </Typography>
                   </Box>
                   <Box>
@@ -567,8 +567,8 @@ export default function PersonnelPage() {
                     <Typography sx={{ fontWeight: 600 }}>
                       {selectedEmployee.dateOfBirth
                         ? new Date(
-                            selectedEmployee.dateOfBirth,
-                          ).toLocaleDateString()
+                          selectedEmployee.dateOfBirth,
+                        ).toLocaleDateString()
                         : "N/A"}
                     </Typography>
                   </Box>

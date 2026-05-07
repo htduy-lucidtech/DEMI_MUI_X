@@ -43,9 +43,9 @@ import {
   TodayStatus,
   SystemSetting,
 } from "@/services/attendance.service";
-import CustomNoRowsOverlay from "@/app/components/CustomNoRowsOverlay";
-import CorrectionsPanel from "./CorrectionsPanel";
-import CheckInOut from "./CheckInOut";
+import CustomNoRowsOverlay from "@/components/CustomNoRowsOverlay";
+import CorrectionsPanel from "@/components/attendance/CorrectionsPanel";
+import CheckInOut from "@/components/attendance/CheckInOut";
 
 export default function AttendancePage() {
   const t = useTranslations("Attendance");

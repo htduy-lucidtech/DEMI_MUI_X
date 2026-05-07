@@ -17,6 +17,8 @@ export interface Employee {
   department?: any;
   baseSalary: number;
   allowance: number;
+  hourlyRate?: number;
+  hourlyRateOT?: number;
   account?: any;
 }
 

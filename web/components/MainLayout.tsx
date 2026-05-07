@@ -13,9 +13,9 @@ import {
   Menu,
   Divider,
 } from "@mui/material";
-import NavLinks from "@/app/nav-links";
+import NavLinks from "@/components/layout/nav-links";
 import { useTranslations } from "next-intl";
-import ProtectedRoute from "@/app/components/ProtectedRoute";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import { useAuth, Role } from "@/app/context/AuthContext";
 import { usePathname, useRouter } from "next/navigation";
 import ShieldMoonIcon from "@mui/icons-material/ShieldMoon";

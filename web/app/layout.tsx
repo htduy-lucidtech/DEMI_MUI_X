@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getLocale, getTranslations } from "next-intl/server";
-import { Providers } from "@/app/components/Providers";
+import { Providers } from "@/components/Providers";
 
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
 

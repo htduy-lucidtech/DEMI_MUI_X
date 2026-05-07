@@ -31,7 +31,7 @@ import {
   JobPosting,
   Candidate,
 } from "@/services/recruitment.service";
-import CustomNoRowsOverlay from "@/app/components/CustomNoRowsOverlay";
+import CustomNoRowsOverlay from "@/components/CustomNoRowsOverlay";
 import { useTranslations } from "next-intl";
 
 export default function RecruitmentPage() {

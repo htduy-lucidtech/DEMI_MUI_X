@@ -3,8 +3,8 @@
 import React from "react";
 import { NotificationProvider } from "./context/NotificationContext";
 import { Box, CssBaseline, useMediaQuery, useTheme } from "@mui/material";
-import Sidebar from "@/app/components/layout/Sidebar";
-import Navbar from "@/app/components/layout/Navbar";
+import Sidebar from "@/components/layout/Sidebar";
+import Navbar from "@/components/layout/Navbar";
 import { usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useAuth } from "@/app/context/AuthContext";

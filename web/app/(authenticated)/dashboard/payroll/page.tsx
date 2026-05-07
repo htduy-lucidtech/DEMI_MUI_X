@@ -19,7 +19,7 @@ import {
   CalculateOutlined as CalcIcon,
   DownloadOutlined as DownloadIcon
 } from "@mui/icons-material";
-import CustomNoRowsOverlay from "@/app/components/CustomNoRowsOverlay";
+import CustomNoRowsOverlay from "@/components/CustomNoRowsOverlay";
 import { useTranslations } from "next-intl";
 import { payrollService, PayrollRecord } from "@/services/payroll.service";
 
