@@ -1,104 +1,136 @@
 # Kế hoạch Triển khai Docker (Docker Deployment Plan)
 
-Tài liệu này trình bày kế hoạch chi tiết để đóng gói (containerize) và triển khai hệ thống HRM (Human Resource Management) bằng Docker và Docker Compose.
+Tài liệu này trình bày kế hoạch chi tiết để đóng gói (containerize) và triển khai hệ thống HRM bằng Docker và Docker Compose.
+
+> **Trạng thái**: ✅ Đã hoàn thành triển khai
 
 ## 1. Kiến trúc Triển khai
 
-Hệ thống sẽ được chia thành các container riêng biệt để đảm bảo tính module và dễ quản lý:
+Hệ thống được chia thành 3 container riêng biệt, giao tiếp qua internal network `hrm-network`:
 
-- **Frontend Container**: Chạy ứng dụng Next.js (chế độ Production).
-- **Backend Container**: Chạy ứng dụng ASP.NET Core API.
-- **Database Container**: Chạy Microsoft SQL Server (Linux-based).
+```
+┌─────────────────────────────────────────────────────┐
+│  Host Machine                                       │
+│                                                     │
+│   :3000 ──► [hrm-web]   Next.js Frontend           │
+│   :8203 ──► [hrm-api]   ASP.NET Core 9 API         │
+│   :5432 ──► [hrm-db]    PostgreSQL 16               │
+│                                                     │
+│  [ hrm-network (bridge) ] ─────────────────────     │
+└─────────────────────────────────────────────────────┘
+```
+
+| Container   | Image                   | Port  | Role          |
+|-------------|------------------------|-------|---------------|
+| `hrm-db`    | `postgres:16-alpine`   | 5432  | Database      |
+| `hrm-api`   | Custom (built locally) | 8203  | REST API      |
+| `hrm-web`   | Custom (built locally) | 3000  | Frontend UI   |
 
 ## 2. Chiến lược Container hóa
 
-### 2.1 Backend (ASP.NET Core)
-- **Dockerfile**: Sử dụng Multi-stage build.
-  - Stage 1: Build bằng `.NET SDK 8.0`.
-  - Stage 2: Publish output.
-  - Stage 3: Runtime bằng `.NET ASPNET 8.0` (Alpine/Debian Slim để tối ưu dung lượng).
-- **Cấu hình**: Sử dụng Environment Variables để ghi đè `appsettings.json` cho Connection String và JWT Secrets.
+### 2.1 Backend (ASP.NET Core 9)
+
+**File**: `src/Hrm.Api/Dockerfile`
+
+- **Stage 1 (restore)**: Copy `.csproj` files → `dotnet restore` → cache layer.
+- **Stage 2 (publish)**: Copy source code → `dotnet publish -c Release`.
+- **Stage 3 (final)**: Runtime image `aspnet:9.0`, non-root user `appuser`.
+
+```dockerfile
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS restore
+# ... restore only
+FROM restore AS publish
+# ... full build + publish
+FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS final
+# ... runtime only (smallest image)
+```
 
 ### 2.2 Frontend (Next.js)
-- **Dockerfile**: Multi-stage build.
-  - Stage 1: Install dependencies (`node:18-alpine` hoặc mới hơn).
-  - Stage 2: Build ứng dụng (`npm run build`).
-  - Stage 3: Chạy bằng `standalone mode` (tính năng của Next.js giúp giảm dung lượng image đáng kể).
-- **Cấu hình**: Sử dụng `.env.production` để cấu hình API URL trỏ đến Backend container.
 
-### 2.3 Database (SQL Server)
-- **Image**: `mcr.microsoft.com/mssql/server:2022-latest`.
-- **Dữ liệu**: Gắn Volume (`docker volume`) để đảm bảo dữ liệu không bị mất khi container restart hoặc delete.
+**File**: `web/Dockerfile`
+
+- **Stage 1 (deps)**: `node:20-alpine`, copy `package.json` → `npm ci`.
+- **Stage 2 (builder)**: Build với `npm run build` (Next.js standalone mode).
+- **Stage 3 (runner)**: Copy `.next/standalone` chỉ (~10MB vs ~300MB đầy đủ).
+
+> **Standalone mode** được bật trong `next.config.ts`:
+> ```ts
+> output: "standalone"
+> ```
+
+### 2.3 Database (PostgreSQL 16)
+
+- **Image**: `postgres:16-alpine` (phù hợp với Npgsql đang dùng trong project).
+- **Volume**: `hrm_postgres_data` đảm bảo dữ liệu bền vững.
+- **Health check**: Backend `depends_on` DB với `condition: service_healthy`.
 
 ## 3. Cấu hình Docker Compose
 
-Tệp `docker-compose.yml` sẽ điều phối các dịch vụ:
+**File**: `docker-compose.yml`
 
 ```yaml
-version: '3.8'
-
 services:
-  db:
-    image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: hrm-db
-    environment:
-      - ACCEPT_EULA=Y
-      - MSSQL_SA_PASSWORD=YourStrongPassword123!
-    ports:
-      - "1433:1433"
-    volumes:
-      - mssql_data:/var/opt/mssql
+  db:       # PostgreSQL với health check
+  backend:  # ASP.NET API, chờ DB healthy mới start
+  frontend: # Next.js standalone
 
-  backend:
-    build:
-      context: .
-      dockerfile: src/Hrm.Api/Dockerfile
-    container_name: hrm-api
-    depends_on:
-      - db
-    environment:
-      - ConnectionStrings__DefaultConnection=Server=db;Database=HrmDb;User Id=sa;Password=YourStrongPassword123!;TrustServerCertificate=True
-      - ASPNETCORE_ENVIRONMENT=Production
-    ports:
-      - "8203:8080"
-
-  frontend:
-    build:
-      context: ./web
-      dockerfile: Dockerfile
-    container_name: hrm-web
-    depends_on:
-      - backend
-    environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:8203/api
-    ports:
-      - "3000:3000"
+networks:
+  hrm-network: { driver: bridge }
 
 volumes:
-  mssql_data:
+  postgres_data: { name: hrm_postgres_data }
 ```
 
-## 4. Lộ trình Triển khai (Roadmap)
+**Thứ tự khởi động**: `db` → `backend` (sau khi DB healthy) → `frontend`
 
-### Bước 1: Chuẩn bị (Ngày 1)
-- Tạo `.dockerignore` cho cả Frontend và Backend để tối ưu tốc độ build.
-- Viết `Dockerfile` cho Backend API.
-- Viết `Dockerfile` cho Frontend Next.js.
+## 4. Quản lý Secrets / Biến Môi Trường
 
-### Bước 2: Cấu hình Môi trường (Ngày 1-2)
-- Thiết lập `docker-compose.yml`.
-- Cấu hình mạng (Networks) để Backend có thể kết nối với DB qua tên dịch vụ (`db`).
-- Kiểm tra kết nối và seeding dữ liệu ban đầu.
+**File**: `.env.example` → Copy thành `.env` (không commit vào git).
 
-### Bước 3: Tối ưu hóa & Bảo mật (Ngày 2)
-- Chuyển sang sử dụng `non-root user` trong container để tăng tính bảo mật.
-- Cấu hình Nginx làm Reverse Proxy (nếu cần) để hỗ trợ HTTPS/SSL.
-- Tối ưu kích thước image (sử dụng Alpine images).
+| Biến                | Mô tả                              | Default         |
+|---------------------|------------------------------------|-----------------|
+| `DB_PASSWORD`       | Mật khẩu PostgreSQL                | `postgres`      |
+| `JWT_SECRET`        | JWT signing key (≥ 32 ký tự)      | (placeholder)   |
 
-### Bước 4: Kiểm thử & Bàn giao (Ngày 3)
-- Kiểm tra hiệu năng container.
-- Viết hướng dẫn lệnh `docker compose up -d` để triển khai một chạm.
+> ⚠️ File `.env` đã được thêm vào `.gitignore`. **KHÔNG BAO GIỜ commit file `.env`**.
 
-## 5. Lưu ý Quan trọng
-- **Bảo mật**: Tuyệt đối không lưu mật khẩu SA hoặc JWT Secret trong git. Sử dụng tệp `.env` hoặc Docker Secrets.
-- **Tốc độ**: Sử dụng Cache Layer hiệu quả bằng cách copy `package.json` hoặc `.csproj` trước khi copy toàn bộ code.
+## 5. Lệnh Triển khai
+
+### Lần đầu tiên
+```bash
+# 1. Copy và cấu hình biến môi trường
+cp .env.example .env
+# (Chỉnh sửa .env với mật khẩu mạnh)
+
+# 2. Build và khởi chạy toàn bộ hệ thống
+docker compose up -d --build
+
+# 3. Kiểm tra trạng thái
+docker compose ps
+docker compose logs -f backend
+```
+
+### Các lệnh thường dùng
+```bash
+# Xem logs real-time
+docker compose logs -f
+
+# Restart một service
+docker compose restart backend
+
+# Dừng hệ thống (giữ data)
+docker compose down
+
+# Dừng và xóa sạch data
+docker compose down -v
+
+# Rebuild chỉ 1 service
+docker compose up -d --build backend
+```
+
+## 6. Lưu ý Quan trọng
+
+- **CORS**: Backend tự đọc `CORS__AllowedOrigins` từ biến môi trường, không cần sửa code khi đổi domain.
+- **Migration**: `ApplyMigrationsOnStartup=true` trong compose — backend tự chạy EF migration khi start.
+- **Seeding**: `SeedDatabase=true` — dữ liệu mẫu tự được tạo lần đầu.
+- **API URL Frontend**: `NEXT_PUBLIC_API_URL` trong Dockerfile được truyền vào lúc build. Khi deploy lên server thật, đổi `http://localhost:8203/api` thành domain thực tế.
