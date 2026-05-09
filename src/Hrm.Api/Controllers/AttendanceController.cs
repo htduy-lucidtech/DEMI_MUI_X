@@ -177,14 +177,24 @@ namespace Hrm.Api.Controllers
             return Ok(corr);
         }
 
-        // Compatibility endpoints used by existing frontend
         [HttpGet]
-        [AllowAnonymous]
         public async Task<IActionResult> GetAttendances()
         {
-            var data = await _context.Attendances
+            var userId = GetUserId();
+            var isAdminOrHR = User.IsInRole("Admin") || User.IsInRole("Manager") || User.IsInRole("Personnel");
+
+            var query = _context.Attendances
                 .Include(a => a.User)
                     .ThenInclude(u => u!.Employee)
+                .AsQueryable();
+
+            // TỐI ƯU: Lọc ngay tại database dựa trên quyền hạn
+            if (!isAdminOrHR)
+            {
+                query = query.Where(a => a.UserId == userId);
+            }
+
+            var data = await query
                 .OrderByDescending(a => a.CheckInTime)
                 .Select(a => new {
                     a.Id,
@@ -200,10 +210,10 @@ namespace Hrm.Api.Controllers
             return Ok(data);
         }
 
-        [HttpGet("today-status/{userId}")]
-        [AllowAnonymous]
-        public async Task<IActionResult> GetTodayStatus(int userId)
+        [HttpGet("today-status")]
+        public async Task<IActionResult> GetTodayStatus()
         {
+            var userId = GetUserId();
             var today = DateTime.UtcNow.Date;
             var attendance = await _context.Attendances
                 .FirstOrDefaultAsync(a => a.UserId == userId && a.CheckInTime.Date == today);
@@ -227,120 +237,9 @@ namespace Hrm.Api.Controllers
             });
         }
 
-        public class CheckInRequest
-        {
-            public int UserId { get; set; }
-            public string? LateReason { get; set; }
-        }
 
-        public class CheckOutRequest
-        {
-            public int UserId { get; set; }
-        }
-
-        [HttpPost("check-in")]
-        [AllowAnonymous]
-        public async Task<IActionResult> CheckInLegacy([FromBody] CheckInRequest request)
-        {
-            var userId = request.UserId;
-            var today = DateTime.UtcNow.Date;
-            var existing = await _context.Attendances
-                .AnyAsync(a => a.UserId == userId && a.CheckInTime.Date == today);
-
-            if (existing) return BadRequest("Already checked in today");
-
-            var settings = await _context.SystemSettings
-                .FirstOrDefaultAsync(s => s.Key == "StandardCheckInTime");
-            
-            var standardTimeStr = settings?.Value ?? "08:30";
-            var now = DateTime.UtcNow;
-            var standardTime = TimeSpan.Parse(standardTimeStr);
-            
-            var isLate = now.TimeOfDay > standardTime;
-
-            var attendance = new Hrm.Domain.Entities.Attendance
-            {
-                UserId = userId,
-                CheckInTime = now,
-                IsLate = isLate,
-                LateReason = request.LateReason,
-                Note = isLate ? "Đi muộn" : "Đúng giờ",
-                CreatedAt = now
-            };
-
-            _context.Attendances.Add(attendance);
-            await _context.SaveChangesAsync();
-
-            var legUserNotif = new Notification
-            {
-                UserId = userId,
-                Title = "Check-in (legacy)",
-                Message = "Bạn đã điểm danh (check-in)",
-                Type = "Attendance",
-                MetaJson = JsonSerializer.Serialize(new {
-                    messageKey = "attendance.checkin",
-                    messageParams = new { attendanceId = attendance.Id },
-                    fallback = "Bạn đã điểm danh (check-in)"
-                })
-            };
-            await _notificationService.CreateAndSendAsync(legUserNotif);
-
-            var legRoleNotif = new Notification
-            {
-                UserId = null,
-                Title = "Nhân viên điểm danh",
-                Message = $"User {userId} đã check-in",
-                Type = "Attendance"
-            };
-            await _notificationService.CreateAndSendAsync(legRoleNotif, "Manager");
-
-            return Ok(attendance);
-        }
-
-        [HttpPost("check-out")]
-        [AllowAnonymous]
-        public async Task<IActionResult> CheckOutLegacy([FromBody] CheckOutRequest request)
-        {
-            var userId = request.UserId;
-            var today = DateTime.UtcNow.Date;
-            var attendance = await _context.Attendances
-                .FirstOrDefaultAsync(a => a.UserId == userId && a.CheckInTime.Date == today);
-
-            if (attendance == null) return BadRequest("No check-in record found for today");
-            if (attendance.CheckOutTime != null) return BadRequest("Already checked out today");
-
-            attendance.CheckOutTime = DateTime.UtcNow;
-            attendance.UpdatedAt = DateTime.UtcNow;
-            await _context.SaveChangesAsync();
-
-            var legUserNotifOut = new Notification
-            {
-                UserId = userId,
-                Title = "Check-out (legacy)",
-                Message = "Bạn đã điểm danh (check-out)",
-                Type = "Attendance",
-                MetaJson = JsonSerializer.Serialize(new {
-                    messageKey = "attendance.checkout",
-                    messageParams = new { attendanceId = attendance.Id },
-                    fallback = "Bạn đã điểm danh (check-out)"
-                })
-            };
-            await _notificationService.CreateAndSendAsync(legUserNotifOut);
-
-            var legRoleNotifOut = new Notification
-            {
-                UserId = null,
-                Title = "Nhân viên điểm danh",
-                Message = $"User {userId} đã check-out",
-                Type = "Attendance"
-            };
-            await _notificationService.CreateAndSendAsync(legRoleNotifOut, "Manager");
-
-            return Ok(attendance);
-        }
 
         [HttpGet("regulations")]
-        [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<SystemSetting>>> GetRegulations()
         {
             return await _context.SystemSettings

@@ -11,19 +11,28 @@ namespace Hrm.Api.Controllers
     {
         private readonly HrmDbContext _context;
 
+        private int GetUserIdFromToken()
+        {
+            var idClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            return int.TryParse(idClaim, out var id) ? id : 0;
+        }
+
         public DashboardController(HrmDbContext context)
         {
             _context = context;
         }
 
         [HttpGet("stats")]
-        public async Task<IActionResult> GetStats([FromQuery] int? userId = null)
+        public async Task<IActionResult> GetStats()
         {
             var today = DateTime.UtcNow.Date;
+            var userIdFromToken = GetUserIdFromToken();
+            var isEmployee = User.IsInRole("Employee");
             
-            // If userId is provided, return personalized stats
-            if (userId.HasValue)
+            // Nếu là Employee, bắt buộc trả về stats cá nhân
+            if (isEmployee)
             {
+                var userId = userIdFromToken;
                 var user = await _context.Users
                     .Include(u => u.Employee)
                     .FirstOrDefaultAsync(u => u.Id == userId);

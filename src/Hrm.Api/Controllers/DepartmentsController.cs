@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Hrm.Api.Controllers
 {
+    [Authorize(Roles = "Admin,Manager,Personnel")]
     [ApiController]
     [Route("api/[controller]")]
     public class DepartmentsController : ControllerBase

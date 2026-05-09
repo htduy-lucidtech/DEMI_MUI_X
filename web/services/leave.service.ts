@@ -17,12 +17,8 @@ export interface LeaveRequest {
 
 export const leaveService = {
   getAll: async (): Promise<LeaveRequest[]> => {
+    // TỐI ƯU: Backend tự lọc dữ liệu dựa trên Token
     const response = await api.get("/LeaveRequests");
-    return response.data;
-  },
-
-  getByUserId: async (userId: number): Promise<LeaveRequest[]> => {
-    const response = await api.get(`/LeaveRequests/user/${userId}`);
     return response.data;
   },
 

@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Hrm.Api.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class UsersController : ControllerBase
@@ -16,6 +17,7 @@ namespace Hrm.Api.Controllers
             _context = context;
         }
 
+        [Authorize(Roles = "Admin,Manager")]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<User>>> GetUsers()
         {
@@ -36,6 +38,7 @@ namespace Hrm.Api.Controllers
             return user;
         }
 
+        [Authorize(Roles = "Admin,Manager")]
         [HttpPost]
         public async Task<ActionResult<User>> CreateUser(User user)
         {
@@ -44,6 +47,7 @@ namespace Hrm.Api.Controllers
             return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
         }
 
+        [Authorize(Roles = "Admin,Manager")]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateUser(int id, User user)
         {
@@ -59,29 +63,24 @@ namespace Hrm.Api.Controllers
 
                 // Update basic fields
                 existingUser.Email = user.Email ?? existingUser.Email;
-                existingUser.Phone = user.Phone;
+                existingUser.Phone = user.Phone ?? existingUser.Phone;
+                existingUser.IsActive = user.IsActive;
+                existingUser.Role = user.Role ?? existingUser.Role;
+                existingUser.EmployeeId = user.EmployeeId != 0 ? user.EmployeeId : existingUser.EmployeeId;
                 
                 // Update nested employee if provided
                 if (user.Employee != null && existingUser.Employee != null)
                 {
                     existingUser.Employee.FullName = user.Employee.FullName ?? existingUser.Employee.FullName;
-                    existingUser.Employee.Email = user.Email ?? existingUser.Employee.Email; // Sync email
-                    
-                    // New fields
-                    existingUser.Employee.Gender = user.Employee.Gender ?? existingUser.Employee.Gender;
-                    existingUser.Employee.Address = user.Employee.Address ?? existingUser.Employee.Address;
-                    existingUser.Employee.IdentityCardNumber = user.Employee.IdentityCardNumber ?? existingUser.Employee.IdentityCardNumber;
-                    existingUser.Employee.BankAccountNumber = user.Employee.BankAccountNumber ?? existingUser.Employee.BankAccountNumber;
-                    existingUser.Employee.BankName = user.Employee.BankName ?? existingUser.Employee.BankName;
+                    existingUser.Employee.Email = existingUser.Email; // Sync email
                 }
 
                 await _context.SaveChangesAsync();
-                
                 return NoContent();
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = ex.Message, inner = ex.InnerException?.Message, stackTrace = ex.StackTrace });
+                return StatusCode(500, new { message = ex.Message });
             }
         }
 
@@ -90,6 +89,7 @@ namespace Hrm.Api.Controllers
             return _context.Users.Any(e => e.Id == id);
         }
 
+        [Authorize(Roles = "Admin,Manager")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(int id)
         {
@@ -100,6 +100,7 @@ namespace Hrm.Api.Controllers
             return NoContent();
         }
 
+        [Authorize(Roles = "Admin,Manager")]
         [HttpPost("bulk-delete")]
         public async Task<IActionResult> DeleteUsers([FromBody] List<int> ids)
         {
@@ -112,15 +113,6 @@ namespace Hrm.Api.Controllers
             return NoContent();
         }
 
-        [HttpPatch("{id}/toggle-active")]
-        public async Task<IActionResult> ToggleActive(int id)
-        {
-            var user = await _context.Users.FindAsync(id);
-            if (user == null) return NotFound();
-            user.IsActive = !user.IsActive;
-            await _context.SaveChangesAsync();
-            return Ok(new { isActive = user.IsActive });
-        }
 
         [HttpPost("{id}/change-password")]
         public async Task<IActionResult> ChangePassword(int id, ChangePasswordRequest request)

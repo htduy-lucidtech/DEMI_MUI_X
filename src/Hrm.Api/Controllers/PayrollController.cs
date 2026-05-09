@@ -8,6 +8,7 @@ using QuestPDF.Infrastructure;
 
 namespace Hrm.Api.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class PayrollController : ControllerBase
@@ -19,6 +20,7 @@ namespace Hrm.Api.Controllers
             _context = context;
         }
 
+        [Authorize(Roles = "Admin,Manager,Personnel")]
         [HttpGet("calculate/{month}/{year}")]
         public async Task<IActionResult> CalculateSalary(int month, int year)
         {
@@ -70,6 +72,7 @@ namespace Hrm.Api.Controllers
             return Ok(payrollList);
         }
 
+        [Authorize(Roles = "Admin,Manager,Personnel")]
         [HttpGet("export/excel/{month}/{year}")]
         public async Task<IActionResult> ExportExcel(int month, int year)
         {

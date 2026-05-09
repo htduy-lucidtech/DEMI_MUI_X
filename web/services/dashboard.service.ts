@@ -1,9 +1,9 @@
 import api from "@/lib/api";
 
 export const dashboardService = {
-  getStats: async (userId?: number) => {
-    const url = userId ? `/Dashboard/stats?userId=${userId}` : "/Dashboard/stats";
-    const response = await api.get(url);
+  getStats: async () => {
+    // TỐI ƯU: Backend tự nhận diện User qua Token
+    const response = await api.get("/Dashboard/stats");
     return response.data;
   },
 

@@ -16,6 +16,7 @@ namespace Hrm.Api.Controllers
         public string Reason { get; set; } = string.Empty;
     }
 
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class LeaveRequestsController : ControllerBase
@@ -32,9 +33,25 @@ namespace Hrm.Api.Controllers
         [HttpGet]
         public async Task<IActionResult> GetLeaveRequests()
         {
-            var data = await _context.LeaveRequests
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim) || !int.TryParse(userIdClaim, out var claimUserId))
+            {
+                return Unauthorized();
+            }
+
+            var isAdminOrHR = User.IsInRole("Admin") || User.IsInRole("Manager") || User.IsInRole("Personnel");
+
+            var query = _context.LeaveRequests
                 .Include(l => l.User)
                     .ThenInclude(u => u!.Employee)
+                .AsQueryable();
+
+            if (!isAdminOrHR)
+            {
+                query = query.Where(l => l.UserId == claimUserId);
+            }
+
+            var data = await query
                 .OrderByDescending(l => l.CreatedAt)
                 .Select(l => new {
                     l.Id,
@@ -53,30 +70,6 @@ namespace Hrm.Api.Controllers
             return Ok(data);
         }
 
-        [HttpGet("user/{userId}")]
-        public async Task<IActionResult> GetUserLeaveRequests(int userId)
-        {
-            var data = await _context.LeaveRequests
-                .Include(l => l.User)
-                    .ThenInclude(u => u!.Employee)
-                .Where(l => l.UserId == userId)
-                .OrderByDescending(l => l.CreatedAt)
-                .Select(l => new {
-                    l.Id,
-                    l.UserId,
-                    l.LeaveType,
-                    l.StartDate,
-                    l.EndDate,
-                    l.ApprovedBy,
-                    l.Comment,
-                    l.Reason,
-                    l.Status,
-                    l.CreatedAt,
-                    FullName = (l.User != null && l.User.Employee != null) ? l.User.Employee.FullName : (l.User != null ? l.User.Username : "N/A")
-                })
-                .ToListAsync();
-            return Ok(data);
-        }
 
         [Authorize]
         [HttpPost]
