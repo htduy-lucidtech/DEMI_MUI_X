@@ -1,197 +1,25 @@
-"use client";
+import React from "react";
+import PayrollClient from "./PayrollClient";
+import { fetchServer } from "@/lib/api";
 
-import React, { useState } from "react";
-import useRealtimeRefresh from '@/hooks/useRealtime';
-import {
-  Box,
-  Typography,
-  Card,
-  CardContent,
-  Grid,
-  TextField,
-  Button,
-  Paper,
-  Stack,
-  MenuItem
-} from "@mui/material";
-import { DataGrid, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
-import {
-  CalculateOutlined as CalcIcon,
-  DownloadOutlined as DownloadIcon
-} from "@mui/icons-material";
-import CustomNoRowsOverlay from "@/components/CustomNoRowsOverlay";
-import { useTranslations } from "next-intl";
-import { payrollService, PayrollRecord } from "@/services/payroll.service";
+export default async function PayrollPage() {
+  const now = new Date();
+  const month = now.getMonth() + 1;
+  const year = now.getFullYear();
 
-export default function PayrollPage() {
-  const t = useTranslations("Payroll");
-  const [month, setMonth] = useState<number>(new Date().getMonth() + 1);
-  const [year, setYear] = useState<number>(new Date().getFullYear());
-  const [records, setRecords] = useState<PayrollRecord[]>([]);
-  const [loading, setLoading] = useState(false);
-
-  const handleCalculate = async () => {
-    setLoading(true);
-    try {
-      const data = await payrollService.calculate(month, year);
-      setRecords(data);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleExportExcel = async () => {
-    try {
-      const blob = await payrollService.exportExcel(month, year);
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `Payroll_${month}_${year}.xlsx`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-    } catch (error) {
-      alert(t("failedToCalculate"));
-    }
-  };
-
-  const handleExportPdf = async (userId: number, fullName: string) => {
-    try {
-      const blob = await payrollService.exportPdf(userId, month, year);
-      const url = window.URL.createObjectURL(new Blob([blob], { type: 'application/pdf' }));
-      const a = document.createElement('a');
-      a.href = url;
-      const fileName = `Payslip_${fullName.trim().replace(/\s+/g, '_')}_${month}_${year}.pdf`;
-      a.download = fileName;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      window.URL.revokeObjectURL(url);
-    } catch (error) {
-      alert(t("failedToCalculate"));
-    }
-  };
-
-  // Recalculate payroll when realtime notifications arrive
-  useRealtimeRefresh(() => handleCalculate(), ["short"]);
-
-  const columns: GridColDef[] = [
-    { field: "fullName", headerName: t("employee"), flex: 1 },
-    {
-      field: "baseSalary",
-      headerName: t("baseSalary"),
-      width: 150,
-      renderCell: (params: GridRenderCellParams) => params.value.toLocaleString() + " ₫"
-    },
-    {
-      field: "hourlyRate",
-      headerName: t("hourlyRate"),
-      width: 130,
-      renderCell: (params: GridRenderCellParams) => params.value.toLocaleString() + " ₫"
-    },
-    { field: "workHours", headerName: t("workHours"), width: 110 },
-    { field: "otHours", headerName: t("otHours"), width: 110 },
-    {
-      field: "totalSalary",
-      headerName: t("totalAmount"),
-      width: 160,
-      renderCell: (params: GridRenderCellParams) => (
-        <Typography sx={{ fontWeight: 800, color: "primary.main" }}>
-          {params.value.toLocaleString()} ₫
-        </Typography>
-      )
-    },
-    {
-      field: "actions",
-      headerName: t('actions'),
-      width: 150,
-      renderCell: (params: GridRenderCellParams) => (
-        <Button
-          size="small"
-          variant="outlined"
-          onClick={() => handleExportPdf(params.row.userId, params.row.fullName)}
-        >
-          {t('downloadPdf')}
-        </Button>
-      )
-    }
-  ];
+  let initialData = [];
+  try {
+    // Fetch current month payroll on server
+    initialData = await fetchServer(`/Payroll/calculate/${month}/${year}`);
+  } catch (error) {
+    console.error("Failed to fetch initial payroll on server:", error);
+  }
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-
-      <Card sx={{ mb: 3, borderRadius: 3, border: '1px solid #e2e8f0' }}>
-        <CardContent>
-          <Stack 
-            direction={{ xs: "column", sm: "row" }} 
-            spacing={2} 
-            sx={{ alignItems: { xs: "stretch", sm: "center" } }}
-          >
-            <Stack direction="row" spacing={2}>
-              <TextField
-                select
-                label={t("month")}
-                size="small"
-                sx={{ flex: 1, minWidth: { sm: 120 } }}
-                value={month}
-                onChange={(e) => setMonth(Number(e.target.value))}
-              >
-                {[...Array(12)].map((_, i) => (
-                  <MenuItem key={i + 1} value={i + 1}>{t("month")} {i + 1}</MenuItem>
-                ))}
-              </TextField>
-              <TextField
-                select
-                label={t("year")}
-                size="small"
-                sx={{ flex: 1, minWidth: { sm: 120 } }}
-                value={year}
-                onChange={(e) => setYear(Number(e.target.value))}
-              >
-                {[2024, 2025, 2026].map((y) => (
-                  <MenuItem key={y} value={y}>{y}</MenuItem>
-                ))}
-              </TextField>
-            </Stack>
-            <Stack direction="row" spacing={2} sx={{ flex: 1 }}>
-              <Button 
-                variant="contained" 
-                startIcon={<CalcIcon />} 
-                onClick={handleCalculate} 
-                disabled={loading}
-                fullWidth
-              >
-                {loading ? t("calculating") : t("calculate")}
-              </Button>
-              <Button 
-                variant="outlined" 
-                startIcon={<DownloadIcon />} 
-                onClick={handleExportExcel} 
-                disabled={records.length === 0}
-                fullWidth
-              >
-                Excel
-              </Button>
-            </Stack>
-          </Stack>
-        </CardContent>
-      </Card>
-
-      <Paper sx={{ height: 500, width: '100%', borderRadius: 4, overflow: 'hidden', border: '1px solid #e2e8f0' }}>
-        <DataGrid
-          rows={records}
-          getRowId={(row) => row.userId}
-          columns={columns}
-          loading={loading}
-          disableRowSelectionOnClick
-          slots={{
-            noRowsOverlay: CustomNoRowsOverlay,
-          }}
-          sx={{ border: 'none' }}
-        />
-      </Paper>
-    </Box>
+    <PayrollClient 
+      initialData={initialData} 
+      currentMonth={month} 
+      currentYear={year} 
+    />
   );
 }
