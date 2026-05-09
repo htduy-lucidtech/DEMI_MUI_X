@@ -124,12 +124,17 @@ using (var scope = app.Services.CreateScope())
 }
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+app.UseStaticFiles();
+
+if (app.Environment.IsDevelopment() || true) // Enable in prod for demo if needed
 {
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "HRM API v1");
+        c.InjectStylesheet("/swagger-ui/custom.css");
+        c.DocumentTitle = "HRM API Documentation";
+        c.DefaultModelsExpandDepth(-1); // Hide schemas by default for cleaner look
     });
 }
 

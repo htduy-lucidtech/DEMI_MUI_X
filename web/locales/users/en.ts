@@ -48,5 +48,7 @@ export default {
   create_success: "Temporary account created successfully. Link with a profile later.",
   update_success: "Account updated successfully",
   unique_error: "Error: Username or Email might already exist",
-  bulk_delete: "Bulk Delete"
+  bulk_delete: "Bulk Delete",
+  validation_username: "Username must be at least 3 chars",
+  validation_email: "Invalid email format"
 };

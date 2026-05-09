@@ -56,18 +56,40 @@ services:
     build:
       context: ./web
       dockerfile: Dockerfile
-      args:
-        NEXT_PUBLIC_API_URL: http://localhost:8203/api
     container_name: hrm-web
     restart: unless-stopped
     depends_on:
       - backend
     environment:
-      NODE_ENV: production
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=http://localhost:8203/api
     ports:
       - "3000:3000"
     networks:
       - hrm-network
+
+  # =========================================================
+  # System Information (Displays access URLs)
+  # =========================================================
+  info:
+    image: alpine
+    container_name: hrm-info
+    depends_on:
+      frontend:
+        condition: service_started
+      backend:
+        condition: service_started
+    command: >
+      sh -c "echo ' ' &&
+             echo '====================================================' &&
+             echo '🚀 HRM PRO SYSTEM IS READY!' &&
+             echo '----------------------------------------------------' &&
+             echo '🌐 Frontend UI:  http://localhost:3000' &&
+             echo '🔌 Backend API:  http://localhost:8203' &&
+             echo '📚 API Swagger:  http://localhost:8203/swagger' &&
+             echo '====================================================' &&
+             echo ' '"
+
 
 # =========================================================
 # Networks & Volumes
@@ -79,3 +101,4 @@ networks:
 volumes:
   postgres_data:
     name: hrm_postgres_data
+

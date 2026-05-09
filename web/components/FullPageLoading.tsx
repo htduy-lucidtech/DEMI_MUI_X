@@ -63,8 +63,9 @@ export default function FullPageLoading({ message }: LoadingProps) {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        bgcolor: "background.default",
-        zIndex: 9999,
+        bgcolor: "rgba(255, 255, 255, 0.8)", // Làm nền hơi trong suốt để thấy lỗi bên dưới nếu có
+        backdropFilter: "blur(4px)", // Tạo hiệu ứng mờ chuyên nghiệp
+        zIndex: 1000, // Giảm zIndex để không đè lên các thông báo lỗi hệ thống quan trọng
       }}
     >
       {/* Top progress bar */}

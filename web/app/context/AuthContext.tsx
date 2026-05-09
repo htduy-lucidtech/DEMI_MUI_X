@@ -52,11 +52,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } else {
           setActiveRoleState(parsedUser.role);
         }
-      } catch {
+      } catch (error) {
+        console.error("Auth initialization error:", error);
         logout();
+      } finally {
+        setIsLoading(false);
       }
+    } else {
+      setIsLoading(false);
     }
-    setIsLoading(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

@@ -13,5 +13,9 @@ export default {
             result: "Attendance correction (ID: {id}) is {status}",
         },
     },
-    system: { welcome: "Welcome to HRM Pro! This is a realtime message." },
+    system: { 
+        welcome: "Welcome to HRM Pro! This is a realtime message.",
+        systemUser: "System",
+        defaultTitle: "Notification"
+    },
 };

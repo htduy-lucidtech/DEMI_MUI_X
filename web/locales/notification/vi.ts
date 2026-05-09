@@ -13,5 +13,9 @@ export default {
             result: "Yêu cầu sửa chấm công (ID: {id}) đã {status}",
         },
     },
-    system: { welcome: "Chào mừng bạn đến với HRM Pro! Đây là thông báo realtime." },
+    system: { 
+        welcome: "Chào mừng bạn đến với HRM Pro! Đây là thông báo realtime.",
+        systemUser: "Hệ thống",
+        defaultTitle: "Thông báo"
+    },
 };

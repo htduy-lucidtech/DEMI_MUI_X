@@ -40,13 +40,13 @@ namespace Hrm.Api.Controllers
                 if (user == null) return NotFound("User not found");
 
                 var myAttendances = await _context.Attendances
-                    .Where(a => a.UserId == userId.Value)
+                    .Where(a => a.UserId == userId)
                     .OrderByDescending(a => a.CheckInTime)
                     .ToListAsync();
 
                 var attendanceToday = myAttendances.FirstOrDefault(a => a.CheckInTime.Date == today);
                 var myLeaveRequests = await _context.LeaveRequests
-                    .Where(l => l.UserId == userId.Value)
+                    .Where(l => l.UserId == userId)
                     .ToListAsync();
 
                 var currentMonth = DateTime.UtcNow.Month;

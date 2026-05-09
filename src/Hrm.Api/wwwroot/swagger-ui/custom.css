@@ -1,0 +1,18 @@
+.swagger-ui .topbar {
+    background-color: #1a1a1a;
+    border-bottom: 2px solid #007bff;
+}
+
+.swagger-ui .info .title {
+    color: #007bff;
+    font-family: 'Inter', sans-serif;
+}
+
+.swagger-ui .scheme-container {
+    background-color: #f8f9fa;
+}
+
+.swagger-ui .opblock.opblock-get { background: rgba(97,175,254,.1); border-color: #61affe; }
+.swagger-ui .opblock.opblock-post { background: rgba(73,204,144,.1); border-color: #49cc90; }
+.swagger-ui .opblock.opblock-put { background: rgba(252,161,48,.1); border-color: #fca130; }
+.swagger-ui .opblock.opblock-delete { background: rgba(249,62,62,.1); border-color: #f93e3e; }

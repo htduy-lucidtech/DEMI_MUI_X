@@ -75,11 +75,29 @@ namespace Hrm.Api.Extensions
         {
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "HRM API", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo 
+                { 
+                    Title = "HRM - Hệ Thống Quản Trị Nhân Sự", 
+                    Version = "v1",
+                    Description = "Tài liệu API cho hệ thống HRM (Human Resource Management). Yêu cầu Bearer Token để truy cập các tài nguyên bảo mật.",
+                    Contact = new OpenApiContact
+                    {
+                        Name = "HRM Development Team",
+                        Email = "dev@hrm-demo.com"
+                    }
+                });
+
+                // Include XML comments
+                var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                if (File.Exists(xmlPath))
+                {
+                    c.IncludeXmlComments(xmlPath);
+                }
 
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
-                    Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
+                    Description = "Nhập token theo định dạng: Bearer {your_token}",
                     Name = "Authorization",
                     In = ParameterLocation.Header,
                     Type = SecuritySchemeType.ApiKey,

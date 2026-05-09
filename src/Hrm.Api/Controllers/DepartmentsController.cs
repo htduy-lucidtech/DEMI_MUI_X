@@ -1,5 +1,6 @@
 using Hrm.Domain.Entities;
 using Hrm.Infrastructure.Data;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 

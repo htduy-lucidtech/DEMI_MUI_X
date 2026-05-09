@@ -11,6 +11,7 @@ import { useAuth } from "@/app/context/AuthContext";
 import { useEffect, useState } from "react";
 import * as signalR from "@microsoft/signalr";
 import { Snackbar, Alert } from "@mui/material";
+import FullPageLoading from "@/components/FullPageLoading";
 
 
 export default function AuthenticatedLayout({
@@ -20,6 +21,7 @@ export default function AuthenticatedLayout({
 }) {
   const pathname = usePathname();
   const t = useTranslations("Notifications");
+  const tLayout = useTranslations("Layout");
   const router = useRouter();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
@@ -93,34 +95,34 @@ export default function AuthenticatedLayout({
             return String(msg);
           };
 
-          newConnection.on("ReceiveNotification", (user, message) => {
-            setNotification({ open: true, user, message: formatIncoming(message) });
-          });
+            newConnection.on("ReceiveNotification", (user, message) => {
+              setNotification({ open: true, user: user || t("system.systemUser"), message: formatIncoming(message) });
+            });
           // Short and full notifications — show short as snackbar and dispatch events for pages to refresh
           newConnection.on("ReceiveNotificationShort", (message) => {
             const display = formatIncoming(message);
-            setNotification({ open: true, user: "Hệ thống", message: display });
+            setNotification({ open: true, user: t("system.systemUser"), message: display });
             try {
               window.dispatchEvent(
                 new CustomEvent("notification:short", { detail: { message } }),
               );
-            } catch {}
+            } catch { }
           });
 
           newConnection.on("ReceiveNotificationFull", (message) => {
-            const display = formatIncoming(message) || (message?.type || "Thông báo");
+            const display = formatIncoming(message) || (message?.type || t("system.defaultTitle"));
             // show snackbar for full notifications as well and also emit short event so pages using "short" refresh
-            setNotification({ open: true, user: "Hệ thống", message: display });
+            setNotification({ open: true, user: t("system.systemUser"), message: display });
             try {
               window.dispatchEvent(
                 new CustomEvent("notification:full", { detail: { message } }),
               );
-            } catch {}
+            } catch { }
             try {
               window.dispatchEvent(
                 new CustomEvent("notification:short", { detail: { message } }),
               );
-            } catch {}
+            } catch { }
           });
         }
       } catch (err) {
@@ -134,9 +136,9 @@ export default function AuthenticatedLayout({
 
     return () => {
       mounted = false;
-      if (newConnection.state === signalR.HubConnectionState.Connected || 
-          newConnection.state === signalR.HubConnectionState.Connecting) {
-        newConnection.stop().catch(() => {});
+      if (newConnection.state === signalR.HubConnectionState.Connected ||
+        newConnection.state === signalR.HubConnectionState.Connecting) {
+        newConnection.stop().catch(() => { });
       }
     };
   }, [token]);
@@ -146,10 +148,6 @@ export default function AuthenticatedLayout({
       router.push("/login");
     }
   }, [isAuthenticated, isLoading, router]);
-
-  if (isLoading || !isAuthenticated) {
-    return null;
-  }
 
   // On mobile: sidebar is a temporary overlay (open/closed via toggle)
   // On desktop: sidebar is permanent (collapsed/expanded)
@@ -164,92 +162,99 @@ export default function AuthenticatedLayout({
   // Desktop: sidebar shifts content via margin; Mobile: sidebar overlays
   const desktopSidebarWidth = isSidebarCollapsed ? 64 : 240;
 
+  if (isLoading) {
+    return <FullPageLoading message={tLayout("loadingSteps.authChecking")} />;
+  }
+
+  if (!isAuthenticated) {
+    return null; // Will redirect via useEffect
+  }
+
   return (
-    <Box
-      sx={{
-        display: "flex",
-        minHeight: "100vh",
-        backgroundColor: "background.default",
-      }}
-    >
-      <CssBaseline />
-
-      {/* Sidebar */}
-      <Sidebar
-        isSidebarCollapsed={isMobile ? !isSidebarOpen : isSidebarCollapsed}
-        onClose={() => setIsSidebarOpen(false)}
-      />
-
-      {/* Right Side: Header + Content */}
+    <NotificationProvider>
       <Box
         sx={{
-          flexGrow: 1,
           display: "flex",
-          flexDirection: "column",
-          minWidth: 0,
-          // On desktop, sidebar is permanent so we don't need extra margin (flex handles it)
-          // On mobile, sidebar is overlay so this fills full width
+          minHeight: "100vh",
+          backgroundColor: "background.default",
         }}
       >
-        {/* Fixed Navbar */}
-        <Box
-          sx={{
-            position: "fixed",
-            top: 0,
-            right: 0,
-            // Desktop: offset by sidebar width. Mobile: full width (left: 0)
-            left: {
-              xs: 0,
-              md: `${desktopSidebarWidth}px`,
-            },
-            zIndex: (theme) => theme.zIndex.appBar,
-            transition: (theme) =>
-              theme.transitions.create(["left"], {
-                easing: theme.transitions.easing.sharp,
-                duration: theme.transitions.duration.leavingScreen,
-              }),
-          }}
-        >
-          <Navbar
-            isSidebarCollapsed={isMobile ? !isSidebarOpen : isSidebarCollapsed}
-            onToggleSidebar={handleToggleSidebar}
-          />
-        </Box>
+        <CssBaseline />
 
-        {/* Main Content */}
+        {/* Sidebar */}
+        <Sidebar
+          isSidebarCollapsed={isMobile ? !isSidebarOpen : isSidebarCollapsed}
+          onClose={() => setIsSidebarOpen(false)}
+        />
+
+        {/* Right Side: Header + Content */}
         <Box
-          component="main"
           sx={{
             flexGrow: 1,
             display: "flex",
             flexDirection: "column",
-            minHeight: "100vh",
-            overflowX: "hidden",
-            pt: "56px",
-            pb: 4,
+            minWidth: 0,
           }}
         >
-          <Box sx={{ flexGrow: 1, p: { xs: 1.5, sm: 2, md: 2.5 } }}>
-            <NotificationProvider>{children}</NotificationProvider>
+          {/* Fixed Navbar */}
+          <Box
+            sx={{
+              position: "fixed",
+              top: 0,
+              right: 0,
+              left: {
+                xs: 0,
+                md: `${desktopSidebarWidth}px`,
+              },
+              zIndex: (theme) => theme.zIndex.appBar,
+              transition: (theme) =>
+                theme.transitions.create(["left"], {
+                  easing: theme.transitions.easing.sharp,
+                  duration: theme.transitions.duration.leavingScreen,
+                }),
+            }}
+          >
+            <Navbar
+              isSidebarCollapsed={isMobile ? !isSidebarOpen : isSidebarCollapsed}
+              onToggleSidebar={handleToggleSidebar}
+            />
+          </Box>
+
+          {/* Main Content */}
+          <Box
+            component="main"
+            sx={{
+              flexGrow: 1,
+              display: "flex",
+              flexDirection: "column",
+              minHeight: "100vh",
+              overflowX: "hidden",
+              pt: "56px",
+              pb: 4,
+            }}
+          >
+            <Box sx={{ flexGrow: 1, p: { xs: 1.5, sm: 2, md: 2.5 } }}>
+              {children}
+            </Box>
           </Box>
         </Box>
-      </Box>
 
-      <Snackbar
-        open={notification?.open}
-        autoHideDuration={6000}
-        onClose={() =>
-          setNotification((prev) => (prev ? { ...prev, open: false } : null))
-        }
-        anchorOrigin={{ vertical: "top", horizontal: "right" }}
-      >
-        <Alert
-          severity="info"
-          sx={{ width: "100%", borderRadius: 1, fontWeight: 700 }}
+        <Snackbar
+          open={notification?.open}
+          autoHideDuration={6000}
+          onClose={() =>
+            setNotification((prev) => (prev ? { ...prev, open: false } : null))
+          }
+          anchorOrigin={{ vertical: "top", horizontal: "right" }}
         >
-          {notification?.user}: {notification?.message}
-        </Alert>
-      </Snackbar>
-    </Box>
+          <Alert
+            severity="info"
+            sx={{ width: "100%", borderRadius: 1, fontWeight: 700 }}
+          >
+            {notification?.user}: {notification?.message}
+          </Alert>
+        </Snackbar>
+      </Box>
+    </NotificationProvider>
   );
 }

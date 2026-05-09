@@ -50,6 +50,9 @@ export default {
     profile: "Hồ sơ",
     settings: "Cài đặt",
     "org-chart": "Sơ đồ tổ chức",
+    payroll: "Bảng lương",
+    recruitment: "Tuyển dụng",
+    performance: "Đánh giá KPI",
   },
   common: {
     noData: "Chưa có dữ liệu hiển thị",
@@ -69,5 +72,6 @@ export default {
     compiling: "Đang biên dịch...",
     building: "Đang xây dựng modules...",
     almostReady: "Gần xong rồi...",
+    authChecking: "Đang kiểm tra quyền truy cập...",
   },
 };

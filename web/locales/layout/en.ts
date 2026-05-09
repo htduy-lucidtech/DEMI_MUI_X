@@ -50,6 +50,9 @@ export default {
     profile: "Profile",
     settings: "Settings",
     "org-chart": "Org Chart",
+    payroll: "Payroll",
+    recruitment: "Recruitment",
+    performance: "Performance",
   },
   common: {
     noData: "No data to display",
@@ -68,7 +71,8 @@ export default {
   loadingSteps: {
     compiling: "Compiling...",
     building: "Building modules...",
-    almostReady: "Almost ready..."
+    almostReady: "Almost ready...",
+    authChecking: "Checking access permissions...",
   }
 };
 

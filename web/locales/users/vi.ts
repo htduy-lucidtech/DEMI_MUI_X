@@ -48,5 +48,7 @@ export default {
   create_success: "Tạo tài khoản tạm thành công. Hãy liên kết với hồ sơ sau.",
   update_success: "Cập nhật tài khoản thành công",
   unique_error: "Lỗi: Tên đăng nhập hoặc Email có thể đã tồn tại",
-  bulk_delete: "Xóa hàng loạt"
+  bulk_delete: "Xóa hàng loạt",
+  validation_username: "Tên đăng nhập phải có ít nhất 3 ký tự",
+  validation_email: "Định dạng Email không hợp lệ"
 };

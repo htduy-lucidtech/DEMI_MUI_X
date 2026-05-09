@@ -1,10 +1,14 @@
 using Hrm.Domain.Entities;
 using Hrm.Infrastructure.Data;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace Hrm.Api.Controllers
 {
+    /// <summary>
+    /// Quản lý thông tin hồ sơ nhân viên, chức vụ và phòng ban.
+    /// </summary>
     [Authorize(Roles = "Admin,Personnel,Manager")]
     [ApiController]
     [Route("api/[controller]")]
@@ -17,6 +21,10 @@ namespace Hrm.Api.Controllers
             _context = context;
         }
 
+        /// <summary>
+        /// Lấy toàn bộ danh sách nhân viên trong hệ thống.
+        /// </summary>
+        /// <returns>Danh sách nhân viên kèm thông tin phòng ban.</returns>
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Employee>>> GetEmployees()
         {

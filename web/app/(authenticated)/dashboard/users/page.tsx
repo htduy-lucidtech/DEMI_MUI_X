@@ -132,8 +132,8 @@ export default function UsersPage() {
   };
 
   const handleSubmit = async () => {
-    if (formData.username.length < 3) return showMsg("Username must be at least 3 chars", "error");
-    if (!formData.email.includes("@")) return showMsg("Invalid email format", "error");
+    if (formData.username.length < 3) return showMsg(t("validation_username"), "error");
+    if (!formData.email.includes("@")) return showMsg(t("validation_email"), "error");
 
     try {
       if (isEdit && formData.id) {

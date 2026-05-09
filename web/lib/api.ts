@@ -30,7 +30,17 @@ export async function api_fetch(url: string, options: any = {}) {
     } catch (e) {}
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5181/api";
+  // 2. Xác định Base URL linh hoạt cho Docker
+  let baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5181/api";
+
+  if (isServer) {
+    // Nếu chạy bên trong Docker (Production), sử dụng tên service 'hrm-api'
+    // Nếu chạy ở máy thật (Development), vẫn dùng localhost
+    const isDocker = process.env.NODE_ENV === 'production';
+    if (isDocker) {
+      baseUrl = "http://hrm-api:8080/api";
+    }
+  }
   
   // 2. Thiết lập Headers
   const headers: HeadersInit = {

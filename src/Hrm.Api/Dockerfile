@@ -1,7 +1,7 @@
 # =====================================================================
-# Stage 1: Restore dependencies (cache layer)
+# Stage 1: Build & Publish (restore + publish in one stage)
 # =====================================================================
-FROM mcr.microsoft.com/dotnet/sdk:9.0 AS restore
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS publish
 WORKDIR /src
 
 # Copy solution + project files first (cache layer for dotnet restore)
@@ -13,12 +13,6 @@ COPY src/Hrm.Service/Hrm.Service.csproj ./src/Hrm.Service/
 
 RUN dotnet restore ./src/Hrm.Api/Hrm.Api.csproj
 
-# =====================================================================
-# Stage 2: Build & Publish
-# =====================================================================
-FROM restore AS publish
-WORKDIR /src
-
 # Copy full source code
 COPY src/ ./src/
 
@@ -28,7 +22,7 @@ RUN dotnet publish ./src/Hrm.Api/Hrm.Api.csproj \
     --no-restore
 
 # =====================================================================
-# Stage 3: Runtime image
+# Stage 2: Runtime image
 # =====================================================================
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS final
 WORKDIR /app
