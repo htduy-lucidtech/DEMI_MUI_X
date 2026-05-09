@@ -1,0 +1,81 @@
+services:
+  # =========================================================
+  # PostgreSQL Database
+  # =========================================================
+  db:
+    image: postgres:16-alpine
+    container_name: hrm-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: Hrm_MUI
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d Hrm_MUI"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - hrm-network
+
+  # =========================================================
+  # ASP.NET Core Backend API
+  # =========================================================
+  backend:
+    build:
+      context: .
+      dockerfile: src/Hrm.Api/Dockerfile
+    container_name: hrm-api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=Hrm_MUI;Username=postgres;Password=${DB_PASSWORD:-postgres}"
+      Jwt__Key: ${JWT_SECRET:-ThisIsASecretKeyForProductionReplaceMe_MinLength32Chars!}
+      Jwt__Issuer: Hrm.Api
+      Jwt__Audience: Hrm.web
+      SeedDatabase: "true"
+      ApplyMigrationsOnStartup: "true"
+      CORS__AllowedOrigins: "http://localhost:3000,http://hrm-web:3000"
+    ports:
+      - "8203:8080"
+    networks:
+      - hrm-network
+
+  # =========================================================
+  # Next.js Frontend
+  # =========================================================
+  frontend:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:8203/api
+    container_name: hrm-web
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      NODE_ENV: production
+    ports:
+      - "3000:3000"
+    networks:
+      - hrm-network
+
+# =========================================================
+# Networks & Volumes
+# =========================================================
+networks:
+  hrm-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    name: hrm_postgres_data

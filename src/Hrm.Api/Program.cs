@@ -37,7 +37,11 @@ builder.Services.AddJwtAuthentication(builder.Configuration);
 // 4. CORS Configuration
 builder.Services.AddCors(options => {
     options.AddPolicy("HrmPolicy", policy => {
-        policy.WithOrigins("http://localhost:3000") // Port của hrm.web
+        var allowedOrigins = builder.Configuration.GetSection("CORS:AllowedOrigins").Get<string[]>()
+            ?? builder.Configuration.GetValue<string>("CORS__AllowedOrigins")?.Split(',')
+            ?? ["http://localhost:3000"];
+
+        policy.WithOrigins(allowedOrigins)
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
