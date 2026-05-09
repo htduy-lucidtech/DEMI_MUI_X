@@ -23,6 +23,8 @@ import {
   Settings as SettingsIcon,
   AdminPanelSettings as AdminIcon,
   Paid as PaidIcon,
+  Timeline as PerformanceIcon,
+  AccountTree as OrgChartIcon,
 } from "@mui/icons-material";
 import { useRouter, usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -34,11 +36,12 @@ interface SidebarProps {
 }
 
 interface MenuItem {
+  key: string;
   text: string;
   icon: React.ReactNode;
   path: string;
   roles: Role[];
-  key: string;
+  section: "sectionCommon" | "sectionManagement" | "sectionSystem";
 }
 
 export default function Sidebar({ isSidebarCollapsed, onClose }: SidebarProps) {
@@ -51,26 +54,80 @@ export default function Sidebar({ isSidebarCollapsed, onClose }: SidebarProps) {
   const { activeRole } = useAuth();
 
   const menuItems: MenuItem[] = [
+    // --- COMMON SECTION ---
     {
       key: "dashboard",
       text: t("dashboard"),
       icon: <DashboardIcon />,
       path: "/dashboard",
-      roles: ["Admin", "Manager", "Personnel", "Attendance", "Employee"],
-    },
-    {
-      key: "personnel",
-      text: t("personnel"),
-      icon: <PeopleIcon />,
-      path: "/dashboard/personnel",
-      roles: ["Admin", "Manager", "Personnel"],
+      roles: ["Admin", "Manager", "Employee"],
+      section: "sectionCommon",
     },
     {
       key: "attendance",
       text: t("attendance"),
       icon: <CalendarIcon />,
       path: "/dashboard/attendance",
-      roles: ["Admin", "Manager", "Attendance", "Employee"],
+      roles: ["Admin", "Manager", "Employee"],
+      section: "sectionCommon",
+    },
+    {
+      key: "leave",
+      text: t("leave"),
+      icon: <AssignmentIcon />,
+      path: "/dashboard/leave",
+      roles: ["Admin", "Manager", "Employee"],
+      section: "sectionCommon",
+    },
+    {
+      key: "org-chart",
+      text: t("org_chart"),
+      icon: <OrgChartIcon />,
+      path: "/dashboard/org-chart",
+      roles: ["Admin", "Manager", "Employee"],
+      section: "sectionCommon",
+    },
+    // --- MANAGEMENT SECTION ---
+    {
+      key: "personnel",
+      text: t("personnel"),
+      icon: <PeopleIcon />,
+      path: "/dashboard/personnel",
+      roles: ["Admin", "Manager"],
+      section: "sectionManagement",
+    },
+    {
+      key: "payroll",
+      text: t("payroll"),
+      icon: <PaidIcon />,
+      path: "/dashboard/payroll",
+      roles: ["Admin", "Manager"],
+      section: "sectionManagement",
+    },
+    {
+      key: "recruitment",
+      text: t("recruitment"),
+      icon: <AssignmentIcon />,
+      path: "/dashboard/recruitment",
+      roles: ["Admin", "Manager"],
+      section: "sectionManagement",
+    },
+    {
+      key: "performance",
+      text: t("performance"),
+      icon: <PerformanceIcon />,
+      path: "/dashboard/performance",
+      roles: ["Admin", "Manager"],
+      section: "sectionManagement",
+    },
+    // --- SYSTEM SECTION ---
+    {
+      key: "users",
+      text: t("users"),
+      icon: <AdminIcon />,
+      path: "/dashboard/users",
+      roles: ["Admin", "Manager"],
+      section: "sectionSystem",
     },
     {
       key: "department",
@@ -78,34 +135,7 @@ export default function Sidebar({ isSidebarCollapsed, onClose }: SidebarProps) {
       icon: <BusinessIcon />,
       path: "/dashboard/departments",
       roles: ["Admin"],
-    },
-    {
-      key: "leave",
-      text: t("leave"),
-      icon: <AssignmentIcon />,
-      path: "/dashboard/leave",
-      roles: ["Admin", "Manager", "Personnel", "Attendance", "Employee"],
-    },
-    {
-      key: "users",
-      text: t("users"),
-      icon: <AdminIcon />,
-      path: "/dashboard/users",
-      roles: ["Admin", "Personnel"],
-    },
-    {
-      key: "payroll",
-      text: t("payroll"),
-      icon: <PaidIcon />,
-      path: "/dashboard/payroll",
-      roles: ["Admin", "Manager", "Personnel"],
-    },
-    {
-      key: "recruitment",
-      text: t("recruitment"),
-      icon: <AssignmentIcon />,
-      path: "/dashboard/recruitment",
-      roles: ["Admin", "Manager", "Personnel"],
+      section: "sectionSystem",
     },
     {
       key: "admin",
@@ -113,20 +143,7 @@ export default function Sidebar({ isSidebarCollapsed, onClose }: SidebarProps) {
       icon: <SettingsIcon />,
       path: "/dashboard/admin",
       roles: ["Admin"],
-    },
-    {
-      key: "org-chart",
-      text: t("org_chart"),
-      icon: <BusinessIcon />,
-      path: "/dashboard/org-chart",
-      roles: ["Admin", "Manager", "Personnel", "Attendance", "Employee"],
-    },
-    {
-      key: "performance",
-      text: t("performance"),
-      icon: <AssignmentIcon />,
-      path: "/dashboard/performance",
-      roles: ["Admin", "Manager", "Personnel"],
+      section: "sectionSystem",
     },
     {
       key: "settings",
@@ -134,188 +151,99 @@ export default function Sidebar({ isSidebarCollapsed, onClose }: SidebarProps) {
       icon: <SettingsIcon />,
       path: "/settings",
       roles: ["Admin"],
+      section: "sectionSystem",
     },
   ];
 
-  const filteredItems = activeRole
-    ? menuItems.filter((item) => item.roles.includes(activeRole))
-    : [];
-
   const handleNavigate = (path: string) => {
     router.push(path);
-    if (isMobile && onClose) {
-      onClose();
-    }
+    if (isMobile && onClose) onClose();
   };
+
+  const sections: { key: MenuItem["section"]; label: string }[] = [
+    { key: "sectionCommon", label: t("sectionCommon") },
+    { key: "sectionManagement", label: t("sectionManagement") },
+    { key: "sectionSystem", label: t("sectionSystem") },
+  ];
 
   const drawerContent = (
     <>
-      {/* Logo Section */}
-      <Box
-        sx={{
-          p: isMobile ? 2.5 : isSidebarCollapsed ? 1.5 : 2.5,
-          display: "flex",
-          alignItems: "center",
-          gap: 1.5,
-          justifyContent: isMobile ? "flex-start" : isSidebarCollapsed ? "center" : "flex-start",
-          transition: (theme) =>
-            theme.transitions.create(["padding"], {
-              easing: theme.transitions.easing.sharp,
-              duration: theme.transitions.duration.leavingScreen,
-            }),
-        }}
-      >
-        <Box
-          sx={{
-            width: 32,
-            height: 32,
-            bgcolor: "primary.main",
-            borderRadius: 0.75,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: "white",
-            fontWeight: "bold",
-            flexShrink: 0,
-          }}
-        >
-          H
-        </Box>
-        {(isMobile || !isSidebarCollapsed) && (
-          <Typography
-            variant="h6"
-            sx={{
-              fontWeight: 800,
-              color: "white",
-              letterSpacing: "-0.5px",
-              whiteSpace: "nowrap",
-            }}
-          >
-            HRM Pro
-          </Typography>
-        )}
+      <Box sx={{ p: isMobile ? 2.5 : isSidebarCollapsed ? 1.5 : 2.5, display: "flex", alignItems: "center", gap: 1.5, justifyContent: isMobile ? "flex-start" : isSidebarCollapsed ? "center" : "flex-start" }}>
+        <Box sx={{ width: 32, height: 32, bgcolor: "primary.main", borderRadius: 0.75, display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: "bold", flexShrink: 0 }}>H</Box>
+        {(isMobile || !isSidebarCollapsed) && <Typography variant="h6" sx={{ fontWeight: 800, color: "white", letterSpacing: "-0.5px" }}>HRM Pro</Typography>}
       </Box>
 
-      <Divider
-        sx={{
-          borderColor: "rgba(255,255,255,0.1)",
-          mx: isMobile ? 2 : isSidebarCollapsed ? 1 : 2,
-          mb: 1,
-        }}
-      />
+      <Divider sx={{ borderColor: "rgba(255,255,255,0.1)", mx: isMobile ? 2 : isSidebarCollapsed ? 1 : 2, mb: 1 }} />
 
-      {/* Scrollable Menu Section */}
-      <Box
-        sx={{
-          overflowY: "auto",
-          overflowX: "hidden",
-          px: isMobile ? 2 : isSidebarCollapsed ? 0 : 2,
-          pb: 2,
-          flexGrow: 1,
-        }}
-      >
-        {(isMobile || !isSidebarCollapsed) && (
-          <Typography
-            variant="caption"
-            sx={{
-              px: 2,
-              mb: 1,
-              mt: 1,
-              display: "block",
-              color: "rgba(255, 255, 255, 0.4)",
-              fontWeight: 700,
-              textTransform: "uppercase",
-            }}
-          >
-            {t("mainMenu")}
-          </Typography>
-        )}
+      <Box sx={{ 
+        flexGrow: 1, 
+        overflowY: "auto", 
+        overflowX: "hidden", 
+        px: isMobile ? 2 : isSidebarCollapsed ? 0 : 2, 
+        pb: 2,
+        "&::-webkit-scrollbar": { display: "none" },
+        msOverflowStyle: "none",
+        scrollbarWidth: "none",
+      }}>
+        {sections.map((section) => {
+          const items = menuItems.filter(item => item.section === section.key && (activeRole ? item.roles.includes(activeRole) : false));
+          if (items.length === 0) return null;
 
-        <List disablePadding sx={{ px: isMobile ? 0 : isSidebarCollapsed ? 0 : 1 }}>
-          {filteredItems.map((item) => {
-            const isActive = pathname === item.path;
-            const collapsed = !isMobile && isSidebarCollapsed;
-            return (
-              <ListItem key={item.key} disablePadding sx={{ mb: 0.5 }}>
-                <ListItemButton
-                  onClick={() => handleNavigate(item.path)}
-                  selected={isActive}
-                  sx={{
-                    borderRadius: collapsed ? 1 : 0.75,
-                    py: 0.5,
-                    mx: collapsed ? "auto" : 0.75,
-                    width: collapsed ? 40 : "auto",
-                    minHeight: 40,
-                    justifyContent: collapsed ? "center" : "flex-start",
-                    transition: (theme) =>
-                      theme.transitions.create(
-                        ["width", "background-color", "padding", "margin"],
-                        {
-                          easing: theme.transitions.easing.sharp,
-                          duration: theme.transitions.duration.leavingScreen,
-                        }
-                      ),
-                    "&.Mui-selected": {
-                      backgroundColor: "primary.main",
-                      color: "#ffffff",
-                      "& .MuiListItemIcon-root": {
-                        color: "#ffffff",
-                      },
-                      "&:hover": {
-                        backgroundColor: "primary.dark",
-                      },
-                    },
-                    "&:hover": {
-                      backgroundColor: "rgba(255, 255, 255, 0.08)",
-                      color: "#ffffff",
-                      "& .MuiListItemIcon-root": {
-                        color: "#ffffff",
-                      },
-                    },
-                  }}
-                >
-                  <ListItemIcon
-                    sx={{
-                      color: isActive ? "#ffffff" : "inherit",
-                      minWidth: collapsed ? 0 : 32,
-                      justifyContent: "center",
-                      transition: "inherit",
-                    }}
-                  >
-                    {React.cloneElement(item.icon as React.ReactElement<any>, {
-                      sx: { fontSize: 20 },
-                    })}
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={
-                      <Typography
+          return (
+            <React.Fragment key={section.key}>
+              {(isMobile || !isSidebarCollapsed) && (
+                <Typography variant="caption" sx={{ px: 2, mb: 1, mt: 1, display: "block", color: "rgba(255, 255, 255, 0.4)", fontWeight: 700, textTransform: "uppercase" }}>
+                  {section.label}
+                </Typography>
+              )}
+              <List disablePadding sx={{ px: isMobile ? 0 : isSidebarCollapsed ? 0 : 1 }}>
+                {items.map((item) => {
+                  const isActive = pathname === item.path;
+                  const collapsed = !isMobile && isSidebarCollapsed;
+                  return (
+                    <ListItem key={item.key} disablePadding sx={{ mb: 0.5 }}>
+                      <ListItemButton
+                        onClick={() => handleNavigate(item.path)}
+                        selected={isActive}
                         sx={{
-                          fontSize: "0.875rem",
-                          fontWeight: isActive ? 600 : 500,
-                          whiteSpace: "nowrap",
-                          opacity: collapsed ? 0 : 1,
-                          transition: (theme) =>
-                            theme.transitions.create("opacity", {
-                              easing: theme.transitions.easing.sharp,
-                              duration: theme.transitions.duration.leavingScreen,
-                            }),
+                          borderRadius: collapsed ? 1 : 0.75,
+                          py: 0.5,
+                          mx: collapsed ? "auto" : 0.75,
+                          width: collapsed ? 40 : "auto",
+                          minHeight: 40,
+                          justifyContent: collapsed ? "center" : "flex-start",
+                          "&.Mui-selected": { backgroundColor: "primary.main", color: "#ffffff", "& .MuiListItemIcon-root": { color: "#ffffff" }, "&:hover": { backgroundColor: "primary.dark" } },
+                          "&:hover": { backgroundColor: "rgba(255, 255, 255, 0.08)", color: "#ffffff", "& .MuiListItemIcon-root": { color: "#ffffff" } },
                         }}
                       >
-                        {item.text}
-                      </Typography>
-                    }
-                    sx={{
-                      m: 0,
-                      opacity: collapsed ? 0 : 1,
-                      width: collapsed ? 0 : "auto",
-                      overflow: "hidden",
-                    }}
-                  />
-                </ListItemButton>
-              </ListItem>
-            );
-          })}
-        </List>
+                        <ListItemIcon sx={{ color: isActive ? "#ffffff" : "inherit", minWidth: collapsed ? 0 : 32, justifyContent: "center" }}>
+                          {React.cloneElement(item.icon as React.ReactElement<any>, { sx: { fontSize: 20 } })}
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={
+                            <Typography
+                              sx={{
+                                fontSize: "0.875rem",
+                                fontWeight: isActive ? 600 : 500,
+                                whiteSpace: "nowrap",
+                                opacity: collapsed ? 0 : 1,
+                                m: 0,
+                                overflow: "hidden"
+                              }}
+                            >
+                              {item.text}
+                            </Typography>
+                          }
+                          sx={{ m: 0, opacity: collapsed ? 0 : 1, width: collapsed ? 0 : "auto" }}
+                        />
+                      </ListItemButton>
+                    </ListItem>
+                  );
+                })}
+              </List>
+            </React.Fragment>
+          );
+        })}
       </Box>
     </>
   );
@@ -324,45 +252,19 @@ export default function Sidebar({ isSidebarCollapsed, onClose }: SidebarProps) {
     backgroundColor: "#1e293b",
     color: "rgba(255, 255, 255, 0.65)",
     borderRight: "none",
-    top: 0,
     height: "100vh",
-    overflowX: "hidden" as const,
-    overflowY: "auto" as const,
-    "&::-webkit-scrollbar": { width: "4px" },
-    "&::-webkit-scrollbar-thumb": {
-      backgroundColor: "rgba(255,255,255,0.1)",
-      borderRadius: "10px",
-    },
+    "&::-webkit-scrollbar": { display: "none" },
+    msOverflowStyle: "none",
+    scrollbarWidth: "none",
   };
-
-  if (isMobile) {
-    return (
-      <Drawer
-        variant="temporary"
-        open={!isSidebarCollapsed}
-        onClose={onClose}
-        ModalProps={{ keepMounted: true }}
-        sx={{
-          display: { xs: "block", md: "none" },
-          "& .MuiDrawer-paper": {
-            width: 240,
-            boxSizing: "border-box",
-            display: "flex",
-            flexDirection: "column",
-            ...drawerStyles,
-          },
-        }}
-      >
-        {drawerContent}
-      </Drawer>
-    );
-  }
 
   return (
     <Drawer
-      variant="permanent"
+      variant={isMobile ? "temporary" : "permanent"}
+      open={isMobile ? !isSidebarCollapsed : true}
+      onClose={onClose}
       sx={{
-        display: { xs: "none", md: "block" },
+        display: isMobile ? { xs: "block", md: "none" } : { xs: "none", md: "block" },
         width: drawerWidth,
         flexShrink: 0,
         [`& .MuiDrawer-paper`]: {
@@ -370,11 +272,7 @@ export default function Sidebar({ isSidebarCollapsed, onClose }: SidebarProps) {
           boxSizing: "border-box",
           display: "flex",
           flexDirection: "column",
-          transition: (theme) =>
-            theme.transitions.create("width", {
-              easing: theme.transitions.easing.sharp,
-              duration: theme.transitions.duration.leavingScreen,
-            }),
+          transition: (theme) => theme.transitions.create("width", { easing: theme.transitions.easing.sharp, duration: theme.transitions.duration.leavingScreen }),
           ...drawerStyles,
         },
       }}

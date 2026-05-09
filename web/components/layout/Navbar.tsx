@@ -121,7 +121,7 @@ export default function Navbar({ isSidebarCollapsed, onToggleSidebar }: NavbarPr
     window.location.reload();
   };
 
-  const roles: Role[] = ["Admin", "Manager", "Personnel", "Attendance", "Employee"];
+  const roles: Role[] = ["Admin", "Manager", "Employee"];
   const currentLocale = (Cookies.get("NEXT_LOCALE") || "vi").toUpperCase();
 
   return (

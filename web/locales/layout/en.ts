@@ -13,6 +13,9 @@ export default {
     performance: "Performance",
     settings: "Settings",
     mainMenu: "Main Menu",
+    sectionCommon: "General System",
+    sectionManagement: "HR Management",
+    sectionSystem: "System Administration",
   },
   navbar: {
     title: "HRM Admin System",

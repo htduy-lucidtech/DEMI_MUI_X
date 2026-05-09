@@ -1,4 +1,4 @@
-﻿export default {
+export default {
   sidebar: {
     dashboard: "Bảng điều khiển",
     attendance: "Chấm công",
@@ -13,6 +13,9 @@
     performance: "Đánh giá KPI",
     settings: "Cài đặt",
     mainMenu: "Menu chính",
+    sectionCommon: "Hệ thống chung",
+    sectionManagement: "Quản trị Nhân sự",
+    sectionSystem: "Quản trị Hệ thống",
   },
   navbar: {
     title: "Hệ thống Quản trị HRM",

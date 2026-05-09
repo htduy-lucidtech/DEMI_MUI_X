@@ -180,26 +180,6 @@ export default function MainLayout({
                     <Typography variant="body2">{t("role_admin")}</Typography>
                   </Stack>
                 </MenuItem>
-                <MenuItem value="Employee">
-                  <Stack
-                    direction="row"
-                    spacing={1.5}
-                    sx={{ alignItems: "center" }}
-                  >
-                    <PersonIcon sx={{ fontSize: 20, color: "#666" }} />
-                    <Typography variant="body2">{t("role_employee")}</Typography>
-                  </Stack>
-                </MenuItem>
-                <MenuItem value="Attendance">
-                  <Stack
-                    direction="row"
-                    spacing={1.5}
-                    sx={{ alignItems: "center" }}
-                  >
-                    <PersonIcon sx={{ fontSize: 20, color: "#666" }} />
-                    <Typography variant="body2">{t("role_attendance")}</Typography>
-                  </Stack>
-                </MenuItem>
                 <MenuItem value="Manager">
                   <Stack
                     direction="row"
@@ -210,14 +190,14 @@ export default function MainLayout({
                     <Typography variant="body2">{t("role_manager")}</Typography>
                   </Stack>
                 </MenuItem>
-                <MenuItem value="Personnel">
+                <MenuItem value="Employee">
                   <Stack
                     direction="row"
                     spacing={1.5}
                     sx={{ alignItems: "center" }}
                   >
                     <PersonIcon sx={{ fontSize: 20, color: "#666" }} />
-                    <Typography variant="body2">{t("role_personnel")}</Typography>
+                    <Typography variant="body2">{t("role_employee")}</Typography>
                   </Stack>
                 </MenuItem>
               </TextField>

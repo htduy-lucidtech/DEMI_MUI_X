@@ -76,7 +76,7 @@ const messagesMap = {
 
 export default getRequestConfig(async () => {
   const cookieStore = await cookies();
-  const locale = cookieStore.get('NEXT_LOCALE')?.value || 'vi';
+  const locale = cookieStore?.get('NEXT_LOCALE')?.value || 'vi';
 
   return {
     locale,
