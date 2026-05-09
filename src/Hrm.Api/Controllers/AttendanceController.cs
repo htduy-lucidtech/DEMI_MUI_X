@@ -233,6 +233,11 @@ namespace Hrm.Api.Controllers
             public string? LateReason { get; set; }
         }
 
+        public class CheckOutRequest
+        {
+            public int UserId { get; set; }
+        }
+
         [HttpPost("check-in")]
         [AllowAnonymous]
         public async Task<IActionResult> CheckInLegacy([FromBody] CheckInRequest request)
@@ -294,8 +299,9 @@ namespace Hrm.Api.Controllers
 
         [HttpPost("check-out")]
         [AllowAnonymous]
-        public async Task<IActionResult> CheckOutLegacy([FromBody] int userId)
+        public async Task<IActionResult> CheckOutLegacy([FromBody] CheckOutRequest request)
         {
+            var userId = request.UserId;
             var today = DateTime.UtcNow.Date;
             var attendance = await _context.Attendances
                 .FirstOrDefaultAsync(a => a.UserId == userId && a.CheckInTime.Date == today);
@@ -331,6 +337,36 @@ namespace Hrm.Api.Controllers
             await _notificationService.CreateAndSendAsync(legRoleNotifOut, "Manager");
 
             return Ok(attendance);
+        }
+
+        [HttpGet("regulations")]
+        [AllowAnonymous]
+        public async Task<ActionResult<IEnumerable<SystemSetting>>> GetRegulations()
+        {
+            return await _context.SystemSettings
+                .Where(s => s.Key == "StandardCheckInTime" || s.Key == "StandardCheckOutTime")
+                .ToListAsync();
+        }
+
+        [HttpPost("regulations")]
+        [Authorize(Roles = "Admin,Personnel")]
+        public async Task<IActionResult> UpdateRegulations([FromBody] List<SystemSetting> settings)
+        {
+            foreach (var setting in settings)
+            {
+                var existing = await _context.SystemSettings.FirstOrDefaultAsync(s => s.Key == setting.Key);
+                if (existing != null)
+                {
+                    existing.Value = setting.Value;
+                    _context.Entry(existing).State = EntityState.Modified;
+                }
+                else
+                {
+                    _context.SystemSettings.Add(setting);
+                }
+            }
+            await _context.SaveChangesAsync();
+            return Ok();
         }
     }
 

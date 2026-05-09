@@ -246,13 +246,21 @@ namespace Hrm.Api.Controllers
         {
             if (id != request.Id) return BadRequest();
 
+            var existing = await _context.LeaveRequests.FindAsync(id);
+            if (existing == null) return NotFound();
+
+            // Cập nhật các trường chính
+            existing.LeaveType = request.LeaveType;
+            existing.Reason = request.Reason;
+            existing.Status = request.Status;
+            existing.Comment = request.Comment;
+            existing.ApprovedBy = request.ApprovedBy;
+
             // Ensure incoming date fields have UTC kind to satisfy Npgsql timestamptz
             if (request.StartDate != default)
-                request.StartDate = DateTime.SpecifyKind(request.StartDate, DateTimeKind.Utc);
+                existing.StartDate = DateTime.SpecifyKind(request.StartDate, DateTimeKind.Utc);
             if (request.EndDate != default)
-                request.EndDate = DateTime.SpecifyKind(request.EndDate, DateTimeKind.Utc);
-
-            _context.Entry(request).State = EntityState.Modified;
+                existing.EndDate = DateTime.SpecifyKind(request.EndDate, DateTimeKind.Utc);
 
             try
             {

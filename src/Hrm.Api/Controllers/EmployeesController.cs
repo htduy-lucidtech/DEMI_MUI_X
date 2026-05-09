@@ -51,7 +51,26 @@ namespace Hrm.Api.Controllers
         {
             if (id != employee.Id) return BadRequest();
 
-            _context.Entry(employee).State = EntityState.Modified;
+            var existing = await _context.Employees.FindAsync(id);
+            if (existing == null) return NotFound();
+
+            // Cập nhật các trường
+            existing.FullName = employee.FullName;
+            existing.Email = employee.Email;
+            existing.PhoneNumber = employee.PhoneNumber;
+            existing.Gender = employee.Gender;
+            existing.DateOfBirth = employee.DateOfBirth;
+            existing.Address = employee.Address;
+            existing.IdentityCardNumber = employee.IdentityCardNumber;
+            existing.BankName = employee.BankName;
+            existing.BankAccountNumber = employee.BankAccountNumber;
+            existing.SocialInsuranceNumber = employee.SocialInsuranceNumber;
+            existing.Position = employee.Position;
+            existing.DepartmentId = employee.DepartmentId;
+            existing.BaseSalary = employee.BaseSalary;
+            existing.Allowance = employee.Allowance;
+            existing.HourlyRate = employee.HourlyRate;
+            existing.HourlyRateOT = employee.HourlyRateOT;
 
             try
             {
