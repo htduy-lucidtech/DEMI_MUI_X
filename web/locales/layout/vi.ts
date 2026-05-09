@@ -1,4 +1,5 @@
 export default {
+  locale: "vi",
   sidebar: {
     dashboard: "Bảng điều khiển",
     attendance: "Chấm công",
@@ -59,6 +60,10 @@ export default {
     delete: "Xóa",
     edit: "Sửa",
     view: "Xem",
+    notAvailable: "N/A",
+    excel: "Excel",
+    pdf: "PDF",
+    currency: "₫",
   },
   loadingSteps: {
     compiling: "Đang biên dịch...",

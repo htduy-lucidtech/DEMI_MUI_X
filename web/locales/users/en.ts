@@ -32,5 +32,21 @@ export default {
     admin: "Admin",
     manager: "Manager",
     employee: "Employee"
-  }
+  },
+  link_profile: "Link Profile",
+  linked_profile: "Linked Profile",
+  not_linked: "Not linked",
+  no_unlinked_emp: "No unlinked profiles available",
+  link_success: "Profile linked successfully",
+  link_error: "Error linking profile",
+  already_linked: "This employee is already linked to another account",
+  select_emp: "Select Employee",
+  select_emp_desc: "Select an employee from the unlinked list to link with {username}.",
+  link_confirm: "Confirm Linking",
+  temp_account: "Temporary Account",
+  add_temp: "Add Temporary Account",
+  create_success: "Temporary account created successfully. Link with a profile later.",
+  update_success: "Account updated successfully",
+  unique_error: "Error: Username or Email might already exist",
+  bulk_delete: "Bulk Delete"
 };

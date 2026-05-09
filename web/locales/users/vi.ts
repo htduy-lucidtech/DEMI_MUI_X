@@ -32,5 +32,21 @@ export default {
     admin: "Admin",
     manager: "Quản lý",
     employee: "Nhân viên"
-  }
+  },
+  link_profile: "Liên kết hồ sơ",
+  linked_profile: "Hồ sơ liên kết",
+  not_linked: "Chưa liên kết hồ sơ",
+  no_unlinked_emp: "Không còn hồ sơ chưa liên kết",
+  link_success: "Liên kết hồ sơ nhân sự thành công",
+  link_error: "Lỗi khi liên kết hồ sơ",
+  already_linked: "Nhân viên này đã được liên kết với tài khoản khác",
+  select_emp: "Chọn nhân viên",
+  select_emp_desc: "Chọn nhân viên từ danh sách hồ sơ chưa có tài khoản để liên kết với {username}.",
+  link_confirm: "Xác nhận liên kết",
+  temp_account: "Tài khoản tạm",
+  add_temp: "Thêm tài khoản tạm",
+  create_success: "Tạo tài khoản tạm thành công. Hãy liên kết với hồ sơ sau.",
+  update_success: "Cập nhật tài khoản thành công",
+  unique_error: "Lỗi: Tên đăng nhập hoặc Email có thể đã tồn tại",
+  bulk_delete: "Xóa hàng loạt"
 };

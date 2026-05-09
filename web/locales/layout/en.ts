@@ -1,4 +1,5 @@
 export default {
+  locale: "en",
   sidebar: {
     dashboard: "Dashboard",
     attendance: "Attendance",
@@ -58,7 +59,11 @@ export default {
     cancel: "Cancel",
     delete: "Delete",
     edit: "Edit",
-    view: "View"
+    view: "View",
+    notAvailable: "N/A",
+    excel: "Excel",
+    pdf: "PDF",
+    currency: "$",
   },
   loadingSteps: {
     compiling: "Compiling...",
