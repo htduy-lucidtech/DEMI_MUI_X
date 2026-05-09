@@ -1,4 +1,4 @@
-import api from "@/services/api";
+import api from "@/lib/api";
 import Cookies from 'js-cookie';
 
 export const authService = {
@@ -11,7 +11,7 @@ export const authService = {
     }
     return response.data;
   },
-  
+
   logout: () => {
     Cookies.remove('token');
     localStorage.removeItem('token');

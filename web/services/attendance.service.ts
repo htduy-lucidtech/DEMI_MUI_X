@@ -1,4 +1,4 @@
-import api from "@/services/api";
+import api from "@/lib/api";
 
 export interface AttendanceRecord {
   id?: number;
@@ -54,7 +54,7 @@ export const attendanceService = {
   },
 
   checkOut: async (userId: number) => {
-    const response = await api.post("/Attendance/check-out", userId);
+    const response = await api.post("/Attendance/check-out", { userId });
     return response.data;
   },
 

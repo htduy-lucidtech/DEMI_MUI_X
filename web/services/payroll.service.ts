@@ -1,4 +1,4 @@
-import api from "@/services/api";
+import api from "@/lib/api";
 
 export interface PayrollRecord {
   userId: number;
@@ -16,7 +16,7 @@ export const payrollService = {
     const response = await api.get(`/Payroll/calculate/${month}/${year}`);
     return response.data;
   },
-  
+
   exportExcel: async (month: number, year: number): Promise<Blob> => {
     const response = await api.get(`/Payroll/export/excel/${month}/${year}`, {
       responseType: 'blob'

@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import Cookies from "js-cookie";
 
-export type Role = "Admin" | "Manager" | "Personnel" | "Attendance" | "Employee";
+export type Role = "Admin" | "Manager" | "Employee";
 
 interface UserInfo {
   id: number;
