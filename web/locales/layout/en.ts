@@ -8,6 +8,8 @@ export default {
     leave: "Leave Request",
     admin: "System Admin",
     users: "Accounts",
+    roles: "Roles",
+    approvals: "Approvals",
     org_chart: "Org Chart",
     payroll: "Payroll",
     recruitment: "Recruitment",
@@ -38,6 +40,8 @@ export default {
     Personnel: "Personnel",
     Attendance: "Attendance",
     Employee: "Employee",
+    "General Manager": "General Manager",
+    "Department Manager": "Department Manager",
   },
   breadcrumbs: {
     home: "Home",

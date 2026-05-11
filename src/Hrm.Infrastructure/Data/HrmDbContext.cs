@@ -18,6 +18,15 @@ namespace Hrm.Infrastructure.Data {
         public DbSet<PerformanceReview> PerformanceReviews { get; set; }
         public DbSet<SystemSetting> SystemSettings { get; set; }
         public DbSet<Notification> Notifications { get; set; }
+        
+        // RBAC
+        public DbSet<Permission> Permissions { get; set; }
+        public DbSet<Role> Roles { get; set; }
+        public DbSet<RolePermission> RolePermissions { get; set; }
+        public DbSet<UserRole> UserRoles { get; set; }
+        public DbSet<AuditLog> AuditLogs { get; set; }
+        public DbSet<Branch> Branches { get; set; }
+        public DbSet<ApprovalRequest> ApprovalRequests { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -26,6 +35,12 @@ namespace Hrm.Infrastructure.Data {
                 .HasOne(e => e.Account)
                 .WithOne(u => u.Employee)
                 .HasForeignKey<User>(u => u.EmployeeId);
+
+            modelBuilder.Entity<Department>()
+                .HasOne(d => d.Parent)
+                .WithMany(d => d.SubDepartments)
+                .HasForeignKey(d => d.ParentId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             base.OnModelCreating(modelBuilder);
         }

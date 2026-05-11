@@ -6,11 +6,13 @@ export default {
   columns: {
     name: "Department Name",
     description: "Description",
+    parent: "Parent Department",
     actions: "Actions"
   },
   dialog: {
     name: "Department Name",
     description: "Detailed description",
+    parent: "Parent Department",
     cancel: "Cancel",
     save: "Save",
   }

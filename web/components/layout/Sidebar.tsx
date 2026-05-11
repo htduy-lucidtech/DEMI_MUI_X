@@ -25,6 +25,8 @@ import {
   Paid as PaidIcon,
   Timeline as PerformanceIcon,
   AccountTree as OrgChartIcon,
+  Security as SecurityIcon,
+  PlaylistAddCheck as ApprovalIcon,
 } from "@mui/icons-material";
 import { useRouter, usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -41,6 +43,7 @@ interface MenuItem {
   icon: React.ReactNode;
   path: string;
   roles: Role[];
+  permission?: string;
   section: "sectionCommon" | "sectionManagement" | "sectionSystem";
 }
 
@@ -51,7 +54,7 @@ export default function Sidebar({ isSidebarCollapsed, onClose }: SidebarProps) {
   const router = useRouter();
   const pathname = usePathname();
   const t = useTranslations("Layout.sidebar");
-  const { activeRole } = useAuth();
+  const { activeRole, hasPermission } = useAuth();
 
   const menuItems: MenuItem[] = [
     // --- COMMON SECTION ---
@@ -94,6 +97,7 @@ export default function Sidebar({ isSidebarCollapsed, onClose }: SidebarProps) {
       icon: <PeopleIcon />,
       path: "/dashboard/personnel",
       roles: ["Admin", "Manager"],
+      permission: "EMP_VIEW_ALL",
       section: "sectionManagement",
     },
     {
@@ -102,6 +106,7 @@ export default function Sidebar({ isSidebarCollapsed, onClose }: SidebarProps) {
       icon: <PaidIcon />,
       path: "/dashboard/payroll",
       roles: ["Admin", "Manager"],
+      permission: "PAYROLL_VIEW_ALL",
       section: "sectionManagement",
     },
     {
@@ -126,8 +131,25 @@ export default function Sidebar({ isSidebarCollapsed, onClose }: SidebarProps) {
       text: t("users"),
       icon: <AdminIcon />,
       path: "/dashboard/users",
-      roles: ["Admin", "Manager"],
+      roles: ["Admin"],
+      permission: "USERS_VIEW",
       section: "sectionSystem",
+    },
+    {
+      key: "roles",
+      text: t("roles"),
+      icon: <SecurityIcon />,
+      path: "/dashboard/admin/roles",
+      roles: ["Admin"],
+      section: "sectionSystem",
+    },
+    {
+      key: "approvals",
+      text: t("approvals"),
+      icon: <ApprovalIcon />,
+      path: "/dashboard/approvals",
+      roles: ["Admin", "General Manager", "Department Manager"],
+      section: "sectionManagement",
     },
     {
       key: "department",
@@ -151,6 +173,7 @@ export default function Sidebar({ isSidebarCollapsed, onClose }: SidebarProps) {
       icon: <SettingsIcon />,
       path: "/settings",
       roles: ["Admin"],
+      permission: "SYS_SETTINGS",
       section: "sectionSystem",
     },
   ];
@@ -186,7 +209,21 @@ export default function Sidebar({ isSidebarCollapsed, onClose }: SidebarProps) {
         scrollbarWidth: "none",
       }}>
         {sections.map((section) => {
-          const items = menuItems.filter(item => item.section === section.key && (activeRole ? item.roles.includes(activeRole) : false));
+          const items = menuItems.filter(item => {
+            if (item.section !== section.key) return false;
+            if (!activeRole) return false;
+            
+            // Role access
+            const hasRoleAccess = item.roles.includes(activeRole);
+            if (!hasRoleAccess) return false;
+
+            // Permission access (if specified)
+            if (item.permission) {
+              return hasPermission(item.permission);
+            }
+
+            return true;
+          });
           if (items.length === 0) return null;
 
           return (

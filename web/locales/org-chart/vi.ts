@@ -21,5 +21,9 @@ export default {
     frontend: "React Team",
     backend: ".NET Team",
   },
-  interactiveMode: "Chế độ tương tác"
+  interactiveMode: "Chế độ tương tác",
+  refresh: "Làm mới",
+  instructions: "HƯỚNG DẪN",
+  zoom_instruction: "Cuộn chuột để Phóng to/Thu nhỏ",
+  move_instruction: "Giữ chuột để Di chuyển sơ đồ"
 };

@@ -214,9 +214,9 @@ namespace Hrm.Api.Controllers
         public async Task<IActionResult> GetTodayStatus()
         {
             var userId = GetUserId();
-            var today = DateTime.UtcNow.Date;
+            var today = DateTime.SpecifyKind(DateTime.UtcNow.Date, DateTimeKind.Utc);
             var attendance = await _context.Attendances
-                .FirstOrDefaultAsync(a => a.UserId == userId && a.CheckInTime.Date == today);
+                .FirstOrDefaultAsync(a => a.UserId == userId && a.CheckInTime.Date == today.Date);
 
             var settings = await _context.SystemSettings
                 .Where(s => s.Key == "StandardCheckInTime" || s.Key == "StandardCheckOutTime")

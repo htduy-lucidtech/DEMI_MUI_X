@@ -17,6 +17,8 @@ const leaveVi = {
     approve: "Duyệt",
     reject: "Từ chối",
     delete_all: "Xóa",
+    approve_selected: "Duyệt chọn",
+    reject_selected: "Từ chối chọn",
   },
   dialog: {
     title: "Tạo yêu cầu nghỉ phép",
@@ -28,6 +30,9 @@ const leaveVi = {
     submit: "Gửi đơn",
     delete_bulk_title: "Xác nhận xóa hàng loạt",
     delete_bulk_confirm: "Bạn có chắc muốn xóa {count} bản ghi đã chọn?",
+    search_placeholder: "Tìm kiếm nhân viên, loại nghỉ, lý do hoặc trạng thái",
+    filter_all: "Tất cả trạng thái",
+    clear_filters: "Xóa lọc",
   },
   messages: {
     success: "Gửi yêu cầu thành công!",
@@ -45,6 +50,10 @@ const leaveVi = {
       Holiday: "Nghỉ lễ",
       "Annual Leave": "Nghỉ phép năm",
       "Sick Leave": "Nghỉ ốm",
+      "Yearly Leave": "Nghỉ phép năm",
+      "Phep Nam": "Nghỉ phép năm",
+      "Nghi Om": "Nghỉ ốm",
+      "Viec Rieng": "Việc riêng",
     },
     status: {
       Pending: "Đang chờ",

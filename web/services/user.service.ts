@@ -23,6 +23,8 @@ export interface User {
   isActive: boolean;
   phone?: string;
   securityScore?: number;
+  roleIds?: number[];
+  roles?: Array<{ id: number; name: string }>;
 }
 
 export const userService = {

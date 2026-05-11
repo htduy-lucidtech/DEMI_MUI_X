@@ -50,6 +50,28 @@ namespace Hrm.Api.Controllers
         [HttpPost]
         public async Task<ActionResult<Employee>> CreateEmployee(Employee employee)
         {
+            var isAdmin = User.IsInRole("Admin");
+            var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            int.TryParse(userIdStr, out var userId);
+
+            if (!isAdmin)
+            {
+                var approval = new ApprovalRequest
+                {
+                    RequesterId = userId,
+                    RequestType = "PERSONNEL_CREATE",
+                    EntityName = "Employee",
+                    DataJson = System.Text.Json.JsonSerializer.Serialize(employee),
+                    Description = $"Thêm mới nhân viên: {employee.FullName}",
+                    DepartmentId = employee.DepartmentId,
+                    Status = ApprovalStatus.Pending
+                };
+
+                _context.ApprovalRequests.Add(approval);
+                await _context.SaveChangesAsync();
+                return Accepted(new { message = "Yêu cầu thêm mới đã được gửi để phê duyệt." });
+            }
+
             _context.Employees.Add(employee);
             await _context.SaveChangesAsync();
             return CreatedAtAction(nameof(GetEmployee), new { id = employee.Id }, employee);
@@ -60,26 +82,40 @@ namespace Hrm.Api.Controllers
         {
             if (id != employee.Id) return BadRequest();
 
-            var existing = await _context.Employees.FindAsync(id);
-            if (existing == null) return NotFound();
+            // Check if user is Admin
+            var isAdmin = User.IsInRole("Admin");
+            var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            int.TryParse(userIdStr, out var userId);
 
-            // Cập nhật các trường
-            existing.FullName = employee.FullName;
-            existing.Email = employee.Email;
-            existing.PhoneNumber = employee.PhoneNumber;
-            existing.Gender = employee.Gender;
-            existing.DateOfBirth = employee.DateOfBirth;
-            existing.Address = employee.Address;
-            existing.IdentityCardNumber = employee.IdentityCardNumber;
-            existing.BankName = employee.BankName;
-            existing.BankAccountNumber = employee.BankAccountNumber;
-            existing.SocialInsuranceNumber = employee.SocialInsuranceNumber;
-            existing.Position = employee.Position;
-            existing.DepartmentId = employee.DepartmentId;
-            existing.BaseSalary = employee.BaseSalary;
-            existing.Allowance = employee.Allowance;
-            existing.HourlyRate = employee.HourlyRate;
-            existing.HourlyRateOT = employee.HourlyRateOT;
+            if (!isAdmin)
+            {
+                // Create Approval Request instead
+                var existing = await _context.Employees.AsNoTracking().FirstOrDefaultAsync(e => e.Id == id);
+                if (existing == null) return NotFound();
+
+                var approval = new ApprovalRequest
+                {
+                    RequesterId = userId,
+                    RequestType = "PERSONNEL_UPDATE",
+                    EntityName = "Employee",
+                    EntityId = id.ToString(),
+                    DataJson = System.Text.Json.JsonSerializer.Serialize(employee),
+                    Description = $"Cập nhật thông tin nhân viên {existing.FullName} (ID: {id})",
+                    DepartmentId = existing.DepartmentId,
+                    Status = ApprovalStatus.Pending
+                };
+
+                _context.ApprovalRequests.Add(approval);
+                await _context.SaveChangesAsync();
+                return Accepted(new { message = "Yêu cầu thay đổi đã được gửi để phê duyệt.", requestId = approval.Id });
+            }
+
+            var existingEmp = await _context.Employees.FindAsync(id);
+            if (existingEmp == null) return NotFound();
+
+            // Direct update for Admin
+            _context.Entry(existingEmp).CurrentValues.SetValues(employee);
+            existingEmp.Id = id;
 
             try
             {
@@ -157,6 +193,28 @@ namespace Hrm.Api.Controllers
         {
             var employee = await _context.Employees.FindAsync(id);
             if (employee == null) return NotFound();
+
+            var isAdmin = User.IsInRole("Admin");
+            var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            int.TryParse(userIdStr, out var userId);
+
+            if (!isAdmin)
+            {
+                var approval = new ApprovalRequest
+                {
+                    RequesterId = userId,
+                    RequestType = "PERSONNEL_DELETE",
+                    EntityName = "Employee",
+                    EntityId = id.ToString(),
+                    Description = $"Xóa nhân viên {employee.FullName} (ID: {id})",
+                    DepartmentId = employee.DepartmentId,
+                    Status = ApprovalStatus.Pending
+                };
+
+                _context.ApprovalRequests.Add(approval);
+                await _context.SaveChangesAsync();
+                return Accepted(new { message = "Yêu cầu xóa nhân viên đã được gửi để phê duyệt." });
+            }
 
             _context.Employees.Remove(employee);
             await _context.SaveChangesAsync();

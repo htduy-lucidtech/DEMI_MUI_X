@@ -80,5 +80,10 @@ export default {
       work_salary: "Work & Salary",
       other: "Other"
     }
+  },
+  messages: {
+    request_sent: "Request has been sent for approval.",
+    save_success: "Personnel updated successfully!",
+    delete_success: "Personnel deleted!",
   }
 };

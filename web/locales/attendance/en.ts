@@ -51,7 +51,10 @@ export default {
     cancel: "Cancel",
     delete_bulk_title: "Confirm Bulk Delete",
     delete_bulk_confirm: "Are you sure you want to delete {count} selected records?",
-    delete_all: "Delete Selected"
+    delete_all: "Delete Selected",
+    search_placeholder: "Search by employee, date, time, status or reason",
+    filter_all: "All Status",
+    clear_filters: "Clear Filters"
   },
   messages: {
     successIn: "Check-in successful!",

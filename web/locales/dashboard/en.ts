@@ -1,10 +1,17 @@
 export default {
   title: "Admin Dashboard",
+  analytics_title: "System Trend Analytics",
+  recent_activity: "Recent Activity",
+  range: {
+    week: "Week",
+    month: "Month"
+  },
   welcome: "Welcome back to the personnel management system.",
   welcome_personal: "Welcome back, {name}!",
   month: "Month {month}",
   stats: {
     total_employees: "Total Employees",
+    total_managers: "Total Managers",
     attendance_today: "Attendance Today",
     late_today: "Late Today",
     total_late: "Total Late Occurrences",

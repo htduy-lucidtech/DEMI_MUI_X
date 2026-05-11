@@ -11,8 +11,12 @@ namespace Hrm.Domain.Entities
         public string Role { get; set; } = "Employee";
         public bool IsActive { get; set; } = true;
 
-        // Link to Personnel
         public int EmployeeId { get; set; }
         public Employee? Employee { get; set; }
+
+        public int? BranchId { get; set; }
+        public Branch? Branch { get; set; }
+
+        public ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
     }
 }

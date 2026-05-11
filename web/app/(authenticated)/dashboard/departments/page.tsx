@@ -14,6 +14,10 @@ import {
   DialogContent,
   DialogActions,
   TextField,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -30,7 +34,7 @@ export default function DepartmentsPage() {
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [editingDept, setEditingDept] = useState<Department | null>(null);
-  const [formData, setFormData] = useState<Department>({ name: "", description: "" });
+  const [formData, setFormData] = useState<Department>({ name: "", description: "", parentId: undefined });
 
   const fetchDepts = async () => {
     setLoading(true);
@@ -57,17 +61,24 @@ export default function DepartmentsPage() {
       setFormData(dept);
     } else {
       setEditingDept(null);
-      setFormData({ name: "", description: "" });
+      setFormData({ name: "", description: "", parentId: undefined });
     }
     setOpen(true);
   };
 
   const handleSave = async () => {
     try {
+      const dataToSave = {
+        id: formData.id,
+        name: formData.name,
+        description: formData.description,
+        parentId: formData.parentId || null
+      } as any;
+
       if (editingDept) {
-        await departmentsService.update(editingDept.id!, formData);
+        await departmentsService.update(editingDept.id!, dataToSave);
       } else {
-        await departmentsService.create(formData);
+        await departmentsService.create(dataToSave);
       }
       setOpen(false);
       fetchDepts();
@@ -87,19 +98,25 @@ export default function DepartmentsPage() {
     }
   };
 
-  const columns: GridColDef[] = [
+  const columns: GridColDef<Department>[] = [
     { field: "name", headerName: t("columns.name"), flex: 1 },
+    {
+      field: "parent",
+      headerName: t("columns.parent"),
+      flex: 1,
+      valueGetter: (_value: any, row: any) => row.parent?.name || "-"
+    },
     { field: "description", headerName: t("columns.description"), flex: 1.5 },
     {
       field: "actions",
       headerName: t("columns.actions"),
       width: 120,
-      renderCell: (params: GridRenderCellParams) => (
+      renderCell: (params: GridRenderCellParams<Department>) => (
         <Stack direction="row" spacing={1}>
           <IconButton size="small" onClick={() => handleOpen(params.row)}>
             <EditIcon fontSize="small" />
           </IconButton>
-          <IconButton size="small" color="error" onClick={() => handleDelete(params.row.id)}>
+          <IconButton size="small" color="error" onClick={() => params.row.id && handleDelete(params.row.id)}>
             <DeleteIcon fontSize="small" />
           </IconButton>
         </Stack>
@@ -111,10 +128,10 @@ export default function DepartmentsPage() {
     <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
       {/* Actions Row */}
       <Box sx={{ display: "flex", justifyContent: "flex-end", alignItems: "center" }}>
-        <Button 
-          variant="contained" 
+        <Button
+          variant="contained"
           size="small"
-          startIcon={<AddIcon />} 
+          startIcon={<AddIcon />}
           onClick={() => handleOpen()}
           sx={{ borderRadius: 2, px: 2 }}
         >
@@ -148,10 +165,26 @@ export default function DepartmentsPage() {
               label={t("dialog.description")}
               fullWidth
               multiline
-              rows={3}
+              rows={2}
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             />
+            <FormControl fullWidth>
+              <InputLabel>{t("dialog.parent")}</InputLabel>
+              <Select
+                value={formData.parentId || ""}
+                label={t("dialog.parent")}
+                onChange={(e) => setFormData({ ...formData, parentId: e.target.value ? Number(e.target.value) : undefined })}
+              >
+                <MenuItem value=""><em>None</em></MenuItem>
+                {depts
+                  .filter(d => d.id !== editingDept?.id) // Prevent self-parent
+                  .map(d => (
+                    <MenuItem key={d.id} value={d.id}>{d.name}</MenuItem>
+                  ))
+                }
+              </Select>
+            </FormControl>
           </Stack>
         </DialogContent>
         <DialogActions sx={{ p: 3 }}>

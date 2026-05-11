@@ -22,8 +22,8 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Card,
-  CardContent,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -59,6 +59,13 @@ export default function PersonnelPage() {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [bulkDeleteConfirmOpen, setBulkDeleteConfirmOpen] = useState(false);
   const [idCardOpen, setIdCardOpen] = useState(false);
+
+  // Snackbar state
+  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: "success" | "info" | "warning" | "error" }>({
+    open: false,
+    message: "",
+    severity: "success",
+  });
 
   const getSelectedIds = (): number[] => {
     if (!selectionModel) return [];
@@ -145,25 +152,39 @@ export default function PersonnelPage() {
 
   const handleSaveEmployee = async (data: Partial<Employee>) => {
     try {
+      let result;
       if (editingEmployee?.id) {
-        await employeeService.update(editingEmployee.id, data);
+        result = await employeeService.update(editingEmployee.id, data);
       } else {
-        await employeeService.create(data);
+        result = await employeeService.create(data);
       }
-      fetchEmployees();
+      
+      // Handle "Accepted" response (approval required)
+      if (result && result.requestId) {
+        setSnackbar({ open: true, message: t("messages.request_sent"), severity: "info" });
+      } else {
+        setSnackbar({ open: true, message: t("messages.save_success"), severity: "success" });
+        fetchEmployees();
+      }
+      setFormDialogOpen(false);
     } catch (error) {
-      console.error("Failed to save employee:", error);
+      setSnackbar({ open: true, message: tc("error") || "Error saving data", severity: "error" });
     }
   };
 
   const handleDeleteConfirm = async () => {
     if (selectedEmployee?.id) {
       try {
-        await employeeService.delete(selectedEmployee.id);
-        fetchEmployees();
+        const result = await employeeService.delete(selectedEmployee.id);
+        if (result && result.requestId) {
+            setSnackbar({ open: true, message: t("messages.request_sent"), severity: "info" });
+        } else {
+            setSnackbar({ open: true, message: t("messages.delete_success"), severity: "success" });
+            fetchEmployees();
+        }
         setDeleteConfirmOpen(false);
       } catch (error) {
-        console.error("Failed to delete employee:", error);
+        setSnackbar({ open: true, message: "Error deleting data", severity: "error" });
       }
     }
   };
@@ -171,11 +192,12 @@ export default function PersonnelPage() {
   const handleBulkDeleteConfirm = async () => {
     try {
       await employeeService.bulkDelete(getSelectedIds());
+      setSnackbar({ open: true, message: t("messages.delete_success"), severity: "success" });
       fetchEmployees();
       setSelectionModel([]);
       setBulkDeleteConfirmOpen(false);
     } catch (error) {
-      console.error("Failed to bulk delete employees:", error);
+      setSnackbar({ open: true, message: "Error in bulk delete", severity: "error" });
     }
   };
 
@@ -215,7 +237,7 @@ export default function PersonnelPage() {
         ),
       },
     ],
-    [t],
+    [t, tc],
   );
 
   return (
@@ -270,11 +292,26 @@ export default function PersonnelPage() {
       </Drawer>
 
       <EmployeeDialog open={formDialogOpen} onClose={() => setFormDialogOpen(false)} onSave={handleSaveEmployee} employee={editingEmployee} title={dialogTitle} />
+      
       <Dialog open={deleteConfirmOpen} onClose={() => setDeleteConfirmOpen(false)}>
         <DialogTitle>{t("dialog.delete_title")}</DialogTitle>
         <DialogContent>{t("dialog.delete_confirm")} <strong>{selectedEmployee?.fullName}</strong></DialogContent>
-        <DialogActions sx={{ p: 2 }}><Button onClick={() => setDeleteConfirmOpen(false)} variant="outlined">{t("dialog.cancel")}</Button><Button onClick={handleDeleteConfirm} variant="contained" color="error">{t("dialog.delete")}</Button></DialogActions>
+        <DialogActions sx={{ p: 2 }}>
+            <Button onClick={() => setDeleteConfirmOpen(false)} variant="outlined">{t("dialog.cancel")}</Button>
+            <Button onClick={handleDeleteConfirm} variant="contained" color="error">{t("dialog.delete")}</Button>
+        </DialogActions>
       </Dialog>
+
+      <Snackbar 
+        open={snackbar.open} 
+        autoHideDuration={6000} 
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert onClose={() => setSnackbar({ ...snackbar, open: false })} severity={snackbar.severity} sx={{ width: '100%' }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

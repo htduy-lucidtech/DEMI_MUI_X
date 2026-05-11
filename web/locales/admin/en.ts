@@ -15,5 +15,15 @@ export default {
     realtimeNotify: "Real-time Notifications"
   },
   save: "Save Settings",
-  success: "Settings updated successfully!"
+  success: "Updated successfully!",
+  roles: {
+    title: "System Permissions",
+    add: "Add Role",
+    edit: "Edit Role",
+    name: "Role Name",
+    description: "Description",
+    permissions: "Permission List",
+    save: "Save Changes",
+    cancel: "Cancel"
+  }
 };

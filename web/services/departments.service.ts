@@ -4,6 +4,11 @@ export interface Department {
   id?: number;
   name: string;
   description?: string;
+  parentId?: number;
+  parent?: {
+    id: number;
+    name: string;
+  };
 }
 
 export const departmentsService = {

@@ -50,7 +50,10 @@ export default {
     cancel: "Hủy bỏ",
     delete_bulk_title: "Xác nhận xóa hàng loạt",
     delete_bulk_confirm: "Bạn có chắc muốn xóa {count} bản ghi đã chọn?",
-    delete_all: "Xóa"
+    delete_all: "Xóa",
+    search_placeholder: "Tìm kiếm nhân viên, ngày tháng, giờ, trạng thái hoặc lý do",
+    filter_all: "Tất cả trạng thái",
+    clear_filters: "Xóa lọc"
   },
   messages: {
     successIn: "Check-in thành công!",

@@ -27,29 +27,69 @@ namespace Hrm.Api.Controllers
         /// <returns>Danh sách người dùng kèm thông tin nhân viên liên kết.</returns>
         [Authorize(Roles = "Admin,Manager")]
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<User>>> GetUsers()
+        public async Task<ActionResult<IEnumerable<object>>> GetUsers()
         {
             return await _context.Users
                 .Include(u => u.Employee)
+                .Include(u => u.UserRoles)
+                    .ThenInclude(ur => ur.Role)
+                .Select(u => new {
+                    u.Id,
+                    u.Username,
+                    u.Email,
+                    u.Role,
+                    u.IsActive,
+                    u.EmployeeId,
+                    Employee = u.Employee != null ? new { u.Employee.FullName, u.Employee.Position } : null,
+                    Roles = u.UserRoles.Select(ur => new { ur.Role.Id, ur.Role.Name })
+                })
                 .ToListAsync();
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<User>> GetUser(int id)
+        public async Task<ActionResult<object>> GetUser(int id)
         {
             var user = await _context.Users
                 .Include(u => u.Employee)
-                    .ThenInclude(e => e.Department)
+                .Include(u => u.UserRoles)
+                    .ThenInclude(ur => ur.Role)
                 .FirstOrDefaultAsync(u => u.Id == id);
 
             if (user == null) return NotFound();
-            return user;
+
+            return Ok(new {
+                user.Id,
+                user.Username,
+                user.Email,
+                user.Role,
+                user.IsActive,
+                user.EmployeeId,
+                RoleIds = user.UserRoles.Select(ur => ur.RoleId).ToList()
+            });
         }
 
         [Authorize(Roles = "Admin,Manager")]
         [HttpPost]
-        public async Task<ActionResult<User>> CreateUser(User user)
+        public async Task<ActionResult<User>> CreateUser(UserDto userDto)
         {
+            var user = new User
+            {
+                Username = userDto.Username,
+                Email = userDto.Email,
+                Password = userDto.Password ?? "Password@123",
+                Role = userDto.Role,
+                IsActive = userDto.IsActive,
+                EmployeeId = userDto.EmployeeId
+            };
+
+            if (userDto.RoleIds != null)
+            {
+                foreach (var roleId in userDto.RoleIds)
+                {
+                    user.UserRoles.Add(new UserRole { RoleId = roleId });
+                }
+            }
+
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
             return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
@@ -57,30 +97,30 @@ namespace Hrm.Api.Controllers
 
         [Authorize(Roles = "Admin,Manager")]
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateUser(int id, User user)
+        public async Task<IActionResult> UpdateUser(int id, UserDto userDto)
         {
             try
             {
-                if (id != user.Id) return BadRequest("ID mismatch");
-                
                 var existingUser = await _context.Users
-                    .Include(u => u.Employee)
+                    .Include(u => u.UserRoles)
                     .FirstOrDefaultAsync(u => u.Id == id);
                     
                 if (existingUser == null) return NotFound();
 
                 // Update basic fields
-                existingUser.Email = user.Email ?? existingUser.Email;
-                existingUser.Phone = user.Phone ?? existingUser.Phone;
-                existingUser.IsActive = user.IsActive;
-                existingUser.Role = user.Role ?? existingUser.Role;
-                existingUser.EmployeeId = user.EmployeeId != 0 ? user.EmployeeId : existingUser.EmployeeId;
+                existingUser.Email = userDto.Email ?? existingUser.Email;
+                existingUser.IsActive = userDto.IsActive;
+                existingUser.Role = userDto.Role ?? existingUser.Role;
+                existingUser.EmployeeId = userDto.EmployeeId != 0 ? userDto.EmployeeId : existingUser.EmployeeId;
                 
-                // Update nested employee if provided
-                if (user.Employee != null && existingUser.Employee != null)
+                // Update roles
+                _context.UserRoles.RemoveRange(existingUser.UserRoles);
+                if (userDto.RoleIds != null)
                 {
-                    existingUser.Employee.FullName = user.Employee.FullName ?? existingUser.Employee.FullName;
-                    existingUser.Employee.Email = existingUser.Email; // Sync email
+                    foreach (var roleId in userDto.RoleIds)
+                    {
+                        existingUser.UserRoles.Add(new UserRole { RoleId = roleId });
+                    }
                 }
 
                 await _context.SaveChangesAsync();
@@ -143,6 +183,17 @@ namespace Hrm.Api.Controllers
                 return StatusCode(500, new { message = ex.Message, inner = ex.InnerException?.Message, stackTrace = ex.StackTrace });
             }
         }
+    }
+
+    public class UserDto
+    {
+        public string Username { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string? Password { get; set; }
+        public string Role { get; set; } = "Employee";
+        public bool IsActive { get; set; } = true;
+        public int EmployeeId { get; set; }
+        public List<int>? RoleIds { get; set; }
     }
 
     public class ChangePasswordRequest

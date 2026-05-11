@@ -96,23 +96,28 @@ export async function api_fetch(url: string, options: any = {}) {
 }
 
 export const api = {
-  get: (url: string, options?: any) => api_fetch(url, { ...options, method: 'GET' }),
-  post: (url: string, body?: any, options?: any) => api_fetch(url, { 
-    ...options, 
-    method: 'POST', 
-    body: body instanceof FormData ? body : JSON.stringify(body) 
-  }),
-  put: (url: string, body?: any, options?: any) => api_fetch(url, { 
-    ...options, 
-    method: 'PUT', 
-    body: JSON.stringify(body) 
-  }),
-  patch: (url: string, body?: any, options?: any) => api_fetch(url, { 
-    ...options, 
-    method: 'PATCH', 
-    body: JSON.stringify(body) 
-  }),
-  delete: (url: string, options?: any) => api_fetch(url, { ...options, method: 'DELETE' }),
+  get: <T = any>(url: string, options?: any): Promise<{ data: T }> => 
+    api_fetch(url, { ...options, method: 'GET' }),
+  post: <T = any>(url: string, body?: any, options?: any): Promise<{ data: T }> => 
+    api_fetch(url, { 
+      ...options, 
+      method: 'POST', 
+      body: body instanceof FormData ? body : JSON.stringify(body) 
+    }),
+  put: <T = any>(url: string, body?: any, options?: any): Promise<{ data: T }> => 
+    api_fetch(url, { 
+      ...options, 
+      method: 'PUT', 
+      body: JSON.stringify(body) 
+    }),
+  patch: <T = any>(url: string, body?: any, options?: any): Promise<{ data: T }> => 
+    api_fetch(url, { 
+      ...options, 
+      method: 'PATCH', 
+      body: JSON.stringify(body) 
+    }),
+  delete: <T = any>(url: string, options?: any): Promise<{ data: T }> => 
+    api_fetch(url, { ...options, method: 'DELETE' }),
 };
 
 export default api;

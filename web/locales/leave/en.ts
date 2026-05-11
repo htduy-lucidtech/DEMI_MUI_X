@@ -17,6 +17,8 @@ const leaveEn = {
     approve: "Approve",
     reject: "Reject",
     delete_all: "Delete Selected",
+    approve_selected: "Approve Selected",
+    reject_selected: "Reject Selected",
   },
   dialog: {
     title: "Create Leave Request",
@@ -28,6 +30,9 @@ const leaveEn = {
     submit: "Submit",
     delete_bulk_title: "Confirm Bulk Delete",
     delete_bulk_confirm: "Are you sure you want to delete {count} selected records?",
+    search_placeholder: "Search employee, type, reason or status",
+    filter_all: "All statuses",
+    clear_filters: "Clear filters",
   },
   messages: {
     success: "Request submitted successfully!",
@@ -45,6 +50,10 @@ const leaveEn = {
       Holiday: "Holiday",
       "Annual Leave": "Annual Leave",
       "Sick Leave": "Sick Leave",
+      "Yearly Leave": "Yearly Leave",
+      "Phep Nam": "Annual Leave",
+      "Nghi Om": "Sick Leave",
+      "Viec Rieng": "Personal Leave",
     },
     status: {
       Pending: "Pending",

@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
+using System.Text.Json.Serialization;
 
 namespace Hrm.Api.Controllers
 {
@@ -280,17 +281,7 @@ namespace Hrm.Api.Controllers
             return NoContent();
         }
 
-        [HttpPost("bulk-delete")]
-        public async Task<IActionResult> DeleteLeaveRequests([FromBody] List<int> ids)
-        {
-            var requests = await _context.LeaveRequests.Where(r => ids.Contains(r.Id)).ToListAsync();
-            if (!requests.Any()) return NotFound();
 
-            _context.LeaveRequests.RemoveRange(requests);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
-        }
 
         private bool LeaveRequestExists(int id)
         {
@@ -298,10 +289,17 @@ namespace Hrm.Api.Controllers
         }
     }
 
+
+
     public class UpdateStatusDto
     {
+        [JsonPropertyName("status")]
         public string Status { get; set; } = string.Empty;
+
+        [JsonPropertyName("approvedBy")]
         public string? ApprovedBy { get; set; }
+
+        [JsonPropertyName("comment")]
         public string? Comment { get; set; }
     }
 }

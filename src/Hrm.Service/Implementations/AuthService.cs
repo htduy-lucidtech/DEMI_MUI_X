@@ -25,6 +25,10 @@ namespace Hrm.Service.Implementations
         {
             var user = await _context.Users
                 .Include(u => u.Employee)
+                .Include(u => u.UserRoles)
+                    .ThenInclude(ur => ur.Role)
+                        .ThenInclude(r => r!.RolePermissions)
+                            .ThenInclude(rp => rp.Permission)
                 .FirstOrDefaultAsync(u => u.Username == username && u.Password == password);
                 
             if (user == null) return null;
@@ -36,6 +40,8 @@ namespace Hrm.Service.Implementations
         {
             return await _context.Users
                 .Include(u => u.Employee)
+                .Include(u => u.UserRoles)
+                    .ThenInclude(ur => ur.Role)
                 .FirstOrDefaultAsync(u => u.Username == username);
         }
 
@@ -44,16 +50,40 @@ namespace Hrm.Service.Implementations
             var jwtSettings = _configuration.GetSection("Jwt");
             var key = Encoding.ASCII.GetBytes(jwtSettings["Key"]!);
 
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Name, user.Username),
+                new Claim(ClaimTypes.Role, user.Role), // Keep primary role string
+                new Claim("Email", user.Email),
+                new Claim("FullName", user.Employee?.FullName ?? user.Username)
+            };
+
+            // Add Permissions from all roles
+            if (user.UserRoles != null)
+            {
+                var permissions = user.UserRoles
+                    .Where(ur => ur.Role != null && (ur.ExpiryDate == null || ur.ExpiryDate > DateTime.UtcNow))
+                    .SelectMany(ur => ur.Role!.RolePermissions)
+                    .Where(rp => rp.Permission != null)
+                    .Select(rp => rp.Permission!.Code)
+                    .Distinct();
+
+                foreach (var perm in permissions)
+                {
+                    claims.Add(new Claim("Permission", perm));
+                }
+
+                // Also add each role as a standard role claim
+                foreach (var ur in user.UserRoles.Where(ur => ur.Role != null))
+                {
+                    claims.Add(new Claim(ClaimTypes.Role, ur.Role!.Name));
+                }
+            }
+
             var tokenDescriptor = new SecurityTokenDescriptor
             {
-                Subject = new ClaimsIdentity(new[]
-                {
-                    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                    new Claim(ClaimTypes.Name, user.Username),
-                    new Claim(ClaimTypes.Role, user.Role),
-                    new Claim("Email", user.Email),
-                    new Claim("FullName", user.Employee?.FullName ?? user.Username)
-                }),
+                Subject = new ClaimsIdentity(claims),
                 Expires = DateTime.UtcNow.AddDays(7),
                 Issuer = jwtSettings["Issuer"],
                 Audience = jwtSettings["Audience"],

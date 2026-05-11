@@ -1,10 +1,17 @@
 export default {
   title: "Trang quản trị",
+  analytics_title: "Phân tích xu hướng hệ thống",
+  recent_activity: "Hoạt động gần đây",
+  range: {
+    week: "Tuần",
+    month: "Tháng"
+  },
   welcome: "Chào mừng bạn quay trở lại với hệ thống quản lý nhân sự.",
   welcome_personal: "Chào mừng {name} quay trở lại!",
   month: "Tháng {month}",
   stats: {
     total_employees: "Tổng nhân viên",
+    total_managers: "Tổng quản lý",
     attendance_today: "Chấm công hôm nay",
     late_today: "Đi muộn",
     total_late: "Tổng số lần đi muộn",

@@ -15,5 +15,15 @@ export default {
     realtimeNotify: "Thông báo thời gian thực"
   },
   save: "Lưu cài đặt",
-  success: "Cập nhật thành công!"
+  success: "Cập nhật thành công!",
+  roles: {
+    title: "Phân quyền hệ thống",
+    add: "Thêm nhóm quyền",
+    edit: "Chỉnh sửa nhóm quyền",
+    name: "Tên nhóm quyền",
+    description: "Mô tả",
+    permissions: "Danh sách quyền hạn",
+    save: "Lưu thay đổi",
+    cancel: "Hủy"
+  }
 };

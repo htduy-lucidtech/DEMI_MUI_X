@@ -8,6 +8,8 @@ export default {
     leave: "Nghỉ phép",
     admin: "Quản trị hệ thống",
     users: "Tài khoản",
+    roles: "Nhóm quyền",
+    approvals: "Phê duyệt",
     org_chart: "Sơ đồ tổ chức",
     payroll: "Bảng lương",
     recruitment: "Tuyển dụng",
@@ -38,6 +40,8 @@ export default {
     Personnel: "Nhân sự",
     Attendance: "Chấm công",
     Employee: "Nhân viên",
+    "General Manager": "Quản lý cấp cao",
+    "Department Manager": "Quản lý phòng ban",
   },
   breadcrumbs: {
     home: "Trang chủ",

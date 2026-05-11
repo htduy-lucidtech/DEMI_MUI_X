@@ -21,5 +21,9 @@ export default {
     frontend: "React Team",
     backend: ".NET Team",
   },
-  interactiveMode: "Interactive Mode"
+  interactiveMode: "Interactive Mode",
+  refresh: "Refresh",
+  instructions: "INSTRUCTIONS",
+  zoom_instruction: "Scroll to Zoom In/Out",
+  move_instruction: "Drag to move the chart"
 };

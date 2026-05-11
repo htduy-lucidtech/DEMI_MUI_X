@@ -6,11 +6,13 @@ export default {
   columns: {
     name: "Tên phòng ban",
     description: "Mô tả",
+    parent: "Trực thuộc (Cha)",
     actions: "Thao tác"
   },
   dialog: {
     name: "Tên phòng ban",
     description: "Mô tả chi tiết",
+    parent: "Thuộc phòng ban (Cấp trên)",
     cancel: "Hủy",
     save: "Lưu",
   }

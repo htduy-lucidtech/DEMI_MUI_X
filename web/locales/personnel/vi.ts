@@ -80,5 +80,10 @@ export default {
       work_salary: "Công việc & Lương",
       other: "Khác"
     }
+  },
+  messages: {
+    request_sent: "Yêu cầu đã được gửi đi để phê duyệt.",
+    save_success: "Cập nhật nhân sự thành công!",
+    delete_success: "Đã xóa nhân sự!",
   }
 };
