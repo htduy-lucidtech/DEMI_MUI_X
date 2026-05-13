@@ -42,6 +42,34 @@ namespace Hrm.Infrastructure.Data {
                 .HasForeignKey(d => d.ParentId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // Indexing for Performance Optimization
+            modelBuilder.Entity<User>()
+                .HasIndex(u => u.Username)
+                .IsUnique();
+            
+            modelBuilder.Entity<User>()
+                .HasIndex(u => u.Email)
+                .IsUnique();
+
+            modelBuilder.Entity<Employee>()
+                .HasIndex(e => e.Email)
+                .IsUnique();
+
+            modelBuilder.Entity<Employee>()
+                .HasIndex(e => e.DepartmentId);
+
+            modelBuilder.Entity<Attendance>()
+                .HasIndex(a => new { a.UserId, a.CheckInTime });
+
+            modelBuilder.Entity<LeaveRequest>()
+                .HasIndex(l => new { l.UserId, l.StartDate });
+
+            modelBuilder.Entity<ApprovalRequest>()
+                .HasIndex(ar => ar.Status);
+
+            modelBuilder.Entity<AuditLog>()
+                .HasIndex(al => al.Timestamp);
+
             base.OnModelCreating(modelBuilder);
         }
     }

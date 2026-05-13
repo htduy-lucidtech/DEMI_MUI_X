@@ -1,94 +1,75 @@
-# Kế hoạch Dự án HRM
+# Kế hoạch Dự án HRM Pro
 
 ## 1. Kiến trúc dự án
 
-Sử dụng MUI cho giao diện frontend
-Đồng nhất cấu trúc i18n: Tất cả các module dùng chung thư mục `web/locales/`.
-Ví dụ:
+Dự án tuân thủ mô hình **Clean Architecture** ở Backend và **App Router Modern** ở Frontend.
 
-├── app/
-│   └──login
-|      └──page.tsx
-├── locales/
-|   └── login/
-|       ├──vi.ts
-|       └──en.ts
-└── i18n.ts
-
+```text
 .
-├── src/                        # File Solution quản lý 4 Project Backend
-│   ├── Hrm.slnx
-│   ├── Hrm.Api/
-│   ├── Hrm.Service/
-│   ├── Hrm.Infrastructure/
-│   └── Hrm.Domain/
-│
-└── web/                        # (Next.js 16) - Giao diện người dùng
-    ├── app/                    # App Router (pages & layouts)
-    ├── components/             # Component dùng chung
-    ├── i18n.ts                 # Cấu hình đa ngôn ngữ (vi, en)
-    ├── public/                 # Ảnh, icons, file tĩnh
-    ├── package.json
-    └── tailwind.config.ts
+├── src/                        # Backend .NET 9
+│   ├── Hrm.Api/                # API & Hubs
+│   ├── Hrm.Service/            # Business Logic
+│   ├── Hrm.Infrastructure/     # Data Access
+│   └── Hrm.Domain/             # Entities
+└── web/                        # Frontend Next.js 15
+    ├── app/                    # Pages & Layouts
+    ├── components/             # Reusable UI
+    ├── locales/                # i18n Messages (Centralized)
+    └── services/               # API Call Layer
+```
+
+---
 
 ## 2. Công nghệ sử dụng
 
-| Thành phần        | Công nghệ                     | Ghi chú                                |
-| ----------------- | ------------------------------ | -------------------------------------- |
-| **Frontend**      | Next.js 15 (App Router)       | React Server Components                |
-| **UI Library**    | MUI (Material UI) v6          | Sử dụng Grid v2, slotProps             |
-| **Đa ngôn ngữ**  | next-intl                     | vi / en                                |
-| **Backend**       | ASP.NET Core Web API (.NET 9) | Clean Architecture                     |
-| **Database**      | PostgreSQL (Supabase/Docker)  |                                        |
-| **Auth**          | JWT Bearer Token              | Hỗ trợ đa nhóm quyền (RBAC)           |
-
-## 3. Tài khoản Test (Dữ liệu mẫu chất lượng cao)
-
-| Role               | Username          | Password     | Mô tả                             |
-| ------------------ | ----------------- | ------------ | --------------------------------- |
-| **Admin**          | admin             | Password@123 | Quản trị viên toàn quyền          |
-| **General Manager**| gen_manager       | Password@123 | Quản lý cấp cao toàn công ty      |
-| **Dept Manager IT**| dept_manager_it   | Password@123 | Quản lý phòng Công nghệ           |
-| **Dept Manager HR**| dept_manager_hr   | Password@123 | Quản lý phòng Nhân sự             |
-| **Employee IT**    | emp_it            | Password@123 | Nhân viên lập trình               |
-| **Employee HR**    | emp_hr            | Password@123 | Nhân viên tuyển dụng              |
+| Thành phần        | Công nghệ                     | Trạng thái |
+| ----------------- | ------------------------------ | ---------- |
+| **Frontend**      | Next.js 15 (App Router)       | ✅ Đã áp dụng |
+| **UI Library**    | MUI (Material UI) v6          | ✅ Đã áp dụng |
+| **Đa ngôn ngữ**  | next-intl                     | ✅ Đã áp dụng |
+| **Backend**       | ASP.NET Core Web API (.NET 9) | ✅ Đã áp dụng |
+| **Database**      | SQL Server (EF Core)          | ✅ Đã áp dụng |
+| **Realtime**      | SignalR                       | ✅ Đã áp dụng |
 
 ---
 
-## 4. Hệ thống phân quyền (RBAC) & Kiểm duyệt
+## 3. Tài khoản Thử nghiệm
 
-### 4.1. Sơ đồ cấp bậc mới
-```
-Admin (Hệ thống)
-  └── General Manager (Toàn công ty)
-        └── Department Manager (Phòng ban)
-              └── Employee (Cá nhân)
-```
-
-### 4.2. Hệ thống Phê duyệt (Approval Flow)
-- Mọi thay đổi quan trọng (nhân sự, lương, đơn từ) có thể được cấu hình qua luồng duyệt.
-- **Admin/General Manager**: Duyệt mọi yêu cầu trong hệ thống.
-- **Department Manager**: Duyệt yêu cầu thuộc phòng ban mình quản lý.
+| Role               | Username          | Password     | Phạm vi quyền hạn                 |
+| ----------------- | ----------------- | ------------ | --------------------------------- |
+| **Admin**          | admin             | Password@123 | Toàn quyền hệ thống               |
+| **General Manager**| gen_manager       | Password@123 | Quản lý toàn bộ công ty           |
+| **Dept Manager**   | dept_manager_it   | Password@123 | Quản lý phòng Công nghệ           |
+| **Employee**       | emp_it            | Password@123 | Nhân viên cá nhân                 |
 
 ---
 
-## 5. Lộ trình triển khai
+## 4. Lộ trình triển khai (Roadmap)
 
-### Giai đoạn 1 - 6: Hoàn thiện tính năng cơ bản & UX
-- ✅ Đã hoàn thành toàn bộ các module: Nhân sự, Chấm công, Lương, Đơn từ, Tuyển dụng, KPI, Cấu hình.
+### Giai đoạn 1-6: Tính năng Cốt lõi (Hoàn thành)
+- ✅ **Nhân sự**: Quản lý hồ sơ, hợp đồng, chi nhánh.
+- ✅ **Phòng ban**: Cấu trúc phân cấp (Hierarchy) & **Sơ đồ tổ chức (Org Chart)**.
+- ✅ **Chấm công**: Check-in/out, tính giờ làm, quản lý OT.
+- ✅ **Lương**: Tính lương theo giờ, bảng lương hàng tháng.
+- ✅ **Phê duyệt**: Hệ thống phê duyệt trung tâm cho mọi thay đổi dữ liệu (Centralized Approvals).
 
-### Giai đoạn 7: Bảo mật & RBAC Nâng cao (Đã hoàn thành)
-| Bước | Công việc                                        | Output                              | Trạng thái |
-| ---- | ------------------------------------------------ | ----------------------------------- | ---------- |
-| 7.1  | API Security & RBAC chặt chẽ                     | Phân quyền Endpoint `[Authorize]`   | ✅ Hoàn thành |
-| 7.2  | Quản lý Quyền (Roles & Permissions)              | Giao diện Settings tùy chỉnh quyền  | ✅ Hoàn thành |
-| 7.3  | Hệ thống Kiểm duyệt (Approval Request)           | Luồng duyệt 2 cấp (Toàn cty/Phòng ban)| ✅ Hoàn thành |
-| 7.4  | Nhật ký hoạt động (Audit Logs)                   | Theo dõi lịch sử thay đổi dữ liệu   | ✅ Hoàn thành |
+### Giai đoạn 7: Đa ngôn ngữ & UX (Hoàn thành)
+- ✅ Triển khai **i18n** toàn hệ thống (VI/EN).
+- ✅ Tối ưu hóa UI với MUI v6 & Responsive Layout.
+- ✅ Hệ thống thông báo Realtime với SignalR.
 
-### Giai đoạn 8: Đa chi nhánh & Triển khai Docker
-| Bước | Công việc                                        | Output                              | Trạng thái |
-| ---- | ------------------------------------------------ | ----------------------------------- | ---------- |
-| 8.1  | Quản lý Đa chi nhánh (Multi-branch)              | Lọc dữ liệu theo `BranchId`         | ✅ Hoàn thành |
-| 8.2  | Tối ưu hóa Database (Indexing & Partitioning)    | Hiệu năng xử lý dữ liệu lớn         | ⏳ Tiếp theo  |
-| 8.3  | Dockerize & CI/CD                                | File docker-compose hoàn thiện      | ✅ Hoàn thành |
-| 8.4  | Unit Test & Integration Test                    | Độ phủ code > 70%                   | ⏳ Tiếp theo  |
+### Giai đoạn 8: Bảo mật & Hạ tầng (Trong tiến trình)
+| Bước | Công việc                                        | Trạng thái |
+| ---- | ------------------------------------------------ | ---------- |
+| 8.1  | Audit Logs chi tiết (Tracking changes)           | ✅ Hoàn thành |
+| 8.2  | Multi-branch (Lọc dữ liệu theo chi nhánh)        | ✅ Hoàn thành |
+| 8.3  | Dockerization & Deployment Scripts               | ✅ Hoàn thành |
+| 8.4  | Unit Tests (Backend & Frontend)                  | ✅ Hoàn thành |
+| 8.5  | Tối ưu hóa hiệu năng Database (Indexing)         | ✅ Hoàn thành |
+
+---
+
+## 5. Mục tiêu tương lai
+- Tích hợp AI hỗ trợ phân tích hiệu suất nhân viên.
+- Ứng dụng di động (Mobile App) dành cho nhân viên.
+- Mở rộng hệ thống API cho tích hợp bên thứ ba.

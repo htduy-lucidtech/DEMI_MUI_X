@@ -14,12 +14,16 @@ Tài liệu này thống kê cách tổ chức các thành phần (Components) v
 
 | Trang (Route) | File duy nhất | Chức năng chính | Trạng thái |
 | :--- | :--- | :--- | :--- |
-| `/dashboard` | `web/app/.../dashboard/page.tsx` | Tổng quan, biểu đồ thống kê | Đã gộp |
-| `/dashboard/attendance` | `web/app/.../attendance/page.tsx` | Chấm công, lịch sử, sửa giờ | Đã gộp |
-| `/dashboard/leave` | `web/app/.../leave/page.tsx` | Quản lý đơn xin nghỉ | Đã gộp |
-| `/dashboard/payroll` | `web/app/.../payroll/page.tsx` | Bảng lương, thanh toán | Đã gộp |
-| `/dashboard/personnel` | `web/app/.../personnel/page.tsx` | Danh sách nhân viên, hồ sơ | Đã gộp |
-| `/dashboard/users` | `web/app/.../users/page.tsx` | Quản lý tài khoản, phân quyền | Đã gộp |
+| `/dashboard` | `web/app/.../dashboard/page.tsx` | Tổng quan, biểu đồ thống kê | Hoàn thiện |
+| `/dashboard/attendance` | `web/app/.../attendance/page.tsx` | Chấm công, lịch sử, sửa giờ | Hoàn thiện |
+| `/dashboard/leave` | `web/app/.../leave/page.tsx` | Quản lý đơn xin nghỉ | Hoàn thiện |
+| `/dashboard/approvals` | `web/app/.../approvals/page.tsx` | Trung tâm phê duyệt (C/U/D) | Hoàn thiện |
+| `/dashboard/departments` | `web/app/.../departments/page.tsx` | Quản lý phòng ban phân cấp | Hoàn thiện |
+| `/dashboard/org-chart` | `web/app/.../org-chart/page.tsx` | Sơ đồ tổ chức trực quan | Hoàn thiện |
+| `/dashboard/payroll` | `web/app/.../payroll/page.tsx` | Bảng lương, thanh toán | Hoàn thiện |
+| `/dashboard/personnel` | `web/app/.../personnel/page.tsx` | Danh sách nhân viên, hồ sơ | Hoàn thiện |
+| `/dashboard/performance` | `web/app/.../performance/page.tsx` | Đánh giá hiệu suất | Hoàn thiện |
+| `/dashboard/users` | `web/app/.../users/page.tsx` | Quản lý tài khoản, phân quyền | Hoàn thiện |
 
 ---
 

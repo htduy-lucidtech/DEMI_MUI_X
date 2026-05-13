@@ -1,94 +1,90 @@
-# Hướng dẫn Đa ngôn ngữ (i18n)
+# Hướng dẫn Phát triển (Development Guide)
 
-Hệ thống HRM sử dụng thư viện `next-intl` để triển khai đa ngôn ngữ với chiến lược "Không tiền tố" (No-prefix strategy), trong đó ngôn ngữ được xác định dựa trên Cookie.
+Tài liệu này hướng dẫn các tiêu chuẩn lập trình, quy trình thêm module mới và cách quản lý đa ngôn ngữ trong hệ thống HRM Pro.
 
-## 1. Tóm tắt và Cách hoạt động
+## 1. Tiêu chuẩn Lập trình (Coding Standards)
 
-### Tổng quan
-- **Thư viện**: `next-intl` (phiên bản mới nhất tương thích Next.js 15 App Router).
-- **Ngôn ngữ hỗ trợ**: Tiếng Việt (`vi`) và Tiếng Anh (`en`). Ngôn ngữ mặc định là `vi`.
-- **Cơ chế lưu trữ**: Ngôn ngữ được lưu trong Cookie có tên `NEXT_LOCALE`.
-- **Phạm vi**: Áp dụng cho cả Server Components và Client Components.
+### Backend (.NET 9)
+- **Clean Architecture**: Tuân thủ tách biệt các lớp (Domain, Service, Infrastructure, Api). Không gọi trực tiếp DbContext từ Controller.
+- **Naming**: Sử dụng `PascalCase` cho Class, Method, Property. Sử dụng `camelCase` cho biến local và tham số.
+- **Duyệt dữ liệu**: Mọi thay đổi dữ liệu nhạy cảm phải thông qua `IApprovalService` thay vì lưu trực tiếp vào database.
+- **Async/Await**: Sử dụng lập trình bất đồng bộ cho tất cả các thao tác I/O (Database, API call).
 
-### Luồng hoạt động
-1. Người dùng thay đổi ngôn ngữ trên giao diện (Navbar).
-2. Hệ thống cập nhật giá trị `vi` hoặc `en` vào Cookie `NEXT_LOCALE`.
-3. Trang web được tải lại (`window.location.reload()`).
-4. File `web/i18n.ts` đọc giá trị từ Cookie và cung cấp bộ tin nhắn (messages) tương ứng cho toàn bộ ứng dụng thông qua `NextIntlClientProvider` (trong `layout.tsx`).
+### Frontend (Next.js 15)
+- **MUI v6**: Sử dụng các component từ `@mui/material`. Ưu tiên sử dụng `sx` prop hoặc Vanilla CSS trong `globals.css` thay vì Tailwind nếu không cần thiết.
+- **Components**: Chia nhỏ component (Atom -> Molecule). Các component dùng chung đặt trong `components/common/`.
+- **I18n**: Không viết cứng (Hard-code) chuỗi văn bản. Luôn sử dụng hook `useTranslations`.
 
 ---
 
-## 2. Chi tiết triển khai vào code
+## 2. Quy trình thêm Module mới
 
-### Cấu trúc thư mục locales (Centralized)
-Để quản lý dễ dàng và tránh phân mảnh, toàn bộ các bản dịch được tập trung tại thư mục `web/locales/`.
+### Bước 1: Backend (Domain & API)
+1. Tạo Entity mới trong `Hrm.Domain/Entities`.
+2. Khai báo `DbSet` trong `HrmDbContext`.
+3. Tạo Controller trong `Hrm.Api/Controllers` để expose API.
+4. (Tùy chọn) Thêm logic phê duyệt nếu module yêu cầu kiểm duyệt dữ liệu.
 
-Cấu trúc:
-```text
-web/locales/
-├── personnel/           # Module Nhân sự
-│   ├── vi.ts
-│   └── en.ts
-├── attendance/          # Module Chấm công
-├── notification/        # Thông báo Realtime
-└── ...
-```
+### Bước 2: Frontend (Service & Locales)
+1. Tạo file service trong `web/services/[module].service.ts`.
+2. Tạo thư mục locales mới trong `web/locales/[module]/` với file `vi.ts` và `en.ts`.
+3. Đăng ký module locales vào `web/i18n.ts`.
 
-### Đăng ký module mới trong `web/i18n.ts`
-Khi tạo module mới, bạn phải import và đăng ký vào `messagesMap` trong `web/i18n.ts`:
+### Bước 3: Frontend (UI & Routing)
+1. Tạo folder module trong `web/app/(authenticated)/dashboard/[module]/`.
+2. Tạo file `page.tsx` và các component hỗ trợ.
+3. Cập nhật Sidebar/Navbar nếu cần thiết.
 
-```typescript
-// 1. Import (Luôn dùng đường dẫn tương đối từ gốc locales)
-import myModuleVi from "./locales/my-module/vi";
-import myModuleEn from "./locales/my-module/en";
+---
 
-// 2. Thêm vào messagesMap
-const messagesMap = {
-  vi: {
-    // ... các module khác
-    MyModule: myModuleVi,
-  },
-  en: {
-    // ... các module khác
-    MyModule: myModuleEn,
-  }
-};
-```
+## 3. Hướng dẫn Đa ngôn ngữ (i18n)
 
-### Sử dụng trong Code
+Hệ thống sử dụng `next-intl` với chiến lược "Không tiền tố" (No-prefix), lưu locale trong Cookie `NEXT_LOCALE`.
 
-#### A. Trong Client Components
-Sử dụng hook `useTranslations`:
-
+### Cách sử dụng trong Client Component:
 ```tsx
 "use client";
 import { useTranslations } from "next-intl";
 
-export default function MyComponent() {
-  const t = useTranslations("MyModule"); // Key đã đăng ký trong messagesMap
-  
-  return <h1>{t("title")}</h1>;
-}
+const t = useTranslations("MyModule");
+return <span>{t("label")}</span>;
 ```
 
-#### B. Trong Server Components
-Sử dụng hàm async `getTranslations`:
-
+### Cách sử dụng trong Server Component:
 ```tsx
 import { getTranslations } from "next-intl/server";
 
-export default async function MyServerPage() {
-  const t = await getTranslations("MyModule");
-  
-  return <div>{t("description")}</div>;
-}
+const t = await getTranslations("MyModule");
+return <div>{t("title")}</div>;
 ```
 
-### Cách thêm bản dịch mới
-1. Tìm thư mục tương ứng trong `web/locales/` (hoặc tạo mới nếu là module mới).
-2. Thêm key-value vào file `vi.ts`.
-3. Thêm key tương tự vào file `en.ts` với giá trị tiếng Anh.
-4. Sử dụng `t("key_vừa_thêm")` trong component.
+---
+
+## 4. Chạy dự án Local
+
+### Yêu cầu:
+- .NET 9 SDK
+- Node.js 20+
+- SQL Server (Local hoặc Docker)
+
+### Lệnh chạy:
+- **Backend**: `dotnet run --project src/Hrm.Api/Hrm.Api.csproj` (hoặc F5 trong VS).
+- **Frontend**: `cd web && npm run dev`.
 
 ---
-*Lưu ý: Luôn đảm bảo tất cả các text hiển thị trên UI (nhãn, nút, thông báo, placeholder) đều được bọc qua hàm `t()` để đảm bảo tính nhất quán của hệ thống.*
+
+## 5. Kiểm thử (Unit Testing)
+
+Hệ thống sử dụng các bộ công cụ kiểm thử hiện đại để đảm bảo chất lượng code.
+
+### Backend (xUnit, Moq, EF Core In-Memory)
+- **Vị trí**: `tests/Hrm.Tests/`
+- **Tiêu chuẩn**: Mỗi Service cần có ít nhất một bộ test cover các case chính (Success, Fail, Validation).
+- **Lệnh chạy**: `dotnet test` từ root hoặc trong thư mục `tests/Hrm.Tests/`.
+
+### Frontend (Vitest, React Testing Library)
+- **Vị trí**: `tests/web/`
+- **Cấu hình**: `tests/vitest.config.ts` (Sử dụng alias `@/` trỏ về thư mục `web/`).
+- **Tiêu chuẩn**: Các component logic quan trọng (Auth, Permission) cần được unit test.
+- **Lệnh chạy**: `cd web && npm run test`.
+- **Lưu ý**: Đã thiết lập Junction link cho `node_modules` trong thư mục `tests` để hỗ trợ Intellisense trong IDE.

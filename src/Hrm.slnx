@@ -3,4 +3,5 @@
   <Project Path="Hrm.Domain/Hrm.Domain.csproj" Id="4832f8f5-7b07-45fa-a151-ed14fdf9150e" />
   <Project Path="Hrm.Infrastructure/Hrm.Infrastructure.csproj" Id="611dd6f9-ac26-4a45-8bcf-9c4615c1dd62" />
   <Project Path="Hrm.Service/Hrm.Service.csproj" Id="d000ea5b-7c49-4e9c-a9c8-627d62792cd4" />
+  <Project Path="../tests/Hrm.Tests/Hrm.Tests.csproj" />
 </Solution>

@@ -8,7 +8,7 @@ Hệ thống sẽ được chia thành các container riêng biệt để đảm
 
 - **Frontend Container**: Chạy ứng dụng Next.js (chế độ Production).
 - **Backend Container**: Chạy ứng dụng ASP.NET Core API.
-- **Database Container**: Chạy Microsoft SQL Server (Linux-based).
+- **Database Container**: Chạy **PostgreSQL 16** (Alpine-based).
 
 ## 2. Chiến lược Container hóa
 
@@ -17,37 +17,37 @@ Hệ thống sẽ được chia thành các container riêng biệt để đảm
   - Stage 1: Build bằng `.NET SDK 9.0`.
   - Stage 2: Publish output.
   - Stage 3: Runtime bằng `.NET ASPNET 9.0` (Alpine).
-- **Cấu hình**: Sử dụng Environment Variables để ghi đè `appsettings.json` cho Connection String và JWT Secrets.
+- **Cấu hình**: Sử dụng Environment Variables để ghi đè `appsettings.json` cho Connection String (PostgreSQL) và JWT Secrets.
 
 ### 2.2 Frontend (Next.js)
 - **Dockerfile**: Multi-stage build.
   - Stage 1: Install dependencies (`node:24-alpine`).
   - Stage 2: Build ứng dụng (`npm run build`).
-  - Stage 3: Chạy bằng `standalone mode` (tính năng của Next.js giúp giảm dung lượng image đáng kể).
-- **Cấu hình**: Sử dụng `.env.production` để cấu hình API URL trỏ đến Backend container.
+  - Stage 3: Chạy bằng `standalone mode`.
+- **Cấu hình**: Sử dụng `.env.production` để cấu hình API URL.
 
-### 2.3 Database (SQL Server)
-- **Image**: `mcr.microsoft.com/mssql/server:2022-latest`.
-- **Dữ liệu**: Gắn Volume (`docker volume`) để đảm bảo dữ liệu không bị mất khi container restart hoặc delete.
+### 2.3 Database (PostgreSQL)
+- **Image**: `postgres:16-alpine`.
+- **Dữ liệu**: Gắn Volume (`hrm_postgres_data`) để đảm bảo dữ liệu không bị mất khi container restart.
+- **Khởi tạo**: Tự động tạo database `Hrm_MUI` khi khởi chạy lần đầu.
 
 ## 3. Cấu hình Docker Compose
 
-Tệp `docker-compose.yml` sẽ điều phối các dịch vụ:
+Tệp `docker-compose.yml` điều phối các dịch vụ:
 
 ```yaml
-version: '3.8'
-
 services:
   db:
-    image: mcr.microsoft.com/mssql/server:2022-latest
+    image: postgres:16-alpine
     container_name: hrm-db
     environment:
-      - ACCEPT_EULA=Y
-      - MSSQL_SA_PASSWORD=YourStrongPassword123!
+      POSTGRES_DB: Hrm_MUI
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
     ports:
-      - "1433:1433"
+      - "5432:5432"
     volumes:
-      - mssql_data:/var/opt/mssql
+      - postgres_data:/var/lib/postgresql/data
 
   backend:
     build:
@@ -55,10 +55,11 @@ services:
       dockerfile: src/Hrm.Api/Dockerfile
     container_name: hrm-api
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     environment:
-      - ConnectionStrings__DefaultConnection=Server=db;Database=HrmDb;User Id=sa;Password=YourStrongPassword123!;TrustServerCertificate=True
-      - ASPNETCORE_ENVIRONMENT=Production
+      ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=Hrm_MUI;Username=postgres;Password=${DB_PASSWORD:-postgres}"
+      ASPNETCORE_ENVIRONMENT: Production
     ports:
       - "8203:8080"
 
@@ -75,30 +76,27 @@ services:
       - "3000:3000"
 
 volumes:
-  mssql_data:
+  postgres_data:
 ```
 
 ## 4. Lộ trình Triển khai (Roadmap)
 
-### Bước 1: Chuẩn bị (Ngày 1)
-- Tạo `.dockerignore` cho cả Frontend và Backend để tối ưu tốc độ build.
-- Viết `Dockerfile` cho Backend API.
-- Viết `Dockerfile` cho Frontend Next.js.
+### Bước 1: Chuẩn bị (Hoàn thành)
+- Tạo `.dockerignore` tối ưu.
+- Viết `Dockerfile` cho Backend & Frontend.
 
-### Bước 2: Cấu hình Môi trường (Ngày 1-2)
-- Thiết lập `docker-compose.yml`.
-- Cấu hình mạng (Networks) để Backend có thể kết nối với DB qua tên dịch vụ (`db`).
-- Kiểm tra kết nối và seeding dữ liệu ban đầu.
+### Bước 2: Cấu hình Môi trường (Hoàn thành)
+- Thiết lập `docker-compose.yml` sử dụng PostgreSQL.
+- Cấu hình Healthcheck cho database để đảm bảo Backend chỉ chạy khi DB đã sẵn sàng.
 
-### Bước 3: Tối ưu hóa & Bảo mật (Ngày 2)
-- Chuyển sang sử dụng `non-root user` trong container để tăng tính bảo mật.
-- Cấu hình Nginx làm Reverse Proxy (nếu cần) để hỗ trợ HTTPS/SSL.
-- Tối ưu kích thước image (sử dụng Alpine images).
+### Bước 3: Tối ưu hóa (Hoàn thành)
+- Sử dụng Alpine images để giảm dung lượng.
+- Tự động chạy Migration và Seed data khi khởi động (`ApplyMigrationsOnStartup`).
 
-### Bước 4: Kiểm thử & Bàn giao (Ngày 3)
-- Kiểm tra hiệu năng container.
-- Viết hướng dẫn lệnh `docker compose up -d` để triển khai một chạm.
+### Bước 4: Triển khai (Bàn giao)
+- Lệnh triển khai: `docker compose up -d --build`.
 
 ## 5. Lưu ý Quan trọng
-- **Bảo mật**: Tuyệt đối không lưu mật khẩu SA hoặc JWT Secret trong git. Sử dụng tệp `.env` hoặc Docker Secrets.
-- **Tốc độ**: Sử dụng Cache Layer hiệu quả bằng cách copy `package.json` hoặc `.csproj` trước khi copy toàn bộ code.
+- **PostgreSQL**: Sử dụng chuẩn kết nối Npgsql. Các bảng và cột được tự động tạo theo migration.
+- **Bảo mật**: Sử dụng biến môi trường cho mật khẩu nhạy cảm.
+- **Volume**: Dữ liệu PostgreSQL được lưu trữ tại `hrm_postgres_data` để bảo toàn dữ liệu.

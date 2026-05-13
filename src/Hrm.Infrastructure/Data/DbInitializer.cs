@@ -18,8 +18,11 @@ namespace Hrm.Infrastructure.Data
 
             if (context.Departments.Any())
             {
+                Console.WriteLine("Database already has data. Skipping seeding.");
                 return;
             }
+
+            Console.WriteLine("Seeding database...");
 
             // 1. Seed Departments
             var departments = GetPreconfiguredDepartments();

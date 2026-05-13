@@ -1,0 +1,9 @@
+{
+  "name": "hrm-pro",
+  "private": true,
+  "workspaces": [
+    "src/*",
+    "web",
+    "tests/*"
+  ]
+}

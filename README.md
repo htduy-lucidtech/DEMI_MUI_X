@@ -33,5 +33,16 @@ Vui lòng tham khảo bộ tài liệu được chuẩn hóa dưới đây:
 1. Mở thư mục `web/`.
 2. Chạy `npm install` và `npm run dev`.
 
+## 🧪 Unit Testing
+
+Hệ thống hỗ trợ Unit Test cho cả Backend và Frontend:
+
+- **Backend (xUnit & Moq)**:
+  - Vị trí: `tests/Hrm.Tests/`
+  - Lệnh: `dotnet test`
+- **Frontend (Vitest & RTL)**:
+  - Vị trí: `tests/web/` (Cấu hình tại `tests/vitest.config.ts`)
+  - Lệnh: `npm run test` (chạy từ thư mục `web/`)
+
 ---
 *Duy trì và phát triển bởi Đội ngũ Kỹ thuật HRM Pro.*
