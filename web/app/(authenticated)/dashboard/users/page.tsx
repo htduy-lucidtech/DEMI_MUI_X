@@ -34,6 +34,7 @@ import {
   VisibilityOutlined as VisibilityIcon,
   VisibilityOffOutlined as VisibilityOffIcon,
   WarningAmberOutlined as WarningIcon,
+  Refresh as RefreshIcon,
 } from "@mui/icons-material";
 import { useTranslations } from "next-intl";
 import { useAuth } from "@/app/context/AuthContext";
@@ -49,7 +50,7 @@ export default function UsersPage() {
   const tc = useTranslations("Layout.common");
   const { user: currentUser } = useAuth();
   const canManage = currentUser?.role === "Admin" || currentUser?.role === "Manager";
-  
+
   const [users, setUsers] = useState<UserData[]>([]);
   const [unlinkedEmployees, setUnlinkedEmployees] = useState<Employee[]>([]);
   const [rolesList, setRolesList] = useState<any[]>([]);
@@ -76,7 +77,7 @@ export default function UsersPage() {
 
   const [selectionModel, setSelectionModel] = useState<any>([]);
   const [bulkDeleteConfirmOpen, setBulkDeleteConfirmOpen] = useState(false);
-  
+
   const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" as any });
 
   const fetchUsers = async () => {
@@ -185,12 +186,15 @@ export default function UsersPage() {
 
   const columns: GridColDef[] = useMemo(() => [
     { field: "username", headerName: t("username"), width: 140, renderCell: (params: GridRenderCellParams) => <Typography variant="body2" sx={{ fontWeight: 600, color: "primary.main" }}>@{params.value}</Typography> },
-    { field: "fullName", headerName: t("linked_profile"), flex: 1, minWidth: 200, renderCell: (params: GridRenderCellParams) => {
+    {
+      field: "fullName", headerName: t("linked_profile"), flex: 1, minWidth: 200, renderCell: (params: GridRenderCellParams) => {
         const emp = params.row.employee;
         if (!emp) return <Chip icon={<WarningIcon sx={{ fontSize: '14px !important' }} />} label={t("not_linked")} size="small" color="warning" variant="outlined" sx={{ fontWeight: 600, fontSize: '0.75rem' }} />;
         return <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}><Avatar sx={{ width: 24, height: 24, bgcolor: "primary.light", color: "primary.main", fontSize: '0.75rem', fontWeight: 700 }}>{emp.fullName.charAt(0).toUpperCase()}</Avatar><Typography variant="body2" sx={{ fontWeight: 600 }}>{emp.fullName}</Typography></Box>;
-    }},
-    { field: "roles", headerName: t("role"), width: 250, renderCell: (params: GridRenderCellParams) => (
+      }
+    },
+    {
+      field: "roles", headerName: t("role"), width: 250, renderCell: (params: GridRenderCellParams) => (
         <Stack direction="row" spacing={0.5} sx={{ flexWrap: "wrap", gap: 0.5 }}>
           {params.row.roles?.map((r: any) => (
             <Chip key={r.id} label={r.name} size="small" variant="outlined" color="primary" sx={{ fontWeight: 600 }} />
@@ -199,9 +203,11 @@ export default function UsersPage() {
             <Chip label={tr(params.row.role)} size="small" variant="filled" sx={{ fontWeight: 600, borderRadius: 1 }} />
           )}
         </Stack>
-    )},
+      )
+    },
     { field: "isActive", headerName: t("status"), width: 100, renderCell: (params: GridRenderCellParams) => <Typography variant="body2" sx={{ color: params.value ? "success.main" : "error.main", fontWeight: 700, fontSize: '0.8125rem' }}>{params.value ? t("active") : t("locked")}</Typography> },
-    { field: "actions", headerName: t("actions"), width: 180, sortable: false, align: "right", renderCell: (params: GridRenderCellParams) => (
+    {
+      field: "actions", headerName: t("actions"), width: 180, sortable: false, align: "right", renderCell: (params: GridRenderCellParams) => (
         <Stack direction="row" spacing={0.5} sx={{ justifyContent: "flex-end", alignItems: "center", height: "100%" }}>
           {canManage && (
             <>
@@ -212,7 +218,8 @@ export default function UsersPage() {
             </>
           )}
         </Stack>
-    )},
+      )
+    },
   ], [t, tr, tc, canManage, users]);
 
   const displayUsers = useMemo(() => {
@@ -227,23 +234,65 @@ export default function UsersPage() {
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <Typography variant="h5" sx={{ fontWeight: 800 }}>{t("title")}</Typography>
-        <Box sx={{ display: "flex", gap: 1 }}>
-          {canManage && selectionModel.length > 0 && <Button variant="contained" color="error" size="small" onClick={() => setBulkDeleteConfirmOpen(true)}>{t("bulk_delete")} ({selectionModel.length})</Button>}
-          <Button variant="contained" size="small" startIcon={<AddIcon />} onClick={() => handleOpen()}>{t("add_temp")}</Button>
+      {/* Users Table */}
+      <Paper sx={{ borderRadius: 1.5, border: "1px solid #e2e8f0" }}>
+        <Box sx={{ p: 2, borderBottom: "1px solid #e2e8f0", display: "flex", flexDirection: "column", gap: 2 }}>
+          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 2 }}>
+            <Stack direction="row" spacing={2} sx={{ alignItems: "center", flexGrow: 1, flexWrap: "wrap" }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 700, mr: 1 }}>{t("title") || "Quản lý tài khoản"}</Typography>
+
+              <TextField
+                placeholder={t("search_placeholder")}
+                size="small"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                slotProps={{
+                  input: {
+                    startAdornment: <SearchIcon sx={{ color: "text.disabled", mr: 1, fontSize: 18 }} />
+                  }
+                }}
+                sx={{ width: { xs: "100%", md: 400 } }}
+              />
+
+              <Stack direction="row" spacing={1}>
+                <Button variant="contained" size="small" startIcon={<AddIcon />} onClick={() => handleOpen()}>
+                  {t("add_temp")}
+                </Button>
+                <IconButton onClick={fetchUsers} disabled={loading} size="small">
+                  <AddIcon sx={{ transform: 'rotate(45deg)', display: 'none' }} /> {/* Just for spacing or placeholder if needed */}
+                  <Typography variant="caption" sx={{ display: 'none' }}>Refresh</Typography>
+                </IconButton>
+              </Stack>
+            </Stack>
+
+            {canManage && selectionModel.length > 0 && (
+              <Button variant="contained" color="error" size="small" onClick={() => setBulkDeleteConfirmOpen(true)}>
+                {t("bulk_delete")} ({selectionModel.length})
+              </Button>
+            )}
+          </Box>
+
+          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+            <Tabs value={activeTab} onChange={(_, v) => setActiveTab(v)} sx={{ minHeight: 40 }}>
+              <Tab label={t("tabs.all")} value="All" />
+              <Tab label={t("tabs.admin")} value="Admin" />
+              <Tab label={t("tabs.manager")} value="Manager" />
+              <Tab label={t("tabs.employee")} value="Employee" />
+            </Tabs>
+          </Box>
         </Box>
-      </Box>
-
-      <Card sx={{ mb: 1, borderRadius: 2 }}>
-        <Stack direction={{ xs: "column", md: "row" }} spacing={2} sx={{ p: 1, justifyContent: "space-between", alignItems: "center" }}>
-            <Tabs value={activeTab} onChange={(_, v) => setActiveTab(v)} sx={{ minHeight: 40 }}><Tab label={t("tabs.all")} value="All" /><Tab label={t("tabs.admin")} value="Admin" /><Tab label={t("tabs.manager")} value="Manager" /><Tab label={t("tabs.employee")} value="Employee" /></Tabs>
-            <TextField placeholder={t("search_placeholder")} size="small" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} sx={{ width: 300 }} slotProps={{ input: { sx: { borderRadius: 2 } } }} />
-        </Stack>
-      </Card>
-
-      <Paper sx={{ minHeight: 400, borderRadius: 2, overflow: "hidden" }}>
-        <DataGrid rows={displayUsers} columns={columns} loading={loading} checkboxSelection={canManage} onRowSelectionModelChange={(newSelection) => setSelectionModel(newSelection)} slots={{ noRowsOverlay: CustomNoRowsOverlay }} density="comfortable" sx={{ border: "none" }} />
+        <Box sx={{ height: 600 }}>
+          <DataGrid
+            rows={displayUsers}
+            columns={columns}
+            loading={loading}
+            checkboxSelection={canManage}
+            onRowSelectionModelChange={(newSelection) => setSelectionModel(newSelection)}
+            slots={{ noRowsOverlay: CustomNoRowsOverlay }}
+            density="compact"
+            sx={{ border: "none" }}
+          />
+        </Box>
       </Paper>
 
       {/* Link Employee Dialog */}
@@ -266,7 +315,7 @@ export default function UsersPage() {
             <TextField label={t("username")} fullWidth size="small" disabled={isEdit} value={formData.username} onChange={(e) => setFormData({ ...formData, username: e.target.value })} />
             <TextField label={t("email")} fullWidth size="small" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} />
             {!isEdit && <TextField label={t("password")} type={showPassword ? "text" : "password"} fullWidth size="small" value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} slotProps={{ input: { endAdornment: <InputAdornment position="end"><IconButton onClick={() => setShowPassword(!showPassword)} edge="end" size="small">{showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}</IconButton></InputAdornment> } }} />}
-            
+
             <TextField
               select
               label="Nhóm quyền (Roles)"

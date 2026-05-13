@@ -44,13 +44,18 @@ export default function EmployeeDialog({ open, onClose, onSave, employee, title 
     identityCardNumber: "",
     bankAccountNumber: "",
     bankName: "",
+    socialInsuranceNumber: "",
+    dateOfBirth: "",
   });
 
   useEffect(() => {
     if (open) {
       fetchDepartments();
       if (employee) {
-        setFormData({ ...employee });
+        setFormData({ 
+          ...employee,
+          dateOfBirth: employee.dateOfBirth ? new Date(employee.dateOfBirth).toISOString().split('T')[0] : ""
+        });
       } else {
         setFormData({
           fullName: "",
@@ -67,6 +72,8 @@ export default function EmployeeDialog({ open, onClose, onSave, employee, title 
           identityCardNumber: "",
           bankAccountNumber: "",
           bankName: "",
+          socialInsuranceNumber: "",
+          dateOfBirth: "",
         });
       }
     }
@@ -97,21 +104,31 @@ export default function EmployeeDialog({ open, onClose, onSave, employee, title 
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle sx={{ fontWeight: 700 }}>{title}</DialogTitle>
-      <DialogContent dividers>
+    <Dialog 
+      open={open} 
+      onClose={onClose} 
+      maxWidth="md" 
+      fullWidth
+      slotProps={{
+        paper: { sx: { borderRadius: 3 } }
+      }}
+    >
+      <DialogTitle sx={{ fontWeight: 800, p: 3, pb: 2, borderBottom: '1px solid #e2e8f0' }}>{title}</DialogTitle>
+      <DialogContent dividers sx={{ p: 3 }}>
         <Box sx={{ 
           display: 'grid', 
           gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' }, 
-          gap: 3, 
+          gap: 2.5, 
           mt: 1 
         }}>
-          <Box sx={{ gridColumn: '1 / -1' }}>
-            <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>{t("dialog.sections.basic")}</Typography>
+          <Box sx={{ gridColumn: '1 / -1', display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
+            <Box sx={{ width: 4, height: 16, bgcolor: 'primary.main', borderRadius: 1 }} />
+            <Typography variant="subtitle2" sx={{ fontWeight: 800, color: 'primary.main' }}>{t("dialog.sections.basic")}</Typography>
           </Box>
           
           <TextField
             fullWidth
+            size="small"
             label={t("details.fields.fullName")}
             name="fullName"
             value={formData.fullName}
@@ -121,6 +138,7 @@ export default function EmployeeDialog({ open, onClose, onSave, employee, title 
           
           <TextField
             fullWidth
+            size="small"
             label={t("table.columns.email")}
             name="email"
             type="email"
@@ -131,6 +149,7 @@ export default function EmployeeDialog({ open, onClose, onSave, employee, title 
           
           <TextField
             fullWidth
+            size="small"
             label={t("details.fields.phone")}
             name="phoneNumber"
             value={formData.phoneNumber}
@@ -139,6 +158,7 @@ export default function EmployeeDialog({ open, onClose, onSave, employee, title 
           
           <TextField
             fullWidth
+            size="small"
             select
             label={t("details.fields.gender")}
             name="gender"
@@ -150,13 +170,27 @@ export default function EmployeeDialog({ open, onClose, onSave, employee, title 
             <MenuItem value="Other">{t("details.genders.other")}</MenuItem>
           </TextField>
 
-          <Box sx={{ gridColumn: '1 / -1' }}>
-            <Divider sx={{ my: 1 }} />
-            <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>{t("dialog.sections.work_salary")}</Typography>
+          <TextField
+            fullWidth
+            size="small"
+            type="date"
+            label={t("details.fields.dob")}
+            name="dateOfBirth"
+            value={formData.dateOfBirth}
+            onChange={handleChange}
+            slotProps={{ inputLabel: { shrink: true } }}
+          />
+
+          <Box sx={{ gridColumn: '1 / -1', mt: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+              <Box sx={{ width: 4, height: 16, bgcolor: 'primary.main', borderRadius: 1 }} />
+              <Typography variant="subtitle2" sx={{ fontWeight: 800, color: 'primary.main' }}>{t("dialog.sections.work_salary")}</Typography>
+            </Box>
           </Box>
           
           <TextField
             fullWidth
+            size="small"
             label={t("details.fields.position")}
             name="position"
             value={formData.position}
@@ -165,6 +199,7 @@ export default function EmployeeDialog({ open, onClose, onSave, employee, title 
           
           <TextField
             fullWidth
+            size="small"
             select
             label={t("details.fields.department")}
             name="departmentId"
@@ -180,6 +215,7 @@ export default function EmployeeDialog({ open, onClose, onSave, employee, title 
           
           <TextField
             fullWidth
+            size="small"
             type="number"
             label={t("details.fields.baseSalary")}
             name="baseSalary"
@@ -189,6 +225,7 @@ export default function EmployeeDialog({ open, onClose, onSave, employee, title 
           
           <TextField
             fullWidth
+            size="small"
             type="number"
             label={t("details.fields.allowance")}
             name="allowance"
@@ -198,6 +235,7 @@ export default function EmployeeDialog({ open, onClose, onSave, employee, title 
           
           <TextField
             fullWidth
+            size="small"
             type="number"
             label={t("details.fields.hourlyRate")}
             name="hourlyRate"
@@ -207,6 +245,7 @@ export default function EmployeeDialog({ open, onClose, onSave, employee, title 
 
           <TextField
             fullWidth
+            size="small"
             type="number"
             label={t("details.fields.hourlyRateOT")}
             name="hourlyRateOT"
@@ -214,14 +253,17 @@ export default function EmployeeDialog({ open, onClose, onSave, employee, title 
             onChange={handleChange}
           />
 
-          <Box sx={{ gridColumn: '1 / -1' }}>
-            <Divider sx={{ my: 1 }} />
-            <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 1 }}>{t("dialog.sections.other")}</Typography>
+          <Box sx={{ gridColumn: '1 / -1', mt: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+              <Box sx={{ width: 4, height: 16, bgcolor: 'primary.main', borderRadius: 1 }} />
+              <Typography variant="subtitle2" sx={{ fontWeight: 800, color: 'primary.main' }}>{t("dialog.sections.other")}</Typography>
+            </Box>
           </Box>
           
           <Box sx={{ gridColumn: '1 / -1' }}>
             <TextField
               fullWidth
+              size="small"
               label={t("details.fields.address")}
               name="address"
               value={formData.address}
@@ -233,6 +275,7 @@ export default function EmployeeDialog({ open, onClose, onSave, employee, title 
           
           <TextField
             fullWidth
+            size="small"
             label={t("details.fields.identityCard")}
             name="identityCardNumber"
             value={formData.identityCardNumber}
@@ -241,6 +284,7 @@ export default function EmployeeDialog({ open, onClose, onSave, employee, title 
           
           <TextField
             fullWidth
+            size="small"
             label={t("details.fields.bankName")}
             name="bankName"
             value={formData.bankName || ""}
@@ -249,16 +293,26 @@ export default function EmployeeDialog({ open, onClose, onSave, employee, title 
 
           <TextField
             fullWidth
+            size="small"
             label={t("details.fields.bankAccount")}
             name="bankAccountNumber"
             value={formData.bankAccountNumber || ""}
             onChange={handleChange}
           />
+
+          <TextField
+            fullWidth
+            size="small"
+            label={t("details.fields.insuranceNumber")}
+            name="socialInsuranceNumber"
+            value={formData.socialInsuranceNumber || ""}
+            onChange={handleChange}
+          />
         </Box>
       </DialogContent>
-      <DialogActions sx={{ p: 2, px: 3 }}>
-        <Button onClick={onClose} variant="outlined">{t("dialog.cancel")}</Button>
-        <Button onClick={handleSubmit} variant="contained" color="primary">{t("dialog.save")}</Button>
+      <DialogActions sx={{ p: 3 }}>
+        <Button onClick={onClose} variant="outlined" sx={{ fontWeight: 700 }}>{t("dialog.cancel")}</Button>
+        <Button onClick={handleSubmit} variant="contained" color="primary" sx={{ px: 4, fontWeight: 700 }}>{t("dialog.save")}</Button>
       </DialogActions>
     </Dialog>
   );

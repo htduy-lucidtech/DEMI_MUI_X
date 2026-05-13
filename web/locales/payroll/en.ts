@@ -14,6 +14,9 @@ const payrollEn = {
   hourlyRate: "Rate/Hr",
   workHours: "Work Hours",
   otHours: "OT Hours",
+  leaveHours: "Leave Hours",
+  lateEarlyMinutes: "Late/Early (min)",
+  deductions: "Deductions",
   totalAmount: "Total Amount",
   failedToCalculate: "Failed to calculate payroll",
 };

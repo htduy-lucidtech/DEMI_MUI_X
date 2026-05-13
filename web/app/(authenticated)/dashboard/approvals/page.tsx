@@ -9,12 +9,6 @@ import {
   Button,
   Grid,
   Chip,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
   Paper,
   IconButton,
   Dialog,
@@ -26,12 +20,20 @@ import {
   CircularProgress,
   Stack,
   Divider,
+  Tabs,
+  Tab,
+  Snackbar,
+  Avatar,
 } from "@mui/material";
+import { DataGrid, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 import {
   CheckCircle as CheckIcon,
   Cancel as CancelIcon,
   Info as InfoIcon,
   PlaylistAddCheck as ApprovalIcon,
+  History as HistoryIcon,
+  PendingActions as PendingIcon,
+  Refresh as RefreshIcon,
 } from "@mui/icons-material";
 import { approvalService, ApprovalRequest, ApprovalStatus } from "@/services/approval.service";
 import { useTranslations } from "next-intl";
@@ -41,7 +43,9 @@ export default function ApprovalsPage() {
   const [requests, setRequests] = useState<ApprovalRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
+  const [tabValue, setTabValue] = useState(0);
   const [selectedRequest, setSelectedRequest] = useState<ApprovalRequest | null>(null);
   const [note, setNote] = useState("");
   const [actioning, setActioning] = useState(false);
@@ -71,6 +75,7 @@ export default function ApprovalsPage() {
       } else {
         await approvalService.reject(selectedRequest.id, note);
       }
+      setSuccess(t("messages.success"));
       setSelectedRequest(null);
       setNote("");
       fetchData();
@@ -81,148 +86,289 @@ export default function ApprovalsPage() {
     }
   };
 
+  const filteredRequests = requests.filter((req) => {
+    if (tabValue === 0) return req.status === ApprovalStatus.Pending;
+    return req.status !== ApprovalStatus.Pending;
+  });
+
   const getStatusChip = (status: ApprovalStatus) => {
     switch (status) {
       case ApprovalStatus.Pending:
-        return <Chip label={t("status.Pending")} color="warning" size="small" variant="outlined" />;
+        return (
+          <Chip
+            label={t("status.Pending")}
+            color="warning"
+            size="small"
+            variant="filled"
+            sx={{ fontWeight: 600, borderRadius: '6px' }}
+            icon={<PendingIcon sx={{ fontSize: '1rem !important' }} />}
+          />
+        );
       case ApprovalStatus.Approved:
-        return <Chip label={t("status.Approved")} color="success" size="small" />;
+        return (
+          <Chip
+            label={t("status.Approved")}
+            color="success"
+            size="small"
+            sx={{ fontWeight: 600, borderRadius: '6px' }}
+            icon={<CheckIcon sx={{ fontSize: '1rem !important' }} />}
+          />
+        );
       case ApprovalStatus.Rejected:
-        return <Chip label={t("status.Rejected")} color="error" size="small" />;
+        return (
+          <Chip
+            label={t("status.Rejected")}
+            color="error"
+            size="small"
+            sx={{ fontWeight: 600, borderRadius: '6px' }}
+            icon={<CancelIcon sx={{ fontSize: '1rem !important' }} />}
+          />
+        );
       default:
-        return <Chip label="N/A" size="small" />;
+        return <Chip label="N/A" size="small" variant="outlined" />;
     }
   };
 
+  const renderDataDiff = (dataJson: string) => {
+    try {
+      const data = JSON.parse(dataJson);
+      return (
+        <Grid container spacing={2}>
+          {Object.entries(data).map(([key, value]) => {
+            if (value === null || typeof value === 'object' || key.toLowerCase().includes('id')) return null;
+
+            let displayValue = String(value);
+            if (typeof value === 'boolean') {
+              displayValue = value ? 'Yes' : 'No';
+            } else if (typeof value === 'string' && (value.includes('T') && value.endsWith('Z'))) {
+              displayValue = new Date(value).toLocaleString();
+            }
+
+            return (
+              <Grid size={{ xs: 12, sm: 6 }} key={key}>
+                <Box sx={{ p: 1, borderRadius: 1, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', textTransform: 'uppercase', fontWeight: 700, fontSize: '0.65rem', mb: 0.5 }}>
+                    {key.replace(/([A-Z])/g, ' $1').trim()}
+                  </Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.primary', wordBreak: 'break-all' }}>
+                    {displayValue}
+                  </Typography>
+                </Box>
+              </Grid>
+            );
+          })}
+        </Grid>
+      );
+    } catch (e) {
+      return <Typography variant="body2" color="error">Invalid Data</Typography>;
+    }
+  };
+
+  const columns: GridColDef[] = [
+    {
+      field: "requestType",
+      headerName: t("columns.type"),
+      flex: 1,
+      renderCell: (params: GridRenderCellParams) => (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, height: '100%' }}>
+          <Box sx={{
+            width: 8,
+            height: 8,
+            borderRadius: '50%',
+            bgcolor: params.value === 'Leave' ? 'info.main' : 'primary.main'
+          }} />
+          <Box>
+            <Typography sx={{ fontWeight: 700, fontSize: '0.85rem' }}>
+              {t(`types.${params.value}`, { fallback: params.value as string })}
+            </Typography>
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: -0.5 }}>
+              {params.row.entityName}
+            </Typography>
+          </Box>
+        </Box>
+      )
+    },
+    {
+      field: "requesterName",
+      headerName: t("columns.requester"),
+      width: 200,
+      renderCell: (params: GridRenderCellParams) => (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, height: '100%' }}>
+          <Avatar sx={{ width: 24, height: 24, bgcolor: 'primary.light', fontSize: '0.7rem', fontWeight: 700 }}>
+            {params.value?.charAt(0)}
+          </Avatar>
+          <Typography variant="body2" sx={{ fontWeight: 600 }}>{params.value}</Typography>
+        </Box>
+      )
+    },
+    {
+      field: "createdAt",
+      headerName: t("columns.createdAt"),
+      width: 150,
+      renderCell: (params: GridRenderCellParams) => (
+        <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%' }}>
+          <Typography variant="body2" sx={{ color: 'text.primary', lineHeight: 1.2 }}>
+            {new Date(params.value).toLocaleDateString()}
+          </Typography>
+          <Typography variant="caption" color="text.secondary">
+            {new Date(params.value).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          </Typography>
+        </Box>
+      )
+    },
+    {
+      field: "status",
+      headerName: t("columns.status"),
+      width: 130,
+      renderCell: (params: GridRenderCellParams) => getStatusChip(params.value)
+    },
+    {
+      field: "actions",
+      headerName: t("columns.actions"),
+      width: 100,
+      sortable: false,
+      renderCell: (params: GridRenderCellParams) => (
+        <IconButton size="small" color="primary" onClick={() => setSelectedRequest(params.row)}>
+          <InfoIcon fontSize="small" />
+        </IconButton>
+      )
+    }
+  ];
+
   if (loading) {
     return (
-      <Box sx={{ display: "flex", justifyContent: "center", mt: 10 }}>
-        <CircularProgress />
+      <Box sx={{ display: "flex", flexDirection: 'column', alignItems: 'center', justifyContent: "center", mt: 10, gap: 2 }}>
+        <CircularProgress size={40} thickness={4} />
+        <Typography variant="body2" color="text.secondary">Loading requests...</Typography>
       </Box>
     );
   }
 
   return (
-    <Box>
-      <Box sx={{ mb: 4, display: "flex", alignItems: "center", gap: 2 }}>
-        <ApprovalIcon color="primary" fontSize="large" />
-        <Box>
-          <Typography variant="h4" sx={{ fontWeight: 800 }}>{t("title")}</Typography>
-          <Typography variant="body2" color="text.secondary">{t("subtitle")}</Typography>
+    <Box sx={{ pb: 4, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+      <Paper sx={{ borderRadius: 1.5, border: "1px solid #e2e8f0" }}>
+        <Box sx={{ p: 2, borderBottom: "1px solid #e2e8f0", display: "flex", flexDirection: "column", gap: 2 }}>
+          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 2 }}>
+            <Box>
+              <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>{t("title")}</Typography>
+              <Typography variant="caption" color="text.secondary">{t("subtitle")}</Typography>
+            </Box>
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={<RefreshIcon />}
+              onClick={fetchData}
+              sx={{ borderRadius: 2 }}
+            >
+              {t("common.refresh") || "Refresh"}
+            </Button>
+          </Box>
+          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+            <Tabs
+              value={tabValue}
+              onChange={(_, v) => setTabValue(v)}
+              sx={{ minHeight: 40 }}
+            >
+              <Tab icon={<PendingIcon sx={{ mr: 1, fontSize: 18 }} />} iconPosition="start" label={t("tabs.pending")} />
+              <Tab icon={<HistoryIcon sx={{ mr: 1, fontSize: 18 }} />} iconPosition="start" label={t("tabs.history")} />
+            </Tabs>
+          </Box>
         </Box>
-      </Box>
+        <Box sx={{ height: 600 }}>
+          <DataGrid
+            rows={filteredRequests}
+            columns={columns}
+            loading={loading}
+            disableRowSelectionOnClick
+            density="compact"
+            onRowClick={(params) => setSelectedRequest(params.row)}
+            slots={{ noRowsOverlay: () => (
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', opacity: 0.5 }}>
+                <PendingIcon sx={{ fontSize: 48, mb: 1 }} />
+                <Typography variant="body2">{t("common.noData")}</Typography>
+              </Box>
+            ) }}
+            sx={{ border: "none" }}
+          />
+        </Box>
+      </Paper>
 
-      {error && (
-        <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
-          {error}
-        </Alert>
-      )}
-
-      <Grid container spacing={3}>
-        <Grid size={{ xs: 12 }}>
-          <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}>
-            <Table>
-              <TableHead sx={{ bgcolor: "grey.50" }}>
-                <TableRow>
-                  <TableCell sx={{ fontWeight: 700 }}>{t("columns.type")}</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>{t("columns.requester")}</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>{t("columns.createdAt")}</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>{t("columns.status")}</TableCell>
-                  <TableCell align="right" sx={{ fontWeight: 700 }}>{t("columns.actions")}</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {requests.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={5} align="center" sx={{ py: 5 }}>
-                      <Typography color="text.secondary">{t("common.noData", { fallback: "Không có yêu cầu nào đang chờ xử lý" })}</Typography>
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  requests.map((req) => (
-                    <TableRow key={req.id} hover>
-                      <TableCell>
-                        <Typography sx={{ fontWeight: 600 }}>{t(`types.${req.requestType}`, { fallback: req.requestType })}</Typography>
-                        <Typography variant="caption" color="text.secondary">{req.entityName}</Typography>
-                      </TableCell>
-                      <TableCell>{req.requesterName}</TableCell>
-                      <TableCell>{new Date(req.createdAt).toLocaleDateString()}</TableCell>
-                      <TableCell>{getStatusChip(req.status)}</TableCell>
-                      <TableCell align="right">
-                        <Button
-                          variant="outlined"
-                          size="small"
-                          startIcon={<InfoIcon />}
-                          onClick={() => setSelectedRequest(req)}
-                        >
-                          {t("dialog.close", { fallback: "Chi tiết" })}
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Grid>
-      </Grid>
-
-      <Dialog open={!!selectedRequest} onClose={() => setSelectedRequest(null)} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ fontWeight: 700, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          {t("dialog.title")}
+      <Dialog
+        open={!!selectedRequest}
+        onClose={() => setSelectedRequest(null)}
+        maxWidth="sm"
+        fullWidth
+        slotProps={{
+          paper: { sx: { borderRadius: 4, boxShadow: '0 24px 48px rgba(0,0,0,0.12)' } }
+        }}
+      >
+        <DialogTitle sx={{ p: 3, pb: 2, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <Box>
+            <Typography variant="h5" sx={{ fontWeight: 800 }}>{t("dialog.title")}</Typography>
+            <Typography variant="body2" color="text.secondary">Review the request details below</Typography>
+          </Box>
           {selectedRequest && getStatusChip(selectedRequest.status)}
         </DialogTitle>
-        <DialogContent dividers>
+        <DialogContent dividers sx={{ p: 3 }}>
           {selectedRequest && (
-            <Box sx={{ py: 1 }}>
-              <Stack spacing={2}>
-                <Box>
-                  <Typography variant="caption" color="text.secondary" sx={{ textTransform: "uppercase", fontWeight: 700 }}>{t("columns.type")}</Typography>
-                  <Typography variant="body1" sx={{ fontWeight: 600 }}>{t(`types.${selectedRequest.requestType}`, { fallback: selectedRequest.requestType })}</Typography>
-                </Box>
-                <Box>
-                  <Typography variant="caption" color="text.secondary" sx={{ textTransform: "uppercase", fontWeight: 700 }}>{t("dialog.info")}</Typography>
-                  <Typography variant="body2">{selectedRequest.description || "N/A"}</Typography>
-                </Box>
+            <Stack spacing={3}>
+              <Grid container spacing={3}>
+                <Grid size={{ xs: 6 }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ textTransform: "uppercase", fontWeight: 700, fontSize: '0.7rem' }}>{t("columns.type")}</Typography>
+                  <Typography variant="body1" sx={{ fontWeight: 700, color: 'primary.main' }}>{t(`types.${selectedRequest.requestType}`, { fallback: selectedRequest.requestType })}</Typography>
+                </Grid>
+                <Grid size={{ xs: 6 }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ textTransform: "uppercase", fontWeight: 700, fontSize: '0.7rem' }}>{t("columns.createdAt")}</Typography>
+                  <Typography variant="body1" sx={{ fontWeight: 600 }}>{new Date(selectedRequest.createdAt).toLocaleString()}</Typography>
+                </Grid>
+              </Grid>
 
-                <Divider />
+              <Box>
+                <Typography variant="caption" color="text.secondary" sx={{ textTransform: "uppercase", fontWeight: 700, fontSize: '0.7rem', mb: 1, display: 'block' }}>{t("dialog.info")}</Typography>
+                <Paper variant="outlined" sx={{ p: 2, borderRadius: 2, bgcolor: 'grey.50' }}>
+                  <Typography variant="body2" sx={{ fontStyle: selectedRequest.description ? 'normal' : 'italic' }}>
+                    {selectedRequest.description || "No description provided"}
+                  </Typography>
+                </Paper>
+              </Box>
 
+              <Box>
+                <Typography variant="caption" color="text.secondary" sx={{ textTransform: "uppercase", fontWeight: 700, fontSize: '0.7rem', mb: 1, display: "block" }}>{t("dialog.data")}</Typography>
+                {renderDataDiff(selectedRequest.dataJson)}
+              </Box>
+
+              {selectedRequest.status === ApprovalStatus.Pending && (
                 <Box>
-                  <Typography variant="caption" color="text.secondary" sx={{ textTransform: "uppercase", fontWeight: 700, mb: 1, display: "block" }}>{t("dialog.data")}</Typography>
-                  <Paper sx={{ p: 2, bgcolor: "grey.900", color: "success.light", overflow: "auto", maxHeight: 200 }}>
-                    <pre style={{ margin: 0, fontSize: "0.8rem", fontFamily: "monospace" }}>
-                      {JSON.stringify(JSON.parse(selectedRequest.dataJson || "{}"), null, 2)}
-                    </pre>
-                  </Paper>
+                  <Typography variant="caption" color="text.secondary" sx={{ textTransform: "uppercase", fontWeight: 700, fontSize: '0.7rem', mb: 1, display: 'block' }}>{t("dialog.notes")}</Typography>
+                  <TextField
+                    fullWidth
+                    multiline
+                    rows={3}
+                    value={note}
+                    onChange={(e) => setNote(e.target.value)}
+                    placeholder={t("dialog.placeholder")}
+                    variant="outlined"
+                    sx={{
+                      '& .MuiOutlinedInput-root': { borderRadius: 3 }
+                    }}
+                  />
                 </Box>
-
-                {selectedRequest.status === ApprovalStatus.Pending && (
-                  <Box sx={{ mt: 2 }}>
-                    <TextField
-                      label={t("dialog.notes")}
-                      fullWidth
-                      multiline
-                      rows={3}
-                      value={note}
-                      onChange={(e) => setNote(e.target.value)}
-                      placeholder={t("dialog.placeholder")}
-                    />
-                  </Box>
-                )}
-              </Stack>
-            </Box>
+              )}
+            </Stack>
           )}
         </DialogContent>
-        <DialogActions sx={{ p: 2, px: 3 }}>
-          <Button onClick={() => setSelectedRequest(null)} color="inherit">{t("dialog.close")}</Button>
+        <DialogActions sx={{ p: 3 }}>
+          <Button onClick={() => setSelectedRequest(null)} color="inherit" sx={{ fontWeight: 700 }}>{t("dialog.close")}</Button>
+          <Box sx={{ flexGrow: 1 }} />
           {selectedRequest?.status === ApprovalStatus.Pending && (
-            <>
+            <Stack direction="row" spacing={2}>
               <Button
                 variant="outlined"
                 color="error"
                 startIcon={<CancelIcon />}
                 onClick={() => handleAction("reject")}
                 disabled={actioning}
+                sx={{ borderRadius: 2, fontWeight: 700, px: 3 }}
               >
                 {t("dialog.reject")}
               </Button>
@@ -232,13 +378,25 @@ export default function ApprovalsPage() {
                 startIcon={<CheckIcon />}
                 onClick={() => handleAction("approve")}
                 disabled={actioning}
+                sx={{ borderRadius: 2, fontWeight: 700, px: 3, boxShadow: '0 8px 16px rgba(46, 125, 50, 0.2)' }}
               >
                 {t("dialog.approve")}
               </Button>
-            </>
+            </Stack>
           )}
         </DialogActions>
       </Dialog>
+
+      <Snackbar
+        open={!!success}
+        autoHideDuration={3000}
+        onClose={() => setSuccess(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert severity="success" variant="filled" sx={{ width: '100%', borderRadius: 2 }}>
+          {success}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

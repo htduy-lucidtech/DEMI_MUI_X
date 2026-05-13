@@ -9,9 +9,19 @@ const approvalsEn = {
     actions: "Actions",
   },
   types: {
-    PersonnelChange: "Personnel Change",
-    LeaveRequest: "Leave Request",
-    AttendanceAdjustment: "Attendance Adjustment",
+    "PERSONNEL_CREATE": "Create Personnel",
+    "PERSONNEL_UPDATE": "Update Personnel",
+    "PERSONNEL_DELETE": "Delete Personnel",
+    "LEAVE_REQUEST": "Leave Request",
+    "ATTENDANCE_ADJUSTMENT": "Attendance Adjustment",
+  },
+  tabs: {
+    pending: "Pending",
+    history: "History",
+  },
+  common: {
+    noData: "No data found",
+    details: "Details",
   },
   status: {
     Pending: "Pending",

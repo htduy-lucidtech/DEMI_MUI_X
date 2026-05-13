@@ -125,28 +125,31 @@ export default function DepartmentsPage() {
   ];
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-      {/* Actions Row */}
-      <Box sx={{ display: "flex", justifyContent: "flex-end", alignItems: "center" }}>
-        <Button
-          variant="contained"
-          size="small"
-          startIcon={<AddIcon />}
-          onClick={() => handleOpen()}
-          sx={{ borderRadius: 2, px: 2 }}
-        >
-          {t("addDept")}
-        </Button>
-      </Box>
-
-      <Paper sx={{ height: 500, width: '100%', borderRadius: 4, overflow: 'hidden', border: '1px solid #e2e8f0' }}>
-        <DataGrid
-          rows={depts}
-          columns={columns}
-          loading={loading}
-          disableRowSelectionOnClick
-          sx={{ border: 'none' }}
-        />
+      <Paper sx={{ borderRadius: 1.5, border: "1px solid #e2e8f0" }}>
+        <Box sx={{ p: 2, borderBottom: "1px solid #e2e8f0", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 2 }}>
+          <Stack direction="row" spacing={2} sx={{ alignItems: "center", flexGrow: 1, flexWrap: "wrap" }}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 700, mr: 1 }}>{t("title") || "Phòng ban"}</Typography>
+          </Stack>
+          <Button
+            variant="contained"
+            size="small"
+            startIcon={<AddIcon />}
+            onClick={() => handleOpen()}
+          >
+            {t("addDept")}
+          </Button>
+        </Box>
+        <Box sx={{ height: 600 }}>
+          <DataGrid
+            rows={depts}
+            columns={columns}
+            loading={loading}
+            disableRowSelectionOnClick
+            density="compact"
+            slots={{ noRowsOverlay: CustomNoRowsOverlay }}
+            sx={{ border: "none" }}
+          />
+        </Box>
       </Paper>
 
       <Dialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth="xs">

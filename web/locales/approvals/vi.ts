@@ -9,9 +9,19 @@ const approvalsVi = {
     actions: "Thao tác",
   },
   types: {
-    PersonnelChange: "Thay đổi nhân sự",
-    LeaveRequest: "Đơn nghỉ phép",
-    AttendanceAdjustment: "Chỉnh sửa chấm công",
+    "PERSONNEL_CREATE": "Thêm mới nhân sự",
+    "PERSONNEL_UPDATE": "Cập nhật nhân sự",
+    "PERSONNEL_DELETE": "Xóa nhân sự",
+    "LEAVE_REQUEST": "Đơn nghỉ phép",
+    "ATTENDANCE_ADJUSTMENT": "Chỉnh sửa chấm công",
+  },
+  tabs: {
+    pending: "Chờ xử lý",
+    history: "Lịch sử",
+  },
+  common: {
+    noData: "Không có dữ liệu",
+    details: "Chi tiết",
   },
   status: {
     Pending: "Đang chờ",

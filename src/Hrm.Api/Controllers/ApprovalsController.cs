@@ -181,6 +181,31 @@ namespace Hrm.Api.Controllers
                     }
                 }
             }
+            else if (request.RequestType == "ATTENDANCE_CORRECTION" && !string.IsNullOrEmpty(request.EntityId))
+            {
+                var id = int.Parse(request.EntityId);
+                var correction = await _context.AttendanceCorrections.FindAsync(id);
+                if (correction != null)
+                {
+                    var data = System.Text.Json.JsonSerializer.Deserialize<AttendanceCorrection>(request.DataJson, options);
+                    if (data != null)
+                    {
+                        _context.Entry(correction).CurrentValues.SetValues(data);
+                        correction.Id = id;
+
+                        // Also update the actual attendance if approved
+                        if (correction.AttendanceId.HasValue)
+                        {
+                            var attendance = await _context.Attendances.FindAsync(correction.AttendanceId.Value);
+                            if (attendance != null)
+                            {
+                                if (correction.RequestedCheckIn.HasValue) attendance.CheckInTime = correction.RequestedCheckIn.Value;
+                                if (correction.RequestedCheckOut.HasValue) attendance.CheckOutTime = correction.RequestedCheckOut.Value;
+                            }
+                        }
+                    }
+                }
+            }
             // Add other types as needed
         }
     }

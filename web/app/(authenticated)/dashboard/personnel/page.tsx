@@ -158,7 +158,7 @@ export default function PersonnelPage() {
       } else {
         result = await employeeService.create(data);
       }
-      
+
       // Handle "Accepted" response (approval required)
       if (result && result.requestId) {
         setSnackbar({ open: true, message: t("messages.request_sent"), severity: "info" });
@@ -177,10 +177,10 @@ export default function PersonnelPage() {
       try {
         const result = await employeeService.delete(selectedEmployee.id);
         if (result && result.requestId) {
-            setSnackbar({ open: true, message: t("messages.request_sent"), severity: "info" });
+          setSnackbar({ open: true, message: t("messages.request_sent"), severity: "info" });
         } else {
-            setSnackbar({ open: true, message: t("messages.delete_success"), severity: "success" });
-            fetchEmployees();
+          setSnackbar({ open: true, message: t("messages.delete_success"), severity: "success" });
+          fetchEmployees();
         }
         setDeleteConfirmOpen(false);
       } catch (error) {
@@ -242,69 +242,244 @@ export default function PersonnelPage() {
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-      <Paper sx={{ p: 1, borderRadius: 2 }}>
-        <Box sx={{ display: "flex", flexDirection: { xs: "column", md: "row" }, justifyContent: "space-between", alignItems: { xs: "stretch", md: "center" }, gap: 1.5 }}>
-          <TextField placeholder={t("table.search_placeholder")} size="small" value={searchText} onChange={(e) => setSearchText(e.target.value)} sx={{ width: { xs: "100%", md: 320 } }} slotProps={{ input: { startAdornment: <InputAdornment position="start"><SearchIcon fontSize="small" color="action" /></InputAdornment>, sx: { borderRadius: 2 } } }} />
-          <Stack direction="row" spacing={1} sx={{ alignItems: "center", justifyContent: { xs: "space-between", md: "flex-end" }, width: { xs: "100%", md: "auto" } }}>
+      {/* Personnel Table */}
+      <Paper sx={{ borderRadius: 1.5, border: "1px solid #e2e8f0" }}>
+        <Box sx={{ p: 2, borderBottom: "1px solid #e2e8f0", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 2 }}>
+          <Stack direction="row" spacing={2} sx={{ alignItems: "center", flexGrow: 1, flexWrap: "wrap" }}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 700, mr: 1 }}>{t("table.title") || "Danh sách nhân viên"}</Typography>
+
+            <TextField
+              placeholder={t("table.search_placeholder")}
+              size="small"
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              slotProps={{
+                input: {
+                  startAdornment: <SearchIcon sx={{ color: "text.disabled", mr: 1, fontSize: 18 }} />
+                }
+              }}
+              sx={{ width: { xs: "100%", md: 400 } }}
+            />
+
             <Stack direction="row" spacing={1}>
-              {selectedCount > 0 && <Button variant="contained" color="error" size="small" startIcon={<DeleteIcon />} onClick={() => setBulkDeleteConfirmOpen(true)} sx={{ borderRadius: 2 }}>{selectedCount}</Button>}
-              <Button variant="outlined" size="small" startIcon={<ExportIcon />} onClick={handleExportExcel} sx={{ borderRadius: 2 }}>{t("table.export_excel")}</Button>
-              <Button variant="contained" size="small" startIcon={<AddIcon />} onClick={handleOpenAdd} sx={{ borderRadius: 2, px: 2 }}>{t("table.add_new")}</Button>
+              <Button variant="outlined" size="small" startIcon={<ExportIcon />} onClick={handleExportExcel}>
+                {t("table.export_excel")}
+              </Button>
+              <Button variant="contained" size="small" startIcon={<AddIcon />} onClick={handleOpenAdd}>
+                {t("table.add_new")}
+              </Button>
+              <IconButton onClick={fetchEmployees} disabled={loading} size="small">
+                <RefreshIcon fontSize="small" />
+              </IconButton>
             </Stack>
-            <IconButton onClick={fetchEmployees} disabled={loading} size="small"><RefreshIcon fontSize="small" /></IconButton>
           </Stack>
+          {selectedCount > 0 && (
+            <Button variant="contained" color="error" size="small" onClick={() => setBulkDeleteConfirmOpen(true)}>
+              {tc("delete") || "Xóa"} ({selectedCount})
+            </Button>
+          )}
+        </Box>
+        <Box sx={{ height: 600 }}>
+          <DataGrid
+            rows={filteredEmployees || []}
+            columns={columns}
+            loading={loading}
+            initialState={{ pagination: { paginationModel: { pageSize: 25 } } }}
+            pageSizeOptions={[10, 25, 50, 100]}
+            disableRowSelectionOnClick
+            checkboxSelection
+            rowSelectionModel={selectionModel}
+            onRowSelectionModelChange={(newSelection) => setSelectionModel(newSelection)}
+            density="compact"
+            slots={{ noRowsOverlay: CustomNoRowsOverlay }}
+            sx={{ border: "none" }}
+          />
         </Box>
       </Paper>
 
-      <Paper sx={{ height: 600, width: "100%", borderRadius: 2, overflow: "hidden", border: "1px solid #e2e8f0" }}>
-        <DataGrid rows={filteredEmployees || []} columns={columns} loading={loading} initialState={{ pagination: { paginationModel: { pageSize: 25 } } }} pageSizeOptions={[10, 25, 50, 100]} disableRowSelectionOnClick checkboxSelection onRowSelectionModelChange={(newSelection) => setSelectionModel(newSelection)} density="compact" slots={{ noRowsOverlay: CustomNoRowsOverlay }} sx={{ border: "none" }} />
-      </Paper>
-
-      <Drawer anchor="right" open={detailDrawerOpen} onClose={() => setDetailDrawerOpen(false)} sx={{ "& .MuiDrawer-paper": { width: { xs: "100%", sm: 500 }, p: { xs: 1.5, sm: 2 } } }}>
+      <Drawer 
+        anchor="right" 
+        open={detailDrawerOpen} 
+        onClose={() => setDetailDrawerOpen(false)} 
+        sx={{ 
+          "& .MuiDrawer-paper": { 
+            width: { xs: "100%", sm: 550 }, 
+            p: 0,
+            bgcolor: 'background.default'
+          } 
+        }}
+      >
         {selectedEmployee && (
-          <Box>
-            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1.5 }}>
-              <Typography variant="h5" sx={{ fontWeight: 800 }}>{t("details.title")}</Typography>
-              <IconButton onClick={() => setDetailDrawerOpen(false)}><CloseIcon /></IconButton>
+          <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+            {/* Header */}
+            <Box sx={{ p: 2, borderBottom: '1px solid #e2e8f0', display: "flex", justifyContent: "space-between", alignItems: "center", bgcolor: 'white' }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>{t("details.title")}</Typography>
+              <IconButton size="small" onClick={() => setDetailDrawerOpen(false)} sx={{ bgcolor: 'grey.50' }}>
+                <CloseIcon fontSize="small" />
+              </IconButton>
             </Box>
-            <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, alignItems: { xs: "flex-start", sm: "center" }, gap: 2, mb: 2 }}>
-              <Avatar sx={{ width: { xs: 64, sm: 80 }, height: { xs: 64, sm: 80 }, bgcolor: "primary.main", fontSize: "2rem" }}>{selectedEmployee?.fullName?.charAt(0) || "U"}</Avatar>
-              <Box>
-                <Typography variant="h6" sx={{ fontWeight: 700 }}>{selectedEmployee.fullName}</Typography>
-                <Typography variant="body2" color="text.secondary">{selectedEmployee.position}</Typography>
-                <Chip label={selectedEmployee.department?.name || tc("notAvailable")} size="small" sx={{ mt: 1 }} />
-              </Box>
-            </Box>
-            <Tabs value={tabValue} onChange={(_, v) => setTabValue(v)} sx={{ mb: 3, borderBottom: 1, borderColor: "divider" }}>
-              <Tab label={t("details.tabs.personal")} /><Tab label={t("details.tabs.work")} /><Tab label={t("details.tabs.bank_salary")} />
-            </Tabs>
-            <Box sx={{ mt: 2 }}>
-              {tabValue === 0 && (
-                <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 1.5 }}>
-                  <Box><Typography variant="caption" color="text.secondary">{t("details.fields.gender")}</Typography><Typography sx={{ fontWeight: 600 }}>{selectedEmployee.gender === "Male" ? t("details.genders.male") : selectedEmployee.gender === "Female" ? t("details.genders.female") : t("details.genders.other")}</Typography></Box>
-                  <Box><Typography variant="caption" color="text.secondary">{t("details.fields.dob")}</Typography><Typography sx={{ fontWeight: 600 }}>{selectedEmployee.dateOfBirth ? new Date(selectedEmployee.dateOfBirth).toLocaleDateString() : tc("notAvailable")}</Typography></Box>
-                  <Box sx={{ gridColumn: "span 2" }}><Typography variant="caption" color="text.secondary">{t("details.fields.address")}</Typography><Typography sx={{ fontWeight: 600 }}>{selectedEmployee.address || tc("notAvailable")}</Typography></Box>
+
+            <Box sx={{ flexGrow: 1, overflowY: 'auto', p: 3 }}>
+              {/* Profile Header Card */}
+              <Paper variant="outlined" sx={{ p: 3, borderRadius: 3, mb: 3, bgcolor: 'primary.50', border: 'none' }}>
+                <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, alignItems: { xs: "flex-start", sm: "center" }, gap: 3 }}>
+                  <Avatar 
+                    sx={{ 
+                      width: 80, 
+                      height: 80, 
+                      bgcolor: "primary.main", 
+                      fontSize: "2rem",
+                      boxShadow: '0 8px 16px rgba(37, 99, 235, 0.2)'
+                    }}
+                  >
+                    {selectedEmployee?.fullName?.charAt(0) || "U"}
+                  </Avatar>
+                  <Box>
+                    <Typography variant="h6" sx={{ fontWeight: 800, color: 'primary.dark' }}>{selectedEmployee.fullName}</Typography>
+                    <Typography variant="body2" sx={{ color: 'primary.main', fontWeight: 600, mb: 1 }}>{selectedEmployee.position}</Typography>
+                    <Chip 
+                      label={selectedEmployee.department?.name || tc("notAvailable")} 
+                      size="small" 
+                      variant="filled"
+                      sx={{ bgcolor: 'white', fontWeight: 600, border: '1px solid', borderColor: 'primary.light' }} 
+                    />
+                  </Box>
                 </Box>
-              )}
+              </Paper>
+
+              <Tabs 
+                value={tabValue} 
+                onChange={(_, v) => setTabValue(v)} 
+                sx={{ 
+                  mb: 3, 
+                  borderBottom: 1, 
+                  borderColor: "divider",
+                  '& .MuiTab-root': { fontWeight: 700, textTransform: 'none', fontSize: '0.9rem' }
+                }}
+              >
+                <Tab label={t("details.tabs.personal")} />
+                <Tab label={t("details.tabs.work")} />
+                <Tab label={t("details.tabs.bank_salary")} />
+              </Tabs>
+
+              <Box sx={{ mt: 2 }}>
+                {tabValue === 0 && (
+                  <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 3 }}>
+                    <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: 'white', border: '1px solid #f1f5f9' }}>
+                      <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.65rem', display: 'block', mb: 0.5 }}>{t("details.fields.fullName")}</Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 600 }}>{selectedEmployee.fullName}</Typography>
+                    </Box>
+                    <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: 'white', border: '1px solid #f1f5f9' }}>
+                      <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.65rem', display: 'block', mb: 0.5 }}>{t("details.fields.gender")}</Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 600 }}>{selectedEmployee.gender === "Male" ? t("details.genders.male") : selectedEmployee.gender === "Female" ? t("details.genders.female") : t("details.genders.other")}</Typography>
+                    </Box>
+                    <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: 'white', border: '1px solid #f1f5f9' }}>
+                      <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.65rem', display: 'block', mb: 0.5 }}>{t("details.fields.dob")}</Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 600 }}>{selectedEmployee.dateOfBirth ? new Date(selectedEmployee.dateOfBirth).toLocaleDateString() : tc("notAvailable")}</Typography>
+                    </Box>
+                    <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: 'white', border: '1px solid #f1f5f9' }}>
+                      <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.65rem', display: 'block', mb: 0.5 }}>{t("details.fields.identityCard")}</Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 600 }}>{selectedEmployee.identityCardNumber || tc("notAvailable")}</Typography>
+                    </Box>
+                    <Box sx={{ gridColumn: "span 2", p: 1.5, borderRadius: 2, bgcolor: 'white', border: '1px solid #f1f5f9' }}>
+                      <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.65rem', display: 'block', mb: 0.5 }}>{t("details.fields.address")}</Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 600 }}>{selectedEmployee.address || tc("notAvailable")}</Typography>
+                    </Box>
+                  </Box>
+                )}
+
+                {tabValue === 1 && (
+                  <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 3 }}>
+                    <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: 'white', border: '1px solid #f1f5f9' }}>
+                      <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.65rem', display: 'block', mb: 0.5 }}>{t("table.columns.email")}</Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 600 }}>{selectedEmployee.email}</Typography>
+                    </Box>
+                    <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: 'white', border: '1px solid #f1f5f9' }}>
+                      <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.65rem', display: 'block', mb: 0.5 }}>{t("details.fields.phone")}</Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 600 }}>{selectedEmployee.phoneNumber || tc("notAvailable")}</Typography>
+                    </Box>
+                    <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: 'white', border: '1px solid #f1f5f9' }}>
+                      <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.65rem', display: 'block', mb: 0.5 }}>{t("details.fields.position")}</Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 600 }}>{selectedEmployee.position || tc("notAvailable")}</Typography>
+                    </Box>
+                    <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: 'white', border: '1px solid #f1f5f9' }}>
+                      <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.65rem', display: 'block', mb: 0.5 }}>{t("details.fields.department")}</Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 600 }}>{selectedEmployee.department?.name || tc("notAvailable")}</Typography>
+                    </Box>
+                    <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: 'white', border: '1px solid #f1f5f9' }}>
+                      <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.65rem', display: 'block', mb: 0.5 }}>{t("details.fields.insuranceNumber")}</Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 600 }}>{selectedEmployee.socialInsuranceNumber || tc("notAvailable")}</Typography>
+                    </Box>
+                  </Box>
+                )}
+
+                {tabValue === 2 && (
+                  <Stack spacing={3}>
+                    <Box>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 800, mb: 1.5, color: 'primary.main', display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Box sx={{ width: 4, height: 16, bgcolor: 'primary.main', borderRadius: 1 }} />
+                        {t("details.sections.bank_info")}
+                      </Typography>
+                      <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 3 }}>
+                        <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: 'white', border: '1px solid #f1f5f9' }}>
+                          <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.65rem', display: 'block', mb: 0.5 }}>{t("details.fields.bankName")}</Typography>
+                          <Typography variant="body2" sx={{ fontWeight: 600 }}>{selectedEmployee.bankName || tc("notAvailable")}</Typography>
+                        </Box>
+                        <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: 'white', border: '1px solid #f1f5f9' }}>
+                          <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.65rem', display: 'block', mb: 0.5 }}>{t("details.fields.bankAccount")}</Typography>
+                          <Typography variant="body2" sx={{ fontWeight: 600 }}>{selectedEmployee.bankAccountNumber || tc("notAvailable")}</Typography>
+                        </Box>
+                      </Box>
+                    </Box>
+
+                    <Divider />
+
+                    <Box>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 800, mb: 1.5, color: 'primary.main', display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Box sx={{ width: 4, height: 16, bgcolor: 'primary.main', borderRadius: 1 }} />
+                        {t("details.sections.salary_info")}
+                      </Typography>
+                      <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 3 }}>
+                        <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: 'primary.50', border: '1px solid', borderColor: 'primary.light' }}>
+                          <Typography variant="caption" color="primary.main" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.65rem', display: 'block', mb: 0.5 }}>{t("details.fields.baseSalary")}</Typography>
+                          <Typography variant="body2" sx={{ fontWeight: 800, color: 'primary.dark' }}>{selectedEmployee.baseSalary?.toLocaleString()} {tc("currency")}</Typography>
+                        </Box>
+                        <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: 'white', border: '1px solid #f1f5f9' }}>
+                          <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.65rem', display: 'block', mb: 0.5 }}>{t("details.fields.allowance")}</Typography>
+                          <Typography variant="body2" sx={{ fontWeight: 600 }}>{selectedEmployee.allowance?.toLocaleString()} {tc("currency")}</Typography>
+                        </Box>
+                        <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: 'white', border: '1px solid #f1f5f9' }}>
+                          <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.65rem', display: 'block', mb: 0.5 }}>{t("details.fields.hourlyRate")}</Typography>
+                          <Typography variant="body2" sx={{ fontWeight: 600 }}>{selectedEmployee.hourlyRate?.toLocaleString()} {tc("currency")}</Typography>
+                        </Box>
+                        <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: 'white', border: '1px solid #f1f5f9' }}>
+                          <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.65rem', display: 'block', mb: 0.5 }}>{t("details.fields.hourlyRateOT")}</Typography>
+                          <Typography variant="body2" sx={{ fontWeight: 600 }}>{selectedEmployee.hourlyRateOT?.toLocaleString()} {tc("currency")}</Typography>
+                        </Box>
+                      </Box>
+                    </Box>
+                  </Stack>
+                )}
+              </Box>
             </Box>
           </Box>
         )}
       </Drawer>
 
       <EmployeeDialog open={formDialogOpen} onClose={() => setFormDialogOpen(false)} onSave={handleSaveEmployee} employee={editingEmployee} title={dialogTitle} />
-      
+
       <Dialog open={deleteConfirmOpen} onClose={() => setDeleteConfirmOpen(false)}>
         <DialogTitle>{t("dialog.delete_title")}</DialogTitle>
         <DialogContent>{t("dialog.delete_confirm")} <strong>{selectedEmployee?.fullName}</strong></DialogContent>
         <DialogActions sx={{ p: 2 }}>
-            <Button onClick={() => setDeleteConfirmOpen(false)} variant="outlined">{t("dialog.cancel")}</Button>
-            <Button onClick={handleDeleteConfirm} variant="contained" color="error">{t("dialog.delete")}</Button>
+          <Button onClick={() => setDeleteConfirmOpen(false)} variant="outlined">{t("dialog.cancel")}</Button>
+          <Button onClick={handleDeleteConfirm} variant="contained" color="error">{t("dialog.delete")}</Button>
         </DialogActions>
       </Dialog>
 
-      <Snackbar 
-        open={snackbar.open} 
-        autoHideDuration={6000} 
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
         onClose={() => setSnackbar({ ...snackbar, open: false })}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
       >

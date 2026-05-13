@@ -10,6 +10,7 @@ import {
   TextField,
   Button,
   Paper,
+  Divider,
   Stack,
   MenuItem
 } from "@mui/material";
@@ -93,14 +94,26 @@ export default function PayrollPage() {
       width: 130,
       renderCell: (params: GridRenderCellParams) => (params.value?.toLocaleString() || "0") + " " + tc("currency")
     },
-    { field: "workHours", headerName: t("workHours"), width: 110 },
-    { field: "otHours", headerName: t("otHours"), width: 110 },
+    { field: "workHours", headerName: t("workHours"), width: 100 },
+    { field: "leaveHours", headerName: t("leaveHours"), width: 110, renderCell: (p) => <Typography sx={{ color: 'success.main' }}>{p.value}</Typography> },
+    { field: "otHours", headerName: t("otHours"), width: 100 },
+    { field: "lateEarlyMinutes", headerName: t("lateEarlyMinutes"), width: 140, renderCell: (p) => <Typography sx={{ color: p.value > 0 ? 'error.main' : 'inherit' }}>{p.value}</Typography> },
+    {
+      field: "deductions",
+      headerName: t("deductions"),
+      width: 130,
+      renderCell: (params: GridRenderCellParams) => (
+        <Typography sx={{ color: "error.main" }}>
+          -{(params.value?.toLocaleString() || "0")} {tc("currency")}
+        </Typography>
+      )
+    },
     {
       field: "totalSalary",
       headerName: t("totalAmount"),
       width: 160,
       renderCell: (params: GridRenderCellParams) => (
-        <Typography sx={{ fontWeight: 800, color: "primary.main" }}>
+        <Typography sx={{ fontWeight: 800, color: "primary.main", fontSize: '1.1rem' }}>
           {(params.value?.toLocaleString() || "0")} {tc("currency")}
         </Typography>
       )
@@ -122,27 +135,160 @@ export default function PayrollPage() {
   ];
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-      <Card sx={{ borderRadius: 3, border: '1px solid #e2e8f0' }}>
-        <CardContent sx={{ p: 2 }}>
-          <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ alignItems: "center" }}>
-            <Stack direction="row" spacing={2}>
-              <TextField select label={t("month")} size="small" sx={{ minWidth: 120 }} value={month} onChange={(e) => setMonth(Number(e.target.value))}>
-                {[...Array(12)].map((_, i) => <MenuItem key={i + 1} value={i + 1}>{t("month")} {i + 1}</MenuItem>)}
-              </TextField>
-              <TextField select label={t("year")} size="small" sx={{ minWidth: 120 }} value={year} onChange={(e) => setYear(Number(e.target.value))}>
-                {[2024, 2025, 2026].map((y) => <MenuItem key={y} value={y}>{y}</MenuItem>)}
-              </TextField>
-            </Stack>
-            <Stack direction="row" spacing={1} sx={{ flex: 1, justifyContent: "flex-end" }}>
-              <Button variant="contained" startIcon={<CalcIcon />} onClick={handleCalculate} disabled={loading}>{t("calculate")}</Button>
-              <Button variant="outlined" startIcon={<DownloadIcon />} onClick={handleExportExcel} disabled={records.length === 0}>{tc("excel")}</Button>
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+      <Paper
+        sx={{
+          p: 2.5,
+          borderRadius: 4,
+          boxShadow: "0 4px 20px rgba(0,0,0,0.06)",
+          border: '1px solid',
+          borderColor: 'divider',
+          background: 'linear-gradient(to right, #ffffff, #f8fafc)'
+        }}
+      >
+        <Stack
+          direction="row"
+          spacing={3}
+          sx={{ justifyContent: "space-between", alignItems: "center" }}
+        >
+          <Stack direction="row" spacing={4} sx={{ flexGrow: 1 }}>
+            <Box>
+              <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, textTransform: 'uppercase', fontSize: '0.65rem', mb: 0.5, display: 'block' }}>
+                {t('totalAmount')}
+              </Typography>
+              <Typography variant="h5" sx={{ fontWeight: 800, color: 'primary.main' }}>
+                {records.reduce((acc, curr) => acc + curr.totalSalary, 0).toLocaleString()} <Typography component="span" variant="caption" sx={{ fontWeight: 700 }}>{tc("currency")}</Typography>
+              </Typography>
+            </Box>
+
+            <Divider orientation="vertical" flexItem sx={{ height: 40, my: 'auto' }} />
+
+            <Box>
+              <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, textTransform: 'uppercase', fontSize: '0.65rem', mb: 0.5, display: 'block' }}>
+                {t('deductions')}
+              </Typography>
+              <Typography variant="h5" sx={{ fontWeight: 800, color: 'error.main' }}>
+                -{records.reduce((acc, curr) => acc + curr.deductions, 0).toLocaleString()} <Typography component="span" variant="caption" sx={{ fontWeight: 700 }}>{tc("currency")}</Typography>
+              </Typography>
+            </Box>
+
+            <Divider orientation="vertical" flexItem sx={{ height: 40, my: 'auto' }} />
+
+            <Box>
+              <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, textTransform: 'uppercase', fontSize: '0.65rem', mb: 0.5, display: 'block' }}>
+                {t('employee')}
+              </Typography>
+              <Typography variant="h5" sx={{ fontWeight: 800 }}>
+                {records.length}
+              </Typography>
+            </Box>
+          </Stack>
+
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            spacing={1.5}
+            sx={{ bgcolor: 'grey.50', p: 1, borderRadius: 3, border: '1px solid', borderColor: 'grey.200', alignItems: "center" }}
+          >
+            <TextField
+              select
+              size="small"
+              value={month}
+              onChange={(e) => setMonth(Number(e.target.value))}
+              sx={{ minWidth: 110, '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'background.paper' } }}
+            >
+              {[...Array(12)].map((_, i) => <MenuItem key={i + 1} value={i + 1}>{t("month")} {i + 1}</MenuItem>)}
+            </TextField>
+            <TextField
+              select
+              size="small"
+              value={year}
+              onChange={(e) => setYear(Number(e.target.value))}
+              sx={{ minWidth: 100, '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'background.paper' } }}
+            >
+              {[2024, 2025, 2026].map((y) => <MenuItem key={y} value={y}>{y}</MenuItem>)}
+            </TextField>
+            <Divider orientation="vertical" flexItem sx={{ display: { xs: 'none', sm: 'block' } }} />
+            <Stack direction="row" spacing={1}>
+              <Button
+                variant="contained"
+                startIcon={<CalcIcon />}
+                onClick={handleCalculate}
+                disabled={loading}
+                sx={{ borderRadius: 2, fontWeight: 700, boxShadow: '0 4px 12px rgba(37, 99, 235, 0.2)' }}
+              >
+                {t("calculate")}
+              </Button>
+              <Button
+                variant="outlined"
+                startIcon={<DownloadIcon />}
+                onClick={handleExportExcel}
+                disabled={records.length === 0}
+                sx={{ borderRadius: 2, fontWeight: 700 }}
+              >
+                {tc("excel")}
+              </Button>
             </Stack>
           </Stack>
-        </CardContent>
-      </Card>
-      <Paper sx={{ height: 600, width: '100%', borderRadius: 2, overflow: 'hidden' }}>
-        <DataGrid rows={records} getRowId={(row) => row.userId} columns={columns} loading={loading} disableRowSelectionOnClick slots={{ noRowsOverlay: CustomNoRowsOverlay }} sx={{ border: 'none' }} />
+        </Stack>
+      </Paper>
+      <Paper sx={{ borderRadius: 1.5, border: "1px solid #e2e8f0" }}>
+        <Box sx={{ p: 2, borderBottom: "1px solid #e2e8f0", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 2 }}>
+          <Stack direction="row" spacing={2} sx={{ alignItems: "center", flexGrow: 1, flexWrap: "wrap" }}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 700, mr: 1 }}>{t("title") || "Bảng lương"}</Typography>
+            
+            <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
+              <TextField
+                select
+                size="small"
+                value={month}
+                onChange={(e) => setMonth(Number(e.target.value))}
+                sx={{ minWidth: 120 }}
+              >
+                {[...Array(12)].map((_, i) => <MenuItem key={i + 1} value={i + 1}>{t("month")} {i + 1}</MenuItem>)}
+              </TextField>
+              <TextField
+                select
+                size="small"
+                value={year}
+                onChange={(e) => setYear(Number(e.target.value))}
+                sx={{ minWidth: 100 }}
+              >
+                {[2024, 2025, 2026].map((y) => <MenuItem key={y} value={y}>{y}</MenuItem>)}
+              </TextField>
+              <Button
+                variant="contained"
+                size="small"
+                startIcon={<CalcIcon />}
+                onClick={handleCalculate}
+                disabled={loading}
+              >
+                {t("calculate")}
+              </Button>
+            </Stack>
+          </Stack>
+          
+          <Button
+            variant="outlined"
+            size="small"
+            startIcon={<DownloadIcon />}
+            onClick={handleExportExcel}
+            disabled={records.length === 0}
+          >
+            {tc("excel")}
+          </Button>
+        </Box>
+        <Box sx={{ height: 600 }}>
+          <DataGrid
+            rows={records}
+            getRowId={(row) => row.userId}
+            columns={columns}
+            loading={loading}
+            disableRowSelectionOnClick
+            density="compact"
+            slots={{ noRowsOverlay: CustomNoRowsOverlay }}
+            sx={{ border: "none" }}
+          />
+        </Box>
       </Paper>
     </Box>
   );

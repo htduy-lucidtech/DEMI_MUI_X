@@ -108,11 +108,42 @@ namespace Hrm.Api.Controllers
             var userId = GetUserId();
             var correction = await _attendanceService.RequestCorrectionAsync(userId, dto.RequestedCheckIn, dto.RequestedCheckOut, dto.Reason);
 
+            // Create Approval Request
+            var user = await _context.Users.Include(u => u.Employee).FirstOrDefaultAsync(u => u.Id == userId);
+            var senderName = user?.Employee?.FullName ?? user?.Username ?? "Nhân viên";
+
+            var approvedData = new AttendanceCorrection
+            {
+                Id = correction.Id,
+                UserId = correction.UserId,
+                AttendanceId = correction.AttendanceId,
+                RequestedCheckIn = correction.RequestedCheckIn,
+                RequestedCheckOut = correction.RequestedCheckOut,
+                Reason = correction.Reason,
+                Status = "Approved",
+                CreatedAt = correction.CreatedAt
+            };
+
+            var approval = new ApprovalRequest
+            {
+                RequesterId = userId,
+                RequestType = "ATTENDANCE_CORRECTION",
+                EntityName = "AttendanceCorrection",
+                EntityId = correction.Id.ToString(),
+                DataJson = JsonSerializer.Serialize(approvedData),
+                Description = $"Sửa chấm công: {senderName} ({correction.CreatedAt.ToShortDateString()})",
+                DepartmentId = user?.Employee?.DepartmentId,
+                Status = ApprovalStatus.Pending
+            };
+
+            _context.ApprovalRequests.Add(approval);
+            await _context.SaveChangesAsync();
+
             var corrRoleNotif = new Notification
             {
                 UserId = null,
                 Title = "Yêu cầu sửa chấm công",
-                Message = $"User {userId} đã gửi yêu cầu sửa chấm công",
+                Message = $"{senderName} đã gửi yêu cầu sửa chấm công",
                 Type = "Attendance"
             };
             await _notificationService.CreateAndSendAsync(corrRoleNotif, "Manager");

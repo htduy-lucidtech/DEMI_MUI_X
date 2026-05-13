@@ -69,6 +69,16 @@ Dự án tuân thủ mô hình **Clean Architecture** ở Backend và **App Rout
 
 ---
 
+### Giai đoạn 9: Tinh chỉnh Chấm công & Lương (Refined Attendance & Payroll)
+| Bước | Công việc                                        | Trạng thái |
+| ---- | ------------------------------------------------ | ---------- |
+| 9.1  | Logic tính khấu trừ đi muộn/về sớm (Deductions)  | 🔄 Đang chờ duyệt |
+| 9.2  | Tích hợp Nghỉ phép vào bảng lương (Leave Sync)   | 🔄 Đang chờ duyệt |
+| 9.3  | Dashboard Lương & Công dự kiến (Live Dashboard)  | 🔄 Đang chờ duyệt |
+| 9.4  | Hệ thống Chốt & Khóa bảng lương (Lock Payroll)  | 🔄 Đang chờ duyệt |
+
+---
+
 ## 5. Mục tiêu tương lai
 - Tích hợp AI hỗ trợ phân tích hiệu suất nhân viên.
 - Ứng dụng di động (Mobile App) dành cho nhân viên.

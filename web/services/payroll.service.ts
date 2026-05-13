@@ -7,7 +7,10 @@ export interface PayrollRecord {
   hourlyRate: number;
   allowance: number;
   workHours: number;
+  leaveHours: number;
   otHours: number;
+  lateEarlyMinutes: number;
+  deductions: number;
   totalSalary: number;
 }
 

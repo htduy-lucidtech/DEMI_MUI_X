@@ -101,52 +101,34 @@ export default function PerformancePage() {
   ];
 
   return (
-    <Box>
-      <Box
-        sx={{
-          mb: 4,
-          display: "flex",
-          flexDirection: { xs: "column", sm: "row" },
-          justifyContent: "space-between",
-          alignItems: { xs: "flex-start", sm: "center" },
-          gap: 2,
-        }}
-      >
-        <Box>
-          <Typography variant="h4" sx={{ fontWeight: 800 }}>
-            {t("title")}
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            {t("subtitle")}
-          </Typography>
+      <Paper sx={{ borderRadius: 1.5, border: "1px solid #e2e8f0" }}>
+        <Box sx={{ p: 2, borderBottom: "1px solid #e2e8f0", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 2 }}>
+          <Stack direction="row" spacing={2} sx={{ alignItems: "center", flexGrow: 1, flexWrap: "wrap" }}>
+            <Box>
+              <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>{t("title")}</Typography>
+              <Typography variant="caption" color="text.secondary">{t("subtitle")}</Typography>
+            </Box>
+          </Stack>
+          <Button
+            variant="contained"
+            size="small"
+            startIcon={<AddIcon />}
+            onClick={() => setOpenDialog(true)}
+          >
+            {t("createReview")}
+          </Button>
         </Box>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => setOpenDialog(true)}
-          sx={{ width: { xs: "100%", sm: "auto" } }}
-        >
-          {t("createReview")}
-        </Button>
-      </Box>
-
-      <Paper
-        sx={{
-          height: 600,
-          width: "100%",
-          borderRadius: 4,
-          overflow: "hidden",
-          border: "1px solid #e2e8f0",
-        }}
-      >
-        <DataGrid
-          rows={reviews}
-          columns={columns}
-          loading={loading}
-          disableRowSelectionOnClick
-          slots={{ noRowsOverlay: CustomNoRowsOverlay }}
-          sx={{ border: "none" }}
-        />
+        <Box sx={{ height: 600 }}>
+          <DataGrid
+            rows={reviews}
+            columns={columns}
+            loading={loading}
+            disableRowSelectionOnClick
+            density="compact"
+            slots={{ noRowsOverlay: CustomNoRowsOverlay }}
+            sx={{ border: "none" }}
+          />
+        </Box>
       </Paper>
 
       {/* Dialog Thêm đánh giá */}

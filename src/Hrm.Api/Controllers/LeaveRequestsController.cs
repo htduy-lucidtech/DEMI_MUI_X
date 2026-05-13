@@ -84,6 +84,14 @@ namespace Hrm.Api.Controllers
                     return Unauthorized(new { message = "Invalid user identity" });
                 }
 
+                var user = await _context.Users
+                    .Include(u => u.Employee)
+                    .Include(u => u.UserRoles).ThenInclude(ur => ur.Role)
+                    .FirstOrDefaultAsync(u => u.Id == claimUserId);
+
+                if (user == null) return Unauthorized();
+                var isAdmin = user.UserRoles.Any(ur => ur.Role.Name == "Admin");
+
                 // 1. Map DTO to Entity
                 var request = new LeaveRequest
                 {
@@ -100,11 +108,41 @@ namespace Hrm.Api.Controllers
                 _context.LeaveRequests.Add(request);
                 await _context.SaveChangesAsync();
 
-                // 3. Load user info for notification (safe load)
-                var author = await _context.Users.Include(u => u.Employee).FirstOrDefaultAsync(u => u.Id == claimUserId);
-                var senderName = (author != null && author.Employee != null) ? author.Employee.FullName : (author != null ? author.Username : "Nhân viên");
+                var senderName = user.Employee?.FullName ?? user.Username;
 
-                // 4. Fire notifications (wrap in try-catch to not block the response)
+                // 3. If not admin, create an Approval Request
+                if (!isAdmin)
+                {
+                    // Update the status in the JSON data so it gets applied as Approved
+                    var approvedData = new LeaveRequest
+                    {
+                        Id = request.Id,
+                        UserId = request.UserId,
+                        LeaveType = request.LeaveType,
+                        StartDate = request.StartDate,
+                        EndDate = request.EndDate,
+                        Reason = request.Reason,
+                        Status = "Approved",
+                        CreatedAt = request.CreatedAt
+                    };
+
+                    var approval = new ApprovalRequest
+                    {
+                        RequesterId = claimUserId,
+                        RequestType = "LEAVE_REQUEST",
+                        EntityName = "LeaveRequest",
+                        EntityId = request.Id.ToString(),
+                        DataJson = System.Text.Json.JsonSerializer.Serialize(approvedData),
+                        Description = $"Đơn nghỉ phép: {senderName} ({request.LeaveType})",
+                        DepartmentId = user.Employee?.DepartmentId,
+                        Status = ApprovalStatus.Pending
+                    };
+
+                    _context.ApprovalRequests.Add(approval);
+                    await _context.SaveChangesAsync();
+                }
+
+                // 4. Fire notifications
                 try {
                     var roleFull = $"Đơn nghỉ mới - Người gửi: {senderName}";
                     var notif = new Notification
@@ -124,7 +162,6 @@ namespace Hrm.Api.Controllers
                         })
                     };
 
-                    // Send to multiple roles
                     await _notificationService.CreateAndSendAsync(notif, "Admin");
                     await _notificationService.CreateAndSendAsync(notif, "Personnel");
                     await _notificationService.CreateAndSendAsync(notif, "Manager");
@@ -133,7 +170,6 @@ namespace Hrm.Api.Controllers
                     Console.WriteLine($"[Notification Error] {ex.Message}");
                 }
 
-                // 5. Return success
                 return Ok(new {
                     request.Id,
                     request.UserId,
@@ -143,7 +179,8 @@ namespace Hrm.Api.Controllers
                     request.Reason,
                     request.Status,
                     request.CreatedAt,
-                    FullName = senderName
+                    FullName = senderName,
+                    RequiresApproval = !isAdmin
                 });
             }
             catch (Exception ex)

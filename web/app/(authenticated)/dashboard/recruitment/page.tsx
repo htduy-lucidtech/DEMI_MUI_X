@@ -168,47 +168,37 @@ export default function RecruitmentPage() {
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-      {/* Actions Row */}
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: { xs: "stretch", sm: "flex-end" },
-          alignItems: "center",
-        }}
-      >
-        <Button
-          variant="contained"
-          size="small"
-          startIcon={<AddIcon />}
-          onClick={() => setOpenJobDialog(true)}
-          sx={{ borderRadius: 2, px: 2, width: { xs: "100%", sm: "auto" } }}
-        >
-          {t("postNew")}
-        </Button>
-      </Box>
-
-      <Paper
-        sx={{
-          mb: 3,
-          borderRadius: 4,
-          overflow: "hidden",
-          border: "1px solid #e2e8f0",
-        }}
-      >
-        <Tabs
-          value={tab}
-          onChange={(_, v) => setTab(v)}
-          sx={{ borderBottom: 1, borderColor: "divider" }}
-        >
-          <Tab label={t("tabs.jobs")} />
-          <Tab label={t("tabs.candidates")} />
-        </Tabs>
+      <Paper sx={{ borderRadius: 1.5, border: "1px solid #e2e8f0" }}>
+        <Box sx={{ p: 2, borderBottom: "1px solid #e2e8f0", display: "flex", flexDirection: "column", gap: 2 }}>
+          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 2 }}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 700, mr: 1 }}>{t("title") || "Tuyển dụng"}</Typography>
+            <Button
+              variant="contained"
+              size="small"
+              startIcon={<AddIcon />}
+              onClick={() => setOpenJobDialog(true)}
+            >
+              {t("postNew")}
+            </Button>
+          </Box>
+          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+            <Tabs
+              value={tab}
+              onChange={(_, v) => setTab(v)}
+              sx={{ minHeight: 40 }}
+            >
+              <Tab label={t("tabs.jobs")} />
+              <Tab label={t("tabs.candidates")} />
+            </Tabs>
+          </Box>
+        </Box>
         <Box sx={{ height: 500, width: "100%" }}>
           <DataGrid
             rows={tab === 0 ? jobs : candidates}
             columns={tab === 0 ? jobColumns : candidateColumns}
             loading={loading}
             disableRowSelectionOnClick
+            density="compact"
             slots={{
               noRowsOverlay: CustomNoRowsOverlay,
             }}

@@ -411,6 +411,7 @@ export default function AttendancePage() {
             loading={loading}
             density="compact"
             checkboxSelection={isHR}
+            rowSelectionModel={selectionModel}
             onRowSelectionModelChange={(newSelection) => setSelectionModel(newSelection)}
             slots={{ noRowsOverlay: CustomNoRowsOverlay }}
             sx={{ border: "none" }}

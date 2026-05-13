@@ -8,12 +8,7 @@ import {
   Card,
   CardContent,
   Grid,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
+  Chip,
   Paper,
   IconButton,
   Dialog,
@@ -24,11 +19,12 @@ import {
   Checkbox,
   FormControlLabel,
   FormGroup,
-  Chip,
   Tooltip,
   Alert,
   CircularProgress,
+  Stack,
 } from "@mui/material";
+import { DataGrid, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 import {
   Add as AddIcon,
   Edit as EditIcon,
@@ -153,6 +149,50 @@ export default function RolesPage() {
     return acc;
   }, {} as Record<string, Permission[]>);
 
+  const columns: GridColDef[] = [
+    {
+      field: "name",
+      headerName: "Tên nhóm",
+      flex: 1,
+      renderCell: (params: GridRenderCellParams) => (
+        <Typography sx={{ fontWeight: 600, fontSize: '0.875rem' }}>{params.value}</Typography>
+      )
+    },
+    { field: "description", headerName: "Mô tả", flex: 1.5 },
+    {
+      field: "permissionCount",
+      headerName: "Số lượng quyền",
+      width: 150,
+      renderCell: (params: GridRenderCellParams) => (
+        <Chip
+          label={`${params.value} quyền`}
+          size="small"
+          color="primary"
+          variant="outlined"
+          sx={{ fontWeight: 600 }}
+        />
+      )
+    },
+    {
+      field: "actions",
+      headerName: "Thao tác",
+      width: 120,
+      sortable: false,
+      align: "right",
+      headerAlign: "right",
+      renderCell: (params: GridRenderCellParams) => (
+        <Stack direction="row" spacing={0.5} sx={{ justifyContent: "flex-end", height: "100%", alignItems: "center" }}>
+          <IconButton onClick={() => handleOpen(params.row)} color="primary" size="small">
+            <EditIcon fontSize="small" />
+          </IconButton>
+          <IconButton onClick={() => handleDelete(params.row.id)} color="error" size="small">
+            <DeleteIcon fontSize="small" />
+          </IconButton>
+        </Stack>
+      )
+    }
+  ];
+
   if (loading) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", mt: 10 }}>
@@ -162,75 +202,39 @@ export default function RolesPage() {
   }
 
   return (
-    <Box sx={{ p: 3 }}>
-      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
-        <Typography variant="h4" sx={{ fontWeight: 700, display: "flex", alignItems: "center", gap: 1.5 }}>
-          <SecurityIcon color="primary" fontSize="large" />
-          Phân quyền hệ thống
-        </Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => handleOpen()}
-          sx={{ borderRadius: 2, px: 3 }}
-        >
-          Thêm nhóm quyền
-        </Button>
-      </Box>
-
-      {error && (
-        <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
-          {error}
-        </Alert>
-      )}
-
-      <Grid container spacing={3}>
-        <Grid size={{ xs: 12, lg: 12 }}>
-          <TableContainer component={Paper} sx={{ borderRadius: 2, boxShadow: 2 }}>
-            <Table>
-              <TableHead sx={{ bgcolor: "grey.50" }}>
-                <TableRow>
-                  <TableCell sx={{ fontWeight: 700 }}>Tên nhóm</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Mô tả</TableCell>
-                  <TableCell sx={{ fontWeight: 700 }}>Số lượng quyền</TableCell>
-                  <TableCell align="right" sx={{ fontWeight: 700 }}>Thao tác</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {roles.map((role) => (
-                  <TableRow key={role.id} hover>
-                    <TableCell>
-                      <Typography sx={{ fontWeight: 600 }}>{role.name}</Typography>
-                    </TableCell>
-                    <TableCell>{role.description}</TableCell>
-                    <TableCell>
-                      <Chip
-                        label={`${role.permissionCount} quyền`}
-                        size="small"
-                        color="primary"
-                        variant="outlined"
-                        sx={{ fontWeight: 600 }}
-                      />
-                    </TableCell>
-                    <TableCell align="right">
-                      <Tooltip title="Chỉnh sửa">
-                        <IconButton onClick={() => handleOpen(role)} color="primary">
-                          <EditIcon />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Xóa">
-                        <IconButton onClick={() => handleDelete(role.id)} color="error">
-                          <DeleteIcon />
-                        </IconButton>
-                      </Tooltip>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Grid>
-      </Grid>
+    <Box sx={{ p: 0 }}>
+      <Paper sx={{ borderRadius: 1.5, border: "1px solid #e2e8f0" }}>
+        <Box sx={{ p: 2, borderBottom: "1px solid #e2e8f0", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 2 }}>
+          <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
+            <SecurityIcon color="primary" />
+            <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>Phân quyền hệ thống</Typography>
+          </Stack>
+          <Button
+            variant="contained"
+            size="small"
+            startIcon={<AddIcon />}
+            onClick={() => handleOpen()}
+          >
+            Thêm nhóm quyền
+          </Button>
+        </Box>
+        <Box sx={{ height: 600 }}>
+          <DataGrid
+            rows={roles}
+            columns={columns}
+            loading={loading}
+            disableRowSelectionOnClick
+            density="compact"
+            slots={{ noRowsOverlay: () => (
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', opacity: 0.5 }}>
+                <SecurityIcon sx={{ fontSize: 48, mb: 1 }} />
+                <Typography variant="body2">Chưa có nhóm quyền nào</Typography>
+              </Box>
+            ) }}
+            sx={{ border: "none" }}
+          />
+        </Box>
+      </Paper>
 
       {/* Role Edit/Create Dialog */}
       <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>

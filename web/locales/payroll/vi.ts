@@ -14,6 +14,9 @@ const payrollVi = {
   hourlyRate: "Lương/Giờ",
   workHours: "Giờ công",
   otHours: "Giờ OT",
+  leaveHours: "Giờ nghỉ (P)",
+  lateEarlyMinutes: "Đi muộn/Về sớm (phút)",
+  deductions: "Khấu trừ",
   totalAmount: "Thành tiền",
   failedToCalculate: "Không thể tính lương",
 };
