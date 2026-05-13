@@ -37,9 +37,13 @@ import {
 } from "@mui/icons-material";
 import { approvalService, ApprovalRequest, ApprovalStatus } from "@/services/approval.service";
 import { useTranslations } from "next-intl";
+import { useAuth } from "@/app/context/AuthContext";
 
 export default function ApprovalsPage() {
   const t = useTranslations("Approvals");
+  const { user } = useAuth();
+  const canManage = user?.role === "Admin" || user?.role === "Manager";
+  
   const [requests, setRequests] = useState<ApprovalRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -360,7 +364,7 @@ export default function ApprovalsPage() {
         <DialogActions sx={{ p: 3 }}>
           <Button onClick={() => setSelectedRequest(null)} color="inherit" sx={{ fontWeight: 700 }}>{t("dialog.close")}</Button>
           <Box sx={{ flexGrow: 1 }} />
-          {selectedRequest?.status === ApprovalStatus.Pending && (
+          {canManage && selectedRequest?.status === ApprovalStatus.Pending && (
             <Stack direction="row" spacing={2}>
               <Button
                 variant="outlined"

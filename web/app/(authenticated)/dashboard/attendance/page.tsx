@@ -68,6 +68,7 @@ export default function AttendancePage() {
   const [lateDialogOpen, setLateDialogOpen] = useState(false);
   const [lateReason, setLateReason] = useState("");
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [correctionOpen, setCorrectionOpen] = useState(false);
   const [regulationSettings, setRegulationSettings] = useState<SystemSetting[]>([]);
 
   const getSelectedIds = (): number[] => {
@@ -208,7 +209,7 @@ export default function AttendancePage() {
       item.lateReason?.toLowerCase().includes(q);
 
     // Date filter check
-    const matchesDate = !filterDate || (item.checkInTime && new Date(item.checkInTime).toISOString().split('T')[0] === filterDate);
+    const matchesDate = !filterDate || (item.checkInTime && new Date(item.checkInTime).toLocaleDateString('en-CA') === filterDate);
 
     // Status filter check
     const matchesStatus = filterStatus === "all" ||
@@ -342,11 +343,14 @@ export default function AttendancePage() {
               </Box>
             </Stack>
             {isHR && (
-              <Button size="small" startIcon={<SettingsIcon />} onClick={handleOpenSettings} sx={{ mt: 2 }}>{t("regulations.edit")}</Button>
+              <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
+                <Button size="small" startIcon={<SettingsIcon />} onClick={handleOpenSettings}>{t("regulations.edit")}</Button>
+                <Button size="small" startIcon={<TimeIcon />} onClick={() => setCorrectionOpen(true)} color="warning">{t("corrections.openButton")}</Button>
+              </Stack>
             )}
           </Card>
 
-          {isHR && <CorrectionsPanel />}
+          {isHR && <CorrectionsPanel open={correctionOpen} onClose={() => setCorrectionOpen(false)} />}
         </Box>
       </Box>
 
@@ -411,7 +415,6 @@ export default function AttendancePage() {
             loading={loading}
             density="compact"
             checkboxSelection={isHR}
-            rowSelectionModel={selectionModel}
             onRowSelectionModelChange={(newSelection) => setSelectionModel(newSelection)}
             slots={{ noRowsOverlay: CustomNoRowsOverlay }}
             sx={{ border: "none" }}

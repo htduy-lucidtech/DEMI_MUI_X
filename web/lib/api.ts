@@ -10,28 +10,28 @@ export async function api_fetch(url: string, options: any = {}) {
   // 1. Lấy Token dựa trên môi trường
   if (isServer) {
     try {
-        const { cookies } = await import("next/headers");
-        const cookieStore = await cookies();
-        if (cookieStore) {
-            token = cookieStore.get("token")?.value;
-        }
+      const { cookies } = await import("next/headers");
+      const cookieStore = await cookies();
+      if (cookieStore) {
+        token = cookieStore.get("token")?.value;
+      }
     } catch (e) {
-        // Fallback for non-request context if any
+      // Fallback for non-request context if any
     }
   } else {
     try {
-        const Cookies = (await import("js-cookie")).default;
-        if (Cookies) {
-            token = Cookies.get("token");
-        }
-        if (!token) {
-            token = localStorage.getItem("token") || undefined;
-        }
-    } catch (e) {}
+      const Cookies = (await import("js-cookie")).default;
+      if (Cookies) {
+        token = Cookies.get("token");
+      }
+      if (!token) {
+        token = localStorage.getItem("token") || undefined;
+      }
+    } catch (e) { }
   }
 
   // 2. Xác định Base URL linh hoạt cho Docker
-  let baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5181/api";
+  let baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8203/api";
 
   if (isServer) {
     // Nếu chạy bên trong Docker (Production), sử dụng tên service 'hrm-api'
@@ -41,7 +41,7 @@ export async function api_fetch(url: string, options: any = {}) {
       baseUrl = "http://hrm-api:8080/api";
     }
   }
-  
+
   // 2. Thiết lập Headers
   const headers: HeadersInit = {
     "Content-Type": "application/json",
@@ -75,7 +75,7 @@ export async function api_fetch(url: string, options: any = {}) {
     if (response.status === 401 && !isServer) {
       window.location.href = "/login";
     }
-    
+
     // Đọc nội dung lỗi
     const errorData = await response.json().catch(() => ({}));
     const errorMessage = errorData.message || `API error: ${response.status}`;
@@ -91,32 +91,32 @@ export async function api_fetch(url: string, options: any = {}) {
   if (contentType && contentType.includes("application/json")) {
     return { data: await response.json() };
   }
-  
-  return { data: response }; 
+
+  return { data: response };
 }
 
 export const api = {
-  get: <T = any>(url: string, options?: any): Promise<{ data: T }> => 
+  get: <T = any>(url: string, options?: any): Promise<{ data: T }> =>
     api_fetch(url, { ...options, method: 'GET' }),
-  post: <T = any>(url: string, body?: any, options?: any): Promise<{ data: T }> => 
-    api_fetch(url, { 
-      ...options, 
-      method: 'POST', 
-      body: body instanceof FormData ? body : JSON.stringify(body) 
+  post: <T = any>(url: string, body?: any, options?: any): Promise<{ data: T }> =>
+    api_fetch(url, {
+      ...options,
+      method: 'POST',
+      body: body instanceof FormData ? body : JSON.stringify(body)
     }),
-  put: <T = any>(url: string, body?: any, options?: any): Promise<{ data: T }> => 
-    api_fetch(url, { 
-      ...options, 
-      method: 'PUT', 
-      body: JSON.stringify(body) 
+  put: <T = any>(url: string, body?: any, options?: any): Promise<{ data: T }> =>
+    api_fetch(url, {
+      ...options,
+      method: 'PUT',
+      body: JSON.stringify(body)
     }),
-  patch: <T = any>(url: string, body?: any, options?: any): Promise<{ data: T }> => 
-    api_fetch(url, { 
-      ...options, 
-      method: 'PATCH', 
-      body: JSON.stringify(body) 
+  patch: <T = any>(url: string, body?: any, options?: any): Promise<{ data: T }> =>
+    api_fetch(url, {
+      ...options,
+      method: 'PATCH',
+      body: JSON.stringify(body)
     }),
-  delete: <T = any>(url: string, options?: any): Promise<{ data: T }> => 
+  delete: <T = any>(url: string, options?: any): Promise<{ data: T }> =>
     api_fetch(url, { ...options, method: 'DELETE' }),
 };
 

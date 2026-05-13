@@ -18,9 +18,15 @@ import {
 import { Check, Close } from "@mui/icons-material";
 import api from "@/lib/api";
 import useRealtimeRefresh from "@/hooks/useRealtime";
+import { useTranslations } from "next-intl";
 
-export default function CorrectionsPanel() {
-  const [open, setOpen] = useState(false);
+interface CorrectionsPanelProps {
+  open: boolean;
+  onClose: () => void;
+}
+
+export default function CorrectionsPanel({ open, onClose }: CorrectionsPanelProps) {
+  const t = useTranslations("Attendance");
   const [items, setItems] = useState<any[]>([]);
 
   const fetch = async () => {
@@ -38,8 +44,6 @@ export default function CorrectionsPanel() {
 
   useRealtimeRefresh((d) => {
     if (d?.type && d.type.startsWith("attendance:correction")) {
-      // open panel and refresh
-      setOpen(true);
       fetch();
     }
   }, ["short"]);
@@ -60,22 +64,22 @@ export default function CorrectionsPanel() {
     <>
       <Dialog
         open={open}
-        onClose={() => setOpen(false)}
+        onClose={onClose}
         maxWidth="md"
         fullWidth
       >
-        <DialogTitle>Yêu cầu chỉnh sửa chấm công</DialogTitle>
+        <DialogTitle>{t("corrections.title")}</DialogTitle>
         <DialogContent>
           <Box sx={{ mt: 1 }}>
-            <Table>
-              <TableHead>
+            <Table size="small">
+              <TableHead sx={{ bgcolor: 'grey.50' }}>
                 <TableRow>
-                  <TableCell>ID</TableCell>
-                  <TableCell>Người yêu cầu</TableCell>
-                  <TableCell>Requested CheckIn</TableCell>
-                  <TableCell>Requested CheckOut</TableCell>
-                  <TableCell>Reason</TableCell>
-                  <TableCell>Action</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>{t("corrections.columns.id")}</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>{t("corrections.columns.requester")}</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>{t("corrections.columns.requestedCheckIn")}</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>{t("corrections.columns.requestedCheckOut")}</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>{t("corrections.columns.reason")}</TableCell>
+                  <TableCell sx={{ fontWeight: 700 }}>{t("corrections.columns.action")}</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -106,8 +110,8 @@ export default function CorrectionsPanel() {
             </Table>
           </Box>
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpen(false)}>Close</Button>
+        <DialogActions sx={{ p: 2 }}>
+          <Button onClick={onClose} variant="outlined">{t("dialog.cancel")}</Button>
         </DialogActions>
       </Dialog>
     </>

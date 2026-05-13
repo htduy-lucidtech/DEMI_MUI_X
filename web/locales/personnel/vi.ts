@@ -2,6 +2,7 @@ export default {
   title: "Quản lý Nhân sự",
   description: "Quản lý danh sách, thông tin và trạng thái làm việc của nhân viên.",
   table: {
+    title: "Danh sách nhân viên",
     columns: {
       fullName: "Họ và tên",
       username: "Tên đăng nhập",

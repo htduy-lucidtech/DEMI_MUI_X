@@ -22,6 +22,7 @@ const approvalsEn = {
   common: {
     noData: "No data found",
     details: "Details",
+    refresh: "Refresh",
   },
   status: {
     Pending: "Pending",

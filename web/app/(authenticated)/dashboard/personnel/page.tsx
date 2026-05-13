@@ -106,7 +106,8 @@ export default function PersonnelPage() {
         (emp) =>
           emp?.fullName?.toLowerCase().includes(searchText.toLowerCase()) ||
           emp?.email?.toLowerCase().includes(searchText.toLowerCase()) ||
-          emp?.position?.toLowerCase().includes(searchText.toLowerCase()),
+          emp?.position?.toLowerCase().includes(searchText.toLowerCase()) ||
+          emp?.department?.name?.toLowerCase().includes(searchText.toLowerCase()),
       ),
     [employees, searchText],
   );
@@ -245,7 +246,7 @@ export default function PersonnelPage() {
       {/* Personnel Table */}
       <Paper sx={{ borderRadius: 1.5, border: "1px solid #e2e8f0" }}>
         <Box sx={{ p: 2, borderBottom: "1px solid #e2e8f0", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 2 }}>
-          <Stack direction="row" spacing={2} sx={{ alignItems: "center", flexGrow: 1, flexWrap: "wrap" }}>
+          <Stack direction="row" spacing={2} sx={{ alignItems: "center", flexWrap: "wrap" }}>
             <Typography variant="subtitle1" sx={{ fontWeight: 700, mr: 1 }}>{t("table.title") || "Danh sách nhân viên"}</Typography>
 
             <TextField
@@ -260,24 +261,24 @@ export default function PersonnelPage() {
               }}
               sx={{ width: { xs: "100%", md: 400 } }}
             />
-
-            <Stack direction="row" spacing={1}>
-              <Button variant="outlined" size="small" startIcon={<ExportIcon />} onClick={handleExportExcel}>
-                {t("table.export_excel")}
-              </Button>
-              <Button variant="contained" size="small" startIcon={<AddIcon />} onClick={handleOpenAdd}>
-                {t("table.add_new")}
-              </Button>
-              <IconButton onClick={fetchEmployees} disabled={loading} size="small">
-                <RefreshIcon fontSize="small" />
-              </IconButton>
-            </Stack>
           </Stack>
-          {selectedCount > 0 && (
-            <Button variant="contained" color="error" size="small" onClick={() => setBulkDeleteConfirmOpen(true)}>
-              {tc("delete") || "Xóa"} ({selectedCount})
+
+          <Stack direction="row" spacing={1} sx={{ alignItems: "center", flexWrap: "wrap" }}>
+            <Button variant="outlined" size="small" startIcon={<ExportIcon />} onClick={handleExportExcel}>
+              {t("table.export_excel")}
             </Button>
-          )}
+            <Button variant="contained" size="small" startIcon={<AddIcon />} onClick={handleOpenAdd}>
+              {t("table.add_new")}
+            </Button>
+            <IconButton onClick={fetchEmployees} disabled={loading} size="small">
+              <RefreshIcon fontSize="small" />
+            </IconButton>
+            {selectedCount > 0 && (
+              <Button variant="contained" color="error" size="small" onClick={() => setBulkDeleteConfirmOpen(true)}>
+                {tc("delete") || "Xóa"} ({selectedCount})
+              </Button>
+            )}
+          </Stack>
         </Box>
         <Box sx={{ height: 600 }}>
           <DataGrid
@@ -288,7 +289,6 @@ export default function PersonnelPage() {
             pageSizeOptions={[10, 25, 50, 100]}
             disableRowSelectionOnClick
             checkboxSelection
-            rowSelectionModel={selectionModel}
             onRowSelectionModelChange={(newSelection) => setSelectionModel(newSelection)}
             density="compact"
             slots={{ noRowsOverlay: CustomNoRowsOverlay }}
@@ -297,16 +297,16 @@ export default function PersonnelPage() {
         </Box>
       </Paper>
 
-      <Drawer 
-        anchor="right" 
-        open={detailDrawerOpen} 
-        onClose={() => setDetailDrawerOpen(false)} 
-        sx={{ 
-          "& .MuiDrawer-paper": { 
-            width: { xs: "100%", sm: 550 }, 
+      <Drawer
+        anchor="right"
+        open={detailDrawerOpen}
+        onClose={() => setDetailDrawerOpen(false)}
+        sx={{
+          "& .MuiDrawer-paper": {
+            width: { xs: "100%", sm: 550 },
             p: 0,
             bgcolor: 'background.default'
-          } 
+          }
         }}
       >
         {selectedEmployee && (
@@ -323,11 +323,11 @@ export default function PersonnelPage() {
               {/* Profile Header Card */}
               <Paper variant="outlined" sx={{ p: 3, borderRadius: 3, mb: 3, bgcolor: 'primary.50', border: 'none' }}>
                 <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, alignItems: { xs: "flex-start", sm: "center" }, gap: 3 }}>
-                  <Avatar 
-                    sx={{ 
-                      width: 80, 
-                      height: 80, 
-                      bgcolor: "primary.main", 
+                  <Avatar
+                    sx={{
+                      width: 80,
+                      height: 80,
+                      bgcolor: "primary.main",
                       fontSize: "2rem",
                       boxShadow: '0 8px 16px rgba(37, 99, 235, 0.2)'
                     }}
@@ -337,22 +337,22 @@ export default function PersonnelPage() {
                   <Box>
                     <Typography variant="h6" sx={{ fontWeight: 800, color: 'primary.dark' }}>{selectedEmployee.fullName}</Typography>
                     <Typography variant="body2" sx={{ color: 'primary.main', fontWeight: 600, mb: 1 }}>{selectedEmployee.position}</Typography>
-                    <Chip 
-                      label={selectedEmployee.department?.name || tc("notAvailable")} 
-                      size="small" 
+                    <Chip
+                      label={selectedEmployee.department?.name || tc("notAvailable")}
+                      size="small"
                       variant="filled"
-                      sx={{ bgcolor: 'white', fontWeight: 600, border: '1px solid', borderColor: 'primary.light' }} 
+                      sx={{ bgcolor: 'white', fontWeight: 600, border: '1px solid', borderColor: 'primary.light' }}
                     />
                   </Box>
                 </Box>
               </Paper>
 
-              <Tabs 
-                value={tabValue} 
-                onChange={(_, v) => setTabValue(v)} 
-                sx={{ 
-                  mb: 3, 
-                  borderBottom: 1, 
+              <Tabs
+                value={tabValue}
+                onChange={(_, v) => setTabValue(v)}
+                sx={{
+                  mb: 3,
+                  borderBottom: 1,
                   borderColor: "divider",
                   '& .MuiTab-root': { fontWeight: 700, textTransform: 'none', fontSize: '0.9rem' }
                 }}

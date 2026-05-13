@@ -207,7 +207,7 @@ export default function RolesPage() {
         <Box sx={{ p: 2, borderBottom: "1px solid #e2e8f0", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 2 }}>
           <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
             <SecurityIcon color="primary" />
-            <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>Phân quyền hệ thống</Typography>
+            <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>{t("title") || "Phân quyền hệ thống"}</Typography>
           </Stack>
           <Button
             variant="contained"
@@ -215,7 +215,7 @@ export default function RolesPage() {
             startIcon={<AddIcon />}
             onClick={() => handleOpen()}
           >
-            Thêm nhóm quyền
+            {t("add") || "Thêm nhóm quyền"}
           </Button>
         </Box>
         <Box sx={{ height: 600 }}>
@@ -228,7 +228,7 @@ export default function RolesPage() {
             slots={{ noRowsOverlay: () => (
               <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', opacity: 0.5 }}>
                 <SecurityIcon sx={{ fontSize: 48, mb: 1 }} />
-                <Typography variant="body2">Chưa có nhóm quyền nào</Typography>
+                <Typography variant="body2">{t("empty") || "Chưa có nhóm quyền nào"}</Typography>
               </Box>
             ) }}
             sx={{ border: "none" }}
@@ -239,19 +239,19 @@ export default function RolesPage() {
       {/* Role Edit/Create Dialog */}
       <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
         <DialogTitle sx={{ fontWeight: 700 }}>
-          {editingRole ? "Chỉnh sửa nhóm quyền" : "Thêm nhóm quyền mới"}
+          {editingRole ? (t("edit") || "Chỉnh sửa nhóm quyền") : (t("add") || "Thêm nhóm quyền mới")}
         </DialogTitle>
         <DialogContent dividers>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 3, py: 1 }}>
             <TextField
-              label="Tên nhóm quyền"
+              label={t("name") || "Tên nhóm quyền"}
               fullWidth
               required
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             />
             <TextField
-              label="Mô tả"
+              label={t("description") || "Mô tả"}
               fullWidth
               multiline
               rows={2}
@@ -260,7 +260,7 @@ export default function RolesPage() {
             />
 
             <Typography variant="h6" sx={{ fontWeight: 700, mt: 1 }}>
-              Danh sách quyền hạn
+              {t("permissions") || "Danh sách quyền hạn"}
             </Typography>
 
             <Grid container spacing={3}>
@@ -293,8 +293,8 @@ export default function RolesPage() {
           </Box>
         </DialogContent>
         <DialogActions sx={{ p: 2, px: 3 }}>
-          <Button onClick={handleClose} color="inherit">Hủy</Button>
-          <Button onClick={handleSubmit} variant="contained" sx={{ px: 4 }}>Lưu thay đổi</Button>
+          <Button onClick={handleClose} color="inherit">{t("cancel") || "Hủy"}</Button>
+          <Button onClick={handleSubmit} variant="contained" sx={{ px: 4 }}>{t("save") || "Lưu thay đổi"}</Button>
         </DialogActions>
       </Dialog>
     </Box>

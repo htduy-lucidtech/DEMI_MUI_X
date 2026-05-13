@@ -232,51 +232,6 @@ export default function PayrollPage() {
         </Stack>
       </Paper>
       <Paper sx={{ borderRadius: 1.5, border: "1px solid #e2e8f0" }}>
-        <Box sx={{ p: 2, borderBottom: "1px solid #e2e8f0", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 2 }}>
-          <Stack direction="row" spacing={2} sx={{ alignItems: "center", flexGrow: 1, flexWrap: "wrap" }}>
-            <Typography variant="subtitle1" sx={{ fontWeight: 700, mr: 1 }}>{t("title") || "Bảng lương"}</Typography>
-            
-            <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
-              <TextField
-                select
-                size="small"
-                value={month}
-                onChange={(e) => setMonth(Number(e.target.value))}
-                sx={{ minWidth: 120 }}
-              >
-                {[...Array(12)].map((_, i) => <MenuItem key={i + 1} value={i + 1}>{t("month")} {i + 1}</MenuItem>)}
-              </TextField>
-              <TextField
-                select
-                size="small"
-                value={year}
-                onChange={(e) => setYear(Number(e.target.value))}
-                sx={{ minWidth: 100 }}
-              >
-                {[2024, 2025, 2026].map((y) => <MenuItem key={y} value={y}>{y}</MenuItem>)}
-              </TextField>
-              <Button
-                variant="contained"
-                size="small"
-                startIcon={<CalcIcon />}
-                onClick={handleCalculate}
-                disabled={loading}
-              >
-                {t("calculate")}
-              </Button>
-            </Stack>
-          </Stack>
-          
-          <Button
-            variant="outlined"
-            size="small"
-            startIcon={<DownloadIcon />}
-            onClick={handleExportExcel}
-            disabled={records.length === 0}
-          >
-            {tc("excel")}
-          </Button>
-        </Box>
         <Box sx={{ height: 600 }}>
           <DataGrid
             rows={records}

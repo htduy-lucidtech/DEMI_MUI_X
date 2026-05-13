@@ -59,5 +59,17 @@ export default {
     successIn: "Check-in thành công!",
     successOut: "Check-out thành công!",
     error: "Có lỗi xảy ra, vui lòng thử lại."
+  },
+  corrections: {
+    title: "Yêu cầu chỉnh sửa chấm công",
+    openButton: "Yêu cầu chỉnh sửa",
+    columns: {
+      id: "ID",
+      requester: "Người yêu cầu",
+      requestedCheckIn: "Yêu cầu Check-in",
+      requestedCheckOut: "Yêu cầu Check-out",
+      reason: "Lý do",
+      action: "Hành động"
+    }
   }
 };

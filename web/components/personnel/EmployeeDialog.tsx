@@ -54,7 +54,7 @@ export default function EmployeeDialog({ open, onClose, onSave, employee, title 
       if (employee) {
         setFormData({ 
           ...employee,
-          dateOfBirth: employee.dateOfBirth ? new Date(employee.dateOfBirth).toISOString().split('T')[0] : ""
+          dateOfBirth: employee.dateOfBirth ? new Date(employee.dateOfBirth).toLocaleDateString('en-CA') : ""
         });
       } else {
         setFormData({

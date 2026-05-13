@@ -27,6 +27,7 @@ import {
 import { DataGrid, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 import { useTranslations } from "next-intl";
 import { departmentsService, Department } from "@/services/departments.service";
+import CustomNoRowsOverlay from "@/components/CustomNoRowsOverlay";
 
 export default function DepartmentsPage() {
   const t = useTranslations("Departments");
@@ -125,6 +126,7 @@ export default function DepartmentsPage() {
   ];
 
   return (
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
       <Paper sx={{ borderRadius: 1.5, border: "1px solid #e2e8f0" }}>
         <Box sx={{ p: 2, borderBottom: "1px solid #e2e8f0", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 2 }}>
           <Stack direction="row" spacing={2} sx={{ alignItems: "center", flexGrow: 1, flexWrap: "wrap" }}>

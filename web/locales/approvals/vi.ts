@@ -22,6 +22,7 @@ const approvalsVi = {
   common: {
     noData: "Không có dữ liệu",
     details: "Chi tiết",
+    refresh: "Làm mới",
   },
   status: {
     Pending: "Đang chờ",

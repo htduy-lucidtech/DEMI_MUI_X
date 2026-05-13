@@ -34,6 +34,8 @@ import performanceVi from "./locales/performance/vi";
 import performanceEn from "./locales/performance/en";
 import notificationVi from "./locales/notification/vi";
 import notificationEn from "./locales/notification/en";
+import approvalsVi from "./locales/approvals/vi";
+import approvalsEn from "./locales/approvals/en";
 
 const messagesMap = {
   vi: {
@@ -53,6 +55,7 @@ const messagesMap = {
     Recruitment: recruitmentVi,
     Performance: performanceVi,
     Notifications: notificationVi,
+    Approvals: approvalsVi,
   },
   en: {
     Login: loginEn,
@@ -71,6 +74,7 @@ const messagesMap = {
     Recruitment: recruitmentEn,
     Performance: performanceEn,
     Notifications: notificationEn,
+    Approvals: approvalsEn,
   }
 };
 

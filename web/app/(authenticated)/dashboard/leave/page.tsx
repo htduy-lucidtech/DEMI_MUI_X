@@ -148,6 +148,7 @@ export default function LeaveRequestsPage() {
   ];
 
   return (
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
       <Paper sx={{ borderRadius: 1.5, border: "1px solid #e2e8f0" }}>
         <Box sx={{ p: 2, borderBottom: "1px solid #e2e8f0", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 2 }}>
           <Stack direction="row" spacing={2} sx={{ alignItems: "center", flexGrow: 1, flexWrap: "wrap" }}>
@@ -225,8 +226,6 @@ export default function LeaveRequestsPage() {
           <Button onClick={handleSubmit} variant="contained">{t("dialog.submit")}</Button>
         </DialogActions>
       </Dialog>
-
-
 
       <Snackbar open={snackbar.open} autoHideDuration={3000} onClose={() => setSnackbar({ ...snackbar, open: false })}>
         <Alert severity={snackbar.severity} variant="filled">{snackbar.message}</Alert>

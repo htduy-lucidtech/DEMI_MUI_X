@@ -60,5 +60,17 @@ export default {
     successIn: "Check-in successful!",
     successOut: "Check-out successful!",
     error: "An error occurred, please try again."
+  },
+  corrections: {
+    title: "Attendance Correction Requests",
+    openButton: "Correction Requests",
+    columns: {
+      id: "ID",
+      requester: "Requester",
+      requestedCheckIn: "Requested Check-In",
+      requestedCheckOut: "Requested Check-Out",
+      reason: "Reason",
+      action: "Action"
+    }
   }
 };

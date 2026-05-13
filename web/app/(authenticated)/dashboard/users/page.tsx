@@ -34,7 +34,7 @@ import {
   VisibilityOutlined as VisibilityIcon,
   VisibilityOffOutlined as VisibilityOffIcon,
   WarningAmberOutlined as WarningIcon,
-  Refresh as RefreshIcon,
+  Search as SearchIcon,
 } from "@mui/icons-material";
 import { useTranslations } from "next-intl";
 import { useAuth } from "@/app/context/AuthContext";
@@ -212,9 +212,9 @@ export default function UsersPage() {
           {canManage && (
             <>
               {!params.row.employeeId || params.row.employeeId === 0 ? <Tooltip title={t("link_profile")}><IconButton size="small" color="warning" onClick={() => { setLinkingUser(params.row); setLinkDialogOpen(true); }}><LinkIcon fontSize="small" /></IconButton></Tooltip> : null}
-              <Switch size="small" checked={params.row.isActive} onChange={async () => { try { await userService.update(params.row.id, { isActive: !params.row.isActive }); fetchUsers(); } catch (e) { showMsg("Không thể thay đổi trạng thái", "error"); } }} />
+              <Switch size="small" checked={params.row.isActive} onChange={async () => { try { await userService.update(params.row.id, { isActive: !params.row.isActive }); fetchUsers(); showMsg(t("update_success")); } catch (e) { showMsg(t("update_error") || "Không thể thay đổi trạng thái", "error"); } }} />
               <IconButton size="small" onClick={() => handleOpen(params.row)} color="primary"><EditIcon fontSize="small" /></IconButton>
-              <IconButton size="small" onClick={async () => { if (window.confirm(t("delete_confirm"))) { try { await userService.delete(params.row.id); fetchUsers(); showMsg(tc("delete") + " thành công"); } catch (e) { showMsg("Lỗi khi xóa", "error"); } } }} color="error"><DeleteIcon fontSize="small" /></IconButton>
+              <IconButton size="small" onClick={async () => { if (window.confirm(t("delete_confirm"))) { try { await userService.delete(params.row.id); fetchUsers(); showMsg(tc("delete") + " " + tc("success")); } catch (e) { showMsg(t("delete_error") || "Lỗi khi xóa", "error"); } } }} color="error"><DeleteIcon fontSize="small" /></IconButton>
             </>
           )}
         </Stack>

@@ -2,6 +2,7 @@ export default {
   title: "Personnel Management",
   description: "Manage employee list, information, and work status.",
   table: {
+    title: "Employee List",
     columns: {
       fullName: "Full Name",
       username: "Username",
