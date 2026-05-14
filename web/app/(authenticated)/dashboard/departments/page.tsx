@@ -28,6 +28,8 @@ import { DataGrid, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 import { useTranslations } from "next-intl";
 import { departmentsService, Department } from "@/services/departments.service";
 import CustomNoRowsOverlay from "@/components/CustomNoRowsOverlay";
+import PageHeader from "@/components/common/PageHeader";
+import FormGrid from "@/components/common/FormGrid";
 
 export default function DepartmentsPage() {
   const t = useTranslations("Departments");
@@ -127,20 +129,20 @@ export default function DepartmentsPage() {
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-      <Paper sx={{ borderRadius: 1.5, border: "1px solid #e2e8f0" }}>
-        <Box sx={{ p: 2, borderBottom: "1px solid #e2e8f0", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 2 }}>
-          <Stack direction="row" spacing={2} sx={{ alignItems: "center", flexGrow: 1, flexWrap: "wrap" }}>
-            <Typography variant="subtitle1" sx={{ fontWeight: 700, mr: 1 }}>{t("title") || "Phòng ban"}</Typography>
-          </Stack>
-          <Button
-            variant="contained"
-            size="small"
-            startIcon={<AddIcon />}
-            onClick={() => handleOpen()}
-          >
-            {t("addDept")}
-          </Button>
-        </Box>
+      <Paper sx={{ borderRadius: 1.5, border: "1px solid #e2e8f0", overflow: "hidden" }}>
+        <PageHeader
+          title={t("title") || "Phòng ban"}
+          actions={
+            <Button
+              variant="contained"
+              size="small"
+              startIcon={<AddIcon />}
+              onClick={() => handleOpen()}
+            >
+              {t("addDept")}
+            </Button>
+          }
+        />
         <Box sx={{ height: 600 }}>
           <DataGrid
             rows={depts}
@@ -158,23 +160,25 @@ export default function DepartmentsPage() {
         <DialogTitle sx={{ fontWeight: 700 }}>
           {editingDept ? t("editDept") : t("addDept")}
         </DialogTitle>
-        <DialogContent>
-          <Stack spacing={3} sx={{ mt: 1 }}>
+        <DialogContent dividers>
+          <FormGrid sx={{ gridTemplateColumns: "1fr", gap: 3, mt: 1 }}>
             <TextField
               label={t("dialog.name")}
               fullWidth
+              size="small"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             />
             <TextField
               label={t("dialog.description")}
               fullWidth
+              size="small"
               multiline
               rows={2}
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             />
-            <FormControl fullWidth>
+            <FormControl fullWidth size="small">
               <InputLabel>{t("dialog.parent")}</InputLabel>
               <Select
                 value={formData.parentId || ""}
@@ -190,7 +194,7 @@ export default function DepartmentsPage() {
                 }
               </Select>
             </FormControl>
-          </Stack>
+          </FormGrid>
         </DialogContent>
         <DialogActions sx={{ p: 3 }}>
           <Button onClick={() => setOpen(false)} color="inherit">{t("dialog.cancel")}</Button>

@@ -41,6 +41,7 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { dashboardService } from "@/services/dashboard.service";
 import { useAuth } from "@/app/context/AuthContext";
+import FormGrid from "@/components/common/FormGrid";
 
 export default function DashboardPage() {
   const t = useTranslations("Dashboard");
@@ -177,9 +178,9 @@ export default function DashboardPage() {
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
       {/* Stats Cards */}
-      <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)", md: isPersonal ? "repeat(3, 1fr)" : "repeat(4, 1fr)" }, gap: 1.5 }}>
+      <FormGrid columns={{ xs: 1, sm: 2, md: isPersonal ? 3 : 4 }} gap={1.5}>
         {stats.map((stat) => (
-          <Card key={stat.name} sx={{ borderRadius: 1.5, border: "1px solid", borderColor: "divider", transition: "all 0.2s ease", "&:hover": { transform: "translateY(-1px)", boxShadow: "0 4px 12px rgba(0,0,0,0.05)" } }}>
+          <Card key={stat.name} sx={{ transition: "all 0.2s ease", "&:hover": { transform: "translateY(-1px)", boxShadow: "0 4px 12px rgba(0,0,0,0.05)" } }}>
             <CardContent sx={{ p: 1.5, "&:last-child": { pb: 1.5 }, cursor: "pointer" }} onClick={() => router.push(stat.link)}>
               <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
                 <Avatar sx={{ bgcolor: `${stat.color}15`, color: stat.color, width: 32, height: 32, borderRadius: 1 }}>
@@ -193,14 +194,14 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
         ))}
-      </Box>
+      </FormGrid>
 
       {/* Main Content Grid: 7/3 Ratio */}
       <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", lg: "7fr 3fr" }, gap: 1.5 }}>
 
         {/* Left Column: Analytics Chart */}
         <Stack spacing={1.5}>
-          <Card sx={{ borderRadius: 1.5, border: "1px solid", borderColor: "divider" }}>
+          <Card>
             <CardContent sx={{ p: 1.5 }}>
               <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1.5, flexWrap: "wrap", gap: 1.5 }}>
                 <Box>
@@ -261,7 +262,7 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
 
-          <Card sx={{ borderRadius: 1.5, border: "1px solid", borderColor: "divider" }}>
+          <Card>
             <CardContent sx={{ p: 2 }}>
               <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
                 <Typography variant="subtitle2" sx={{ fontWeight: 800 }}>{t("recent_activity")}</Typography>
@@ -292,7 +293,7 @@ export default function DashboardPage() {
 
         {/* Right Column: Performance & Info (3 Ratio) */}
         <Stack spacing={1.5}>
-          <Card sx={{ borderRadius: 1.5, border: "1px solid", borderColor: "divider" }}>
+          <Card>
             <CardContent sx={{ p: 2 }}>
               <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 800 }}>{isPersonal ? t("performance.title_personal") : t("performance.title")}</Typography>
               <Box sx={{ mb: 2.5 }}>
@@ -312,12 +313,12 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
 
-          <Paper sx={{ p: 2, bgcolor: "primary.main", color: "white", borderRadius: 1.5, boxShadow: "0 4px 12px rgba(79, 70, 229, 0.2)" }}>
+          <Paper sx={{ p: 2, bgcolor: "primary.main", color: "white", boxShadow: "0 4px 12px rgba(79, 70, 229, 0.2)" }}>
             <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 0.5 }}>Mẹo hệ thống</Typography>
             <Typography variant="caption" sx={{ opacity: 0.9 }}>Duy trì tỉ lệ đi làm trên 95% để nhận thưởng chuyên cần cuối tháng!</Typography>
           </Paper>
 
-          <Card sx={{ borderRadius: 1.5, bgcolor: "grey.50", border: "1px dashed", borderColor: "divider" }}>
+          <Card sx={{ bgcolor: "grey.50", border: "1px dashed", borderColor: "divider" }}>
             <CardContent sx={{ p: 2, textAlign: "center" }}>
               <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700 }}>PHIÊN BẢN HRM PRO V2.0</Typography>
               <Typography variant="h4" sx={{ fontWeight: 900, color: "grey.300", mt: 1 }}>2026</Typography>

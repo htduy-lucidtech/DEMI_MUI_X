@@ -20,6 +20,8 @@ import {
   DownloadOutlined as DownloadIcon
 } from "@mui/icons-material";
 import CustomNoRowsOverlay from "@/components/CustomNoRowsOverlay";
+import PageHeader from "@/components/common/PageHeader";
+import FormGrid from "@/components/common/FormGrid";
 import { useTranslations } from "next-intl";
 import { payrollService, PayrollRecord } from "@/services/payroll.service";
 
@@ -135,66 +137,21 @@ export default function PayrollPage() {
   ];
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-      <Paper
-        sx={{
-          p: 2.5,
-          borderRadius: 4,
-          boxShadow: "0 4px 20px rgba(0,0,0,0.06)",
-          border: '1px solid',
-          borderColor: 'divider',
-          background: 'linear-gradient(to right, #ffffff, #f8fafc)'
-        }}
-      >
-        <Stack
-          direction="row"
-          spacing={3}
-          sx={{ justifyContent: "space-between", alignItems: "center" }}
-        >
-          <Stack direction="row" spacing={4} sx={{ flexGrow: 1 }}>
-            <Box>
-              <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, textTransform: 'uppercase', fontSize: '0.65rem', mb: 0.5, display: 'block' }}>
-                {t('totalAmount')}
-              </Typography>
-              <Typography variant="h5" sx={{ fontWeight: 800, color: 'primary.main' }}>
-                {records.reduce((acc, curr) => acc + curr.totalSalary, 0).toLocaleString()} <Typography component="span" variant="caption" sx={{ fontWeight: 700 }}>{tc("currency")}</Typography>
-              </Typography>
-            </Box>
-
-            <Divider orientation="vertical" flexItem sx={{ height: 40, my: 'auto' }} />
-
-            <Box>
-              <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, textTransform: 'uppercase', fontSize: '0.65rem', mb: 0.5, display: 'block' }}>
-                {t('deductions')}
-              </Typography>
-              <Typography variant="h5" sx={{ fontWeight: 800, color: 'error.main' }}>
-                -{records.reduce((acc, curr) => acc + curr.deductions, 0).toLocaleString()} <Typography component="span" variant="caption" sx={{ fontWeight: 700 }}>{tc("currency")}</Typography>
-              </Typography>
-            </Box>
-
-            <Divider orientation="vertical" flexItem sx={{ height: 40, my: 'auto' }} />
-
-            <Box>
-              <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, textTransform: 'uppercase', fontSize: '0.65rem', mb: 0.5, display: 'block' }}>
-                {t('employee')}
-              </Typography>
-              <Typography variant="h5" sx={{ fontWeight: 800 }}>
-                {records.length}
-              </Typography>
-            </Box>
-          </Stack>
-
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+      <PageHeader
+        title={t("title") || "Bảng lương"}
+        actions={
           <Stack
             direction={{ xs: 'column', sm: 'row' }}
             spacing={1.5}
-            sx={{ bgcolor: 'grey.50', p: 1, borderRadius: 3, border: '1px solid', borderColor: 'grey.200', alignItems: "center" }}
+            sx={{ alignItems: "center" }}
           >
             <TextField
               select
               size="small"
               value={month}
               onChange={(e) => setMonth(Number(e.target.value))}
-              sx={{ minWidth: 110, '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'background.paper' } }}
+              sx={{ minWidth: 110 }}
             >
               {[...Array(12)].map((_, i) => <MenuItem key={i + 1} value={i + 1}>{t("month")} {i + 1}</MenuItem>)}
             </TextField>
@@ -203,35 +160,76 @@ export default function PayrollPage() {
               size="small"
               value={year}
               onChange={(e) => setYear(Number(e.target.value))}
-              sx={{ minWidth: 100, '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: 'background.paper' } }}
+              sx={{ minWidth: 100 }}
             >
               {[2024, 2025, 2026].map((y) => <MenuItem key={y} value={y}>{y}</MenuItem>)}
             </TextField>
-            <Divider orientation="vertical" flexItem sx={{ display: { xs: 'none', sm: 'block' } }} />
+            <Divider orientation="vertical" flexItem sx={{ display: { xs: 'none', sm: 'block' }, mx: 1 }} />
             <Stack direction="row" spacing={1}>
               <Button
                 variant="contained"
+                size="small"
                 startIcon={<CalcIcon />}
                 onClick={handleCalculate}
                 disabled={loading}
-                sx={{ borderRadius: 2, fontWeight: 700, boxShadow: '0 4px 12px rgba(37, 99, 235, 0.2)' }}
+                sx={{ fontWeight: 700 }}
               >
                 {t("calculate")}
               </Button>
               <Button
                 variant="outlined"
+                size="small"
                 startIcon={<DownloadIcon />}
                 onClick={handleExportExcel}
                 disabled={records.length === 0}
-                sx={{ borderRadius: 2, fontWeight: 700 }}
+                sx={{ fontWeight: 700 }}
               >
                 {tc("excel")}
               </Button>
             </Stack>
           </Stack>
-        </Stack>
+        }
+      />
+
+      <Paper
+        sx={{
+          p: 2,
+          borderRadius: 1.5,
+          border: '1px solid',
+          borderColor: 'divider',
+          bgcolor: 'white'
+        }}
+      >
+        <FormGrid sx={{ gridTemplateColumns: { xs: "1fr", md: "repeat(3, 1fr)" }, gap: 3 }}>
+          <Box>
+            <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, textTransform: 'uppercase', fontSize: '0.65rem', mb: 0.5, display: 'block' }}>
+              {t('totalAmount')}
+            </Typography>
+            <Typography variant="h5" sx={{ fontWeight: 800, color: 'primary.main' }}>
+              {records.reduce((acc, curr) => acc + curr.totalSalary, 0).toLocaleString()} <Typography component="span" variant="caption" sx={{ fontWeight: 700 }}>{tc("currency")}</Typography>
+            </Typography>
+          </Box>
+
+          <Box>
+            <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, textTransform: 'uppercase', fontSize: '0.65rem', mb: 0.5, display: 'block' }}>
+              {t('deductions')}
+            </Typography>
+            <Typography variant="h5" sx={{ fontWeight: 800, color: 'error.main' }}>
+              -{records.reduce((acc, curr) => acc + curr.deductions, 0).toLocaleString()} <Typography component="span" variant="caption" sx={{ fontWeight: 700 }}>{tc("currency")}</Typography>
+            </Typography>
+          </Box>
+
+          <Box>
+            <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700, textTransform: 'uppercase', fontSize: '0.65rem', mb: 0.5, display: 'block' }}>
+              {t('employee')}
+            </Typography>
+            <Typography variant="h5" sx={{ fontWeight: 800 }}>
+              {records.length}
+            </Typography>
+          </Box>
+        </FormGrid>
       </Paper>
-      <Paper sx={{ borderRadius: 1.5, border: "1px solid #e2e8f0" }}>
+      <Paper sx={{ borderRadius: 1.5, border: "1px solid #e2e8f0", overflow: "hidden" }}>
         <Box sx={{ height: 600 }}>
           <DataGrid
             rows={records}

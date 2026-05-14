@@ -9,14 +9,14 @@ import {
   Button,
   TextField,
   MenuItem,
-  Stack,
-  Typography,
-  Divider,
   Box,
 } from "@mui/material";
 import { Employee } from "@/services/employee.service";
 import { departmentsService, Department } from "@/services/departments.service";
 import { useTranslations } from "next-intl";
+
+import SectionHeader from "@/components/common/SectionHeader";
+import FormGrid from "@/components/common/FormGrid";
 
 interface EmployeeDialogProps {
   open: boolean;
@@ -115,16 +115,8 @@ export default function EmployeeDialog({ open, onClose, onSave, employee, title 
     >
       <DialogTitle sx={{ fontWeight: 800, p: 3, pb: 2, borderBottom: '1px solid #e2e8f0' }}>{title}</DialogTitle>
       <DialogContent dividers sx={{ p: 3 }}>
-        <Box sx={{ 
-          display: 'grid', 
-          gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)' }, 
-          gap: 2.5, 
-          mt: 1 
-        }}>
-          <Box sx={{ gridColumn: '1 / -1', display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-            <Box sx={{ width: 4, height: 16, bgcolor: 'primary.main', borderRadius: 1 }} />
-            <Typography variant="subtitle2" sx={{ fontWeight: 800, color: 'primary.main' }}>{t("dialog.sections.basic")}</Typography>
-          </Box>
+        <FormGrid>
+          <SectionHeader title={t("dialog.sections.basic")} sx={{ gridColumn: "1 / -1" }} />
           
           <TextField
             fullWidth
@@ -181,12 +173,7 @@ export default function EmployeeDialog({ open, onClose, onSave, employee, title 
             slotProps={{ inputLabel: { shrink: true } }}
           />
 
-          <Box sx={{ gridColumn: '1 / -1', mt: 1 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
-              <Box sx={{ width: 4, height: 16, bgcolor: 'primary.main', borderRadius: 1 }} />
-              <Typography variant="subtitle2" sx={{ fontWeight: 800, color: 'primary.main' }}>{t("dialog.sections.work_salary")}</Typography>
-            </Box>
-          </Box>
+          <SectionHeader title={t("dialog.sections.work_salary")} sx={{ gridColumn: "1 / -1", mt: 1 }} />
           
           <TextField
             fullWidth
@@ -253,12 +240,7 @@ export default function EmployeeDialog({ open, onClose, onSave, employee, title 
             onChange={handleChange}
           />
 
-          <Box sx={{ gridColumn: '1 / -1', mt: 1 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
-              <Box sx={{ width: 4, height: 16, bgcolor: 'primary.main', borderRadius: 1 }} />
-              <Typography variant="subtitle2" sx={{ fontWeight: 800, color: 'primary.main' }}>{t("dialog.sections.other")}</Typography>
-            </Box>
-          </Box>
+          <SectionHeader title={t("dialog.sections.other")} sx={{ gridColumn: "1 / -1", mt: 1 }} />
           
           <Box sx={{ gridColumn: '1 / -1' }}>
             <TextField
@@ -308,7 +290,7 @@ export default function EmployeeDialog({ open, onClose, onSave, employee, title 
             value={formData.socialInsuranceNumber || ""}
             onChange={handleChange}
           />
-        </Box>
+        </FormGrid>
       </DialogContent>
       <DialogActions sx={{ p: 3 }}>
         <Button onClick={onClose} variant="outlined" sx={{ fontWeight: 700 }}>{t("dialog.cancel")}</Button>

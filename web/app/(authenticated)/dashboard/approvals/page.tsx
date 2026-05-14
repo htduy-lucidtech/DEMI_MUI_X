@@ -38,6 +38,8 @@ import {
 import { approvalService, ApprovalRequest, ApprovalStatus } from "@/services/approval.service";
 import { useTranslations } from "next-intl";
 import { useAuth } from "@/app/context/AuthContext";
+import PageHeader from "@/components/common/PageHeader";
+import StatusChip from "@/components/common/StatusChip";
 
 export default function ApprovalsPage() {
   const t = useTranslations("Approvals");
@@ -99,37 +101,30 @@ export default function ApprovalsPage() {
     switch (status) {
       case ApprovalStatus.Pending:
         return (
-          <Chip
+          <StatusChip
+            status="warning"
             label={t("status.Pending")}
-            color="warning"
-            size="small"
-            variant="filled"
-            sx={{ fontWeight: 600, borderRadius: '6px' }}
             icon={<PendingIcon sx={{ fontSize: '1rem !important' }} />}
           />
         );
       case ApprovalStatus.Approved:
         return (
-          <Chip
+          <StatusChip
+            status="success"
             label={t("status.Approved")}
-            color="success"
-            size="small"
-            sx={{ fontWeight: 600, borderRadius: '6px' }}
             icon={<CheckIcon sx={{ fontSize: '1rem !important' }} />}
           />
         );
       case ApprovalStatus.Rejected:
         return (
-          <Chip
+          <StatusChip
+            status="error"
             label={t("status.Rejected")}
-            color="error"
-            size="small"
-            sx={{ fontWeight: 600, borderRadius: '6px' }}
             icon={<CancelIcon sx={{ fontSize: '1rem !important' }} />}
           />
         );
       default:
-        return <Chip label="N/A" size="small" variant="outlined" />;
+        return <StatusChip status="default" label="N/A" />;
     }
   };
 
@@ -250,13 +245,11 @@ export default function ApprovalsPage() {
 
   return (
     <Box sx={{ pb: 4, display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-      <Paper sx={{ borderRadius: 1.5, border: "1px solid #e2e8f0" }}>
-        <Box sx={{ p: 2, borderBottom: "1px solid #e2e8f0", display: "flex", flexDirection: "column", gap: 2 }}>
-          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 2 }}>
-            <Box>
-              <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>{t("title")}</Typography>
-              <Typography variant="caption" color="text.secondary">{t("subtitle")}</Typography>
-            </Box>
+      <Paper sx={{ borderRadius: 1.5, border: "1px solid #e2e8f0", overflow: "hidden" }}>
+        <PageHeader
+          title={t("title")}
+          subtitle={t("subtitle")}
+          actions={
             <Button
               variant="outlined"
               size="small"
@@ -266,17 +259,17 @@ export default function ApprovalsPage() {
             >
               {t("common.refresh") || "Refresh"}
             </Button>
-          </Box>
-          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-            <Tabs
-              value={tabValue}
-              onChange={(_, v) => setTabValue(v)}
-              sx={{ minHeight: 40 }}
-            >
-              <Tab icon={<PendingIcon sx={{ mr: 1, fontSize: 18 }} />} iconPosition="start" label={t("tabs.pending")} />
-              <Tab icon={<HistoryIcon sx={{ mr: 1, fontSize: 18 }} />} iconPosition="start" label={t("tabs.history")} />
-            </Tabs>
-          </Box>
+          }
+        />
+        <Box sx={{ borderBottom: 1, borderColor: 'divider', px: 2 }}>
+          <Tabs
+            value={tabValue}
+            onChange={(_, v) => setTabValue(v)}
+            sx={{ minHeight: 40 }}
+          >
+            <Tab icon={<PendingIcon sx={{ mr: 1, fontSize: 18 }} />} iconPosition="start" label={t("tabs.pending")} />
+            <Tab icon={<HistoryIcon sx={{ mr: 1, fontSize: 18 }} />} iconPosition="start" label={t("tabs.history")} />
+          </Tabs>
         </Box>
         <Box sx={{ height: 600 }}>
           <DataGrid

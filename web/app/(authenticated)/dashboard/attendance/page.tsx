@@ -43,6 +43,9 @@ import {
 } from "@/services/attendance.service";
 import CustomNoRowsOverlay from "@/components/CustomNoRowsOverlay";
 import CorrectionsPanel from "@/components/attendance/CorrectionsPanel";
+import PageHeader from "@/components/common/PageHeader";
+import StatusChip from "@/components/common/StatusChip";
+import FormGrid from "@/components/common/FormGrid";
 
 export default function AttendancePage() {
   const t = useTranslations("Attendance");
@@ -278,12 +281,10 @@ export default function AttendancePage() {
       headerName: t("columns.status"),
       width: 130,
       renderCell: (params) => (
-        <Chip
-          size="small"
-          icon={params.value ? <WarningIcon /> : <CheckIcon />}
+        <StatusChip
+          status={params.value ? "error" : "success"}
           label={params.value ? t("status.late") : t("status.onTime")}
-          color={params.value ? "error" : "success"}
-          variant="outlined"
+          icon={params.value ? <WarningIcon sx={{ fontSize: '0.9rem !important' }} /> : <CheckIcon sx={{ fontSize: '0.9rem !important' }} />}
         />
       ),
     },
@@ -291,7 +292,7 @@ export default function AttendancePage() {
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-      <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "repeat(4, 1fr)" }, gap: 1.5 }}>
+      <FormGrid sx={{ gridTemplateColumns: { xs: "1fr", md: "1fr 3fr" } }}>
         {/* Clock Card */}
         <Card sx={{ borderRadius: 1.5, background: "linear-gradient(135deg, #2563eb 0%, #1e40af 100%)", color: "white" }}>
           <CardContent sx={{ textAlign: "center", py: 1.5 }}>
@@ -324,7 +325,7 @@ export default function AttendancePage() {
         </Card>
 
         {/* Info & Stats Summary */}
-        <Box sx={{ gridColumn: "span 3", display: "grid", gridTemplateColumns: "2fr 1fr", gap: 1.5 }}>
+        <Box sx={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 1.5 }}>
           <Card sx={{ borderRadius: 1.5, p: 2 }}>
             <Typography variant="subtitle2" sx={{ fontWeight: 700, mb: 2 }}><TimeIcon fontSize="small" /> {t("status.title")}</Typography>
             <Stack direction="row" spacing={3}>
@@ -352,62 +353,54 @@ export default function AttendancePage() {
 
           {isHR && <CorrectionsPanel open={correctionOpen} onClose={() => setCorrectionOpen(false)} />}
         </Box>
-      </Box>
+      </FormGrid>
 
       {/* History Table */}
-      <Paper sx={{ borderRadius: 1.5, border: "1px solid #e2e8f0" }}>
-        <Box sx={{ p: 2, borderBottom: "1px solid #e2e8f0", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 2 }}>
-          <Stack direction="row" spacing={2} sx={{ alignItems: "center", flexGrow: 1, flexWrap: "wrap" }}>
-            <Typography variant="subtitle1" sx={{ fontWeight: 700, mr: 1 }}>{t("history")}</Typography>
+      <Paper sx={{ borderRadius: 1.5, border: "1px solid #e2e8f0", overflow: "hidden" }}>
+        <PageHeader
+          title={t("history")}
+          searchPlaceholder={tc("search_placeholder")}
+          searchValue={searchQuery}
+          onSearchChange={setSearchQuery}
+          actions={
+            <>
+              <TextField
+                type="date"
+                size="small"
+                value={filterDate}
+                onChange={(e) => setFilterDate(e.target.value)}
+                slotProps={{
+                  inputLabel: { shrink: true }
+                }}
+                sx={{ width: 170 }}
+              />
 
-            <TextField
-              placeholder={tc("search_placeholder")}
-              size="small"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              slotProps={{
-                input: {
-                  startAdornment: <SearchIcon sx={{ color: "text.disabled", mr: 1, fontSize: 18 }} />
-                }
-              }}
-              sx={{ width: { xs: "100%", md: 450 } }}
-            />
+              <FormControl size="small" sx={{ minWidth: 140 }}>
+                <InputLabel shrink>{t("columns.status")}</InputLabel>
+                <Select
+                  value={filterStatus}
+                  label={t("columns.status")}
+                  onChange={(e) => setFilterStatus(e.target.value)}
+                  displayEmpty
+                >
+                  <MenuItem value="all">{tc("filter_all") || "Tất cả trạng thái"}</MenuItem>
+                  <MenuItem value="onTime">{t("status.onTime")}</MenuItem>
+                  <MenuItem value="late">{t("status.late")}</MenuItem>
+                </Select>
+              </FormControl>
 
-            <TextField
-              type="date"
-              size="small"
-              value={filterDate}
-              onChange={(e) => setFilterDate(e.target.value)}
-              slotProps={{
-                inputLabel: { shrink: true }
-              }}
-              sx={{ width: 170 }}
-            />
+              {(searchQuery || filterDate || filterStatus !== "all") && (
+                <Button size="small" onClick={() => { setSearchQuery(""); setFilterDate(""); setFilterStatus("all"); }}>
+                  {tc("clear_filters") || "Xóa lọc"}
+                </Button>
+              )}
 
-            <FormControl size="small" sx={{ minWidth: 140 }}>
-              <InputLabel shrink>{t("columns.status")}</InputLabel>
-              <Select
-                value={filterStatus}
-                label={t("columns.status")}
-                onChange={(e) => setFilterStatus(e.target.value)}
-                displayEmpty
-              >
-                <MenuItem value="all">{tc("filter_all") || "Tất cả trạng thái"}</MenuItem>
-                <MenuItem value="onTime">{t("status.onTime")}</MenuItem>
-                <MenuItem value="late">{t("status.late")}</MenuItem>
-              </Select>
-            </FormControl>
-
-            {(searchQuery || filterDate || filterStatus !== "all") && (
-              <Button size="small" onClick={() => { setSearchQuery(""); setFilterDate(""); setFilterStatus("all"); }}>
-                {tc("clear_filters") || "Xóa lọc"}
-              </Button>
-            )}
-          </Stack>
-          {isHR && selectedCount > 0 && (
-            <Button variant="contained" color="error" size="small" onClick={() => setBulkDeleteConfirmOpen(true)}>{t("dialog.delete_all")} ({selectedCount})</Button>
-          )}
-        </Box>
+              {isHR && selectedCount > 0 && (
+                <Button variant="contained" color="error" size="small" onClick={() => setBulkDeleteConfirmOpen(true)}>{t("dialog.delete_all")} ({selectedCount})</Button>
+              )}
+            </>
+          }
+        />
         <Box sx={{ height: 400 }}>
           <DataGrid
             rows={filteredHistory}

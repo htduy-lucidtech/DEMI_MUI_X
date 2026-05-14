@@ -31,6 +31,9 @@ import { FormControl, InputLabel, Select } from "@mui/material";
 import { leaveService, LeaveRequest } from "@/services/leave.service";
 import { useAuth } from "@/app/context/AuthContext";
 import CustomNoRowsOverlay from "@/components/CustomNoRowsOverlay";
+import PageHeader from "@/components/common/PageHeader";
+import StatusChip from "@/components/common/StatusChip";
+import FormGrid from "@/components/common/FormGrid";
 
 export default function LeaveRequestsPage() {
   const t = useTranslations("Leave");
@@ -130,7 +133,10 @@ export default function LeaveRequestsPage() {
       headerName: t("columns.status"),
       width: 110,
       renderCell: (params) => (
-        <Chip label={t(`data.status.${params.value}`)} color={params.value === "Approved" ? "success" : params.value === "Rejected" ? "error" : "warning"} size="small" />
+        <StatusChip
+          status={params.value === "Approved" ? "success" : params.value === "Rejected" ? "error" : "warning"}
+          label={t(`data.status.${params.value}`)}
+        />
       ),
     },
     {
@@ -149,50 +155,41 @@ export default function LeaveRequestsPage() {
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-      <Paper sx={{ borderRadius: 1.5, border: "1px solid #e2e8f0" }}>
-        <Box sx={{ p: 2, borderBottom: "1px solid #e2e8f0", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 2 }}>
-          <Stack direction="row" spacing={2} sx={{ alignItems: "center", flexGrow: 1, flexWrap: "wrap" }}>
-            <Typography variant="subtitle1" sx={{ fontWeight: 700, mr: 1 }}>{t("title") || "Nghỉ phép"}</Typography>
+      <Paper sx={{ borderRadius: 1.5, border: "1px solid #e2e8f0", overflow: "hidden" }}>
+        <PageHeader
+          title={t("title") || "Nghỉ phép"}
+          searchPlaceholder={t("dialog.search_placeholder")}
+          searchValue={searchQuery}
+          onSearchChange={setSearchQuery}
+          actions={
+            <>
+              <FormControl size="small" sx={{ minWidth: 160 }}>
+                <InputLabel shrink>{t("columns.status")}</InputLabel>
+                <Select
+                  value={filterStatus}
+                  label={t("columns.status")}
+                  onChange={(e) => setFilterStatus(e.target.value)}
+                  displayEmpty
+                >
+                  <MenuItem value="all">{t("dialog.filter_all")}</MenuItem>
+                  <MenuItem value="Pending">{t("data.status.Pending")}</MenuItem>
+                  <MenuItem value="Approved">{t("data.status.Approved")}</MenuItem>
+                  <MenuItem value="Rejected">{t("data.status.Rejected")}</MenuItem>
+                </Select>
+              </FormControl>
 
-            <TextField
-              placeholder={t("dialog.search_placeholder")}
-              size="small"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              slotProps={{
-                input: {
-                  startAdornment: <SearchIcon sx={{ color: "text.disabled", mr: 1, fontSize: 18 }} />
-                }
-              }}
-              sx={{ width: { xs: "100%", md: 400 } }}
-            />
+              {(searchQuery || filterStatus !== "all") && (
+                <Button size="small" onClick={() => { setSearchQuery(""); setFilterStatus("all"); }}>
+                  {t("dialog.clear_filters")}
+                </Button>
+              )}
 
-            <FormControl size="small" sx={{ minWidth: 160 }}>
-              <InputLabel shrink>{t("columns.status")}</InputLabel>
-              <Select
-                value={filterStatus}
-                label={t("columns.status")}
-                onChange={(e) => setFilterStatus(e.target.value)}
-                displayEmpty
-              >
-                <MenuItem value="all">{t("dialog.filter_all")}</MenuItem>
-                <MenuItem value="Pending">{t("data.status.Pending")}</MenuItem>
-                <MenuItem value="Approved">{t("data.status.Approved")}</MenuItem>
-                <MenuItem value="Rejected">{t("data.status.Rejected")}</MenuItem>
-              </Select>
-            </FormControl>
-
-            {(searchQuery || filterStatus !== "all") && (
-              <Button size="small" onClick={() => { setSearchQuery(""); setFilterStatus("all"); }}>
-                {t("dialog.clear_filters")}
+              <Button variant="contained" size="small" startIcon={<AddIcon />} onClick={() => setOpen(true)}>
+                {t("createRequest")}
               </Button>
-            )}
-          </Stack>
-
-          <Button variant="contained" size="small" startIcon={<AddIcon />} onClick={() => setOpen(true)}>
-            {t("createRequest")}
-          </Button>
-        </Box>
+            </>
+          }
+        />
         <Box sx={{ height: 600 }}>
           <DataGrid
             rows={filteredRequests}
@@ -209,8 +206,8 @@ export default function LeaveRequestsPage() {
 
       <Dialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth="xs">
         <DialogTitle>{t("dialog.title")}</DialogTitle>
-        <DialogContent>
-          <Stack spacing={2} sx={{ mt: 1 }}>
+        <DialogContent dividers>
+          <FormGrid sx={{ gridTemplateColumns: "1fr", gap: 2, mt: 1 }}>
             <TextField select label={t("dialog.type")} fullWidth value={formData.leaveType} onChange={(e) => setFormData({ ...formData, leaveType: e.target.value })}>
               <MenuItem value="Yearly Leave">{t("data.type.Yearly Leave")}</MenuItem>
               <MenuItem value="Sick Leave">{t("data.type.Sick Leave")}</MenuItem>
@@ -219,7 +216,7 @@ export default function LeaveRequestsPage() {
             <TextField type="date" label={t("dialog.startDate")} fullWidth slotProps={{ inputLabel: { shrink: true } }} value={formData.startDate} onChange={(e) => setFormData({ ...formData, startDate: e.target.value })} />
             <TextField type="date" label={t("dialog.endDate")} fullWidth slotProps={{ inputLabel: { shrink: true } }} value={formData.endDate} onChange={(e) => setFormData({ ...formData, endDate: e.target.value })} />
             <TextField label={t("dialog.reason")} fullWidth multiline rows={3} value={formData.reason} onChange={(e) => setFormData({ ...formData, reason: e.target.value })} />
-          </Stack>
+          </FormGrid>
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
           <Button onClick={() => setOpen(false)}>{t("dialog.cancel")}</Button>

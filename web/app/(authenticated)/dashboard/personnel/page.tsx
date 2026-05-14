@@ -41,6 +41,9 @@ import { useTranslations } from "next-intl";
 import { employeeService, Employee } from "@/services/employee.service";
 import CustomNoRowsOverlay from "@/components/CustomNoRowsOverlay";
 import EmployeeDialog from "@/components/personnel/EmployeeDialog";
+import PageHeader from "@/components/common/PageHeader";
+import SectionHeader from "@/components/common/SectionHeader";
+import FormGrid from "@/components/common/FormGrid";
 
 export default function PersonnelPage() {
   const t = useTranslations("Personnel");
@@ -244,42 +247,31 @@ export default function PersonnelPage() {
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
       {/* Personnel Table */}
-      <Paper sx={{ borderRadius: 1.5, border: "1px solid #e2e8f0" }}>
-        <Box sx={{ p: 2, borderBottom: "1px solid #e2e8f0", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 2 }}>
-          <Stack direction="row" spacing={2} sx={{ alignItems: "center", flexWrap: "wrap" }}>
-            <Typography variant="subtitle1" sx={{ fontWeight: 700, mr: 1 }}>{t("table.title") || "Danh sách nhân viên"}</Typography>
-
-            <TextField
-              placeholder={t("table.search_placeholder")}
-              size="small"
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              slotProps={{
-                input: {
-                  startAdornment: <SearchIcon sx={{ color: "text.disabled", mr: 1, fontSize: 18 }} />
-                }
-              }}
-              sx={{ width: { xs: "100%", md: 400 } }}
-            />
-          </Stack>
-
-          <Stack direction="row" spacing={1} sx={{ alignItems: "center", flexWrap: "wrap" }}>
-            <Button variant="outlined" size="small" startIcon={<ExportIcon />} onClick={handleExportExcel}>
-              {t("table.export_excel")}
-            </Button>
-            <Button variant="contained" size="small" startIcon={<AddIcon />} onClick={handleOpenAdd}>
-              {t("table.add_new")}
-            </Button>
-            <IconButton onClick={fetchEmployees} disabled={loading} size="small">
-              <RefreshIcon fontSize="small" />
-            </IconButton>
-            {selectedCount > 0 && (
-              <Button variant="contained" color="error" size="small" onClick={() => setBulkDeleteConfirmOpen(true)}>
-                {tc("delete") || "Xóa"} ({selectedCount})
+      <Paper sx={{ borderRadius: 1.5, border: "1px solid #e2e8f0", overflow: "hidden" }}>
+        <PageHeader
+          title={t("table.title") || "Danh sách nhân viên"}
+          searchPlaceholder={t("table.search_placeholder")}
+          searchValue={searchText}
+          onSearchChange={setSearchText}
+          actions={
+            <>
+              <Button variant="outlined" size="small" startIcon={<ExportIcon />} onClick={handleExportExcel}>
+                {t("table.export_excel")}
               </Button>
-            )}
-          </Stack>
-        </Box>
+              <Button variant="contained" size="small" startIcon={<AddIcon />} onClick={handleOpenAdd}>
+                {t("table.add_new")}
+              </Button>
+              <IconButton onClick={fetchEmployees} disabled={loading} size="small">
+                <RefreshIcon fontSize="small" />
+              </IconButton>
+              {selectedCount > 0 && (
+                <Button variant="contained" color="error" size="small" onClick={() => setBulkDeleteConfirmOpen(true)}>
+                  {tc("delete") || "Xóa"} ({selectedCount})
+                </Button>
+              )}
+            </>
+          }
+        />
         <Box sx={{ height: 600 }}>
           <DataGrid
             rows={filteredEmployees || []}
@@ -364,7 +356,7 @@ export default function PersonnelPage() {
 
               <Box sx={{ mt: 2 }}>
                 {tabValue === 0 && (
-                  <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 3 }}>
+                  <FormGrid gap={3}>
                     <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: 'white', border: '1px solid #f1f5f9' }}>
                       <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.65rem', display: 'block', mb: 0.5 }}>{t("details.fields.fullName")}</Typography>
                       <Typography variant="body2" sx={{ fontWeight: 600 }}>{selectedEmployee.fullName}</Typography>
@@ -385,11 +377,11 @@ export default function PersonnelPage() {
                       <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.65rem', display: 'block', mb: 0.5 }}>{t("details.fields.address")}</Typography>
                       <Typography variant="body2" sx={{ fontWeight: 600 }}>{selectedEmployee.address || tc("notAvailable")}</Typography>
                     </Box>
-                  </Box>
+                  </FormGrid>
                 )}
 
                 {tabValue === 1 && (
-                  <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 3 }}>
+                  <FormGrid gap={3}>
                     <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: 'white', border: '1px solid #f1f5f9' }}>
                       <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.65rem', display: 'block', mb: 0.5 }}>{t("table.columns.email")}</Typography>
                       <Typography variant="body2" sx={{ fontWeight: 600 }}>{selectedEmployee.email}</Typography>
@@ -410,17 +402,14 @@ export default function PersonnelPage() {
                       <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.65rem', display: 'block', mb: 0.5 }}>{t("details.fields.insuranceNumber")}</Typography>
                       <Typography variant="body2" sx={{ fontWeight: 600 }}>{selectedEmployee.socialInsuranceNumber || tc("notAvailable")}</Typography>
                     </Box>
-                  </Box>
+                  </FormGrid>
                 )}
 
                 {tabValue === 2 && (
                   <Stack spacing={3}>
                     <Box>
-                      <Typography variant="subtitle2" sx={{ fontWeight: 800, mb: 1.5, color: 'primary.main', display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Box sx={{ width: 4, height: 16, bgcolor: 'primary.main', borderRadius: 1 }} />
-                        {t("details.sections.bank_info")}
-                      </Typography>
-                      <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 3 }}>
+                      <SectionHeader title={t("details.sections.bank_info")} />
+                      <FormGrid gap={3}>
                         <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: 'white', border: '1px solid #f1f5f9' }}>
                           <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.65rem', display: 'block', mb: 0.5 }}>{t("details.fields.bankName")}</Typography>
                           <Typography variant="body2" sx={{ fontWeight: 600 }}>{selectedEmployee.bankName || tc("notAvailable")}</Typography>
@@ -429,17 +418,14 @@ export default function PersonnelPage() {
                           <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.65rem', display: 'block', mb: 0.5 }}>{t("details.fields.bankAccount")}</Typography>
                           <Typography variant="body2" sx={{ fontWeight: 600 }}>{selectedEmployee.bankAccountNumber || tc("notAvailable")}</Typography>
                         </Box>
-                      </Box>
+                      </FormGrid>
                     </Box>
 
                     <Divider />
 
                     <Box>
-                      <Typography variant="subtitle2" sx={{ fontWeight: 800, mb: 1.5, color: 'primary.main', display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Box sx={{ width: 4, height: 16, bgcolor: 'primary.main', borderRadius: 1 }} />
-                        {t("details.sections.salary_info")}
-                      </Typography>
-                      <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 3 }}>
+                      <SectionHeader title={t("details.sections.salary_info")} />
+                      <FormGrid gap={3}>
                         <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: 'primary.50', border: '1px solid', borderColor: 'primary.light' }}>
                           <Typography variant="caption" color="primary.main" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.65rem', display: 'block', mb: 0.5 }}>{t("details.fields.baseSalary")}</Typography>
                           <Typography variant="body2" sx={{ fontWeight: 800, color: 'primary.dark' }}>{selectedEmployee.baseSalary?.toLocaleString()} {tc("currency")}</Typography>
@@ -456,7 +442,7 @@ export default function PersonnelPage() {
                           <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.65rem', display: 'block', mb: 0.5 }}>{t("details.fields.hourlyRateOT")}</Typography>
                           <Typography variant="body2" sx={{ fontWeight: 600 }}>{selectedEmployee.hourlyRateOT?.toLocaleString()} {tc("currency")}</Typography>
                         </Box>
-                      </Box>
+                      </FormGrid>
                     </Box>
                   </Stack>
                 )}
