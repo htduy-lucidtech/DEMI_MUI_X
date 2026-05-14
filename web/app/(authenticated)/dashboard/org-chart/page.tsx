@@ -20,6 +20,7 @@ import { Box, Typography, Paper, CircularProgress, Stack, Button } from '@mui/ma
 import { useTranslations } from 'next-intl';
 import { AccountTree as DeptIcon, Refresh as RefreshIcon } from '@mui/icons-material';
 import { departmentsService, Department } from '@/services/departments.service';
+import PageHeader from '@/components/common/PageHeader';
 
 // Custom Node Component for Departments
 const DeptNode = ({ data }: any) => {
@@ -160,33 +161,28 @@ export default function OrgChartPage() {
   );
 
   return (
-    <Box sx={{ height: 'calc(100vh - 180px)', width: '100%', display: 'flex', flexDirection: 'column', gap: 2 }}>
-      <Stack direction="row" sx={{ justifyContent: "space-between", alignItems: "center" }}>
-        <Box>
-          <Typography variant="h4" sx={{ fontWeight: 800, mb: 0.5, letterSpacing: '-0.02em' }}>
-            {t('title')}
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
-            {t('description')}
-          </Typography>
-        </Box>
-        <Button 
-          variant="outlined" 
-          startIcon={<RefreshIcon />} 
-          onClick={loadData}
-          sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600 }}
-        >
-          {t('refresh') || 'Refresh'}
-        </Button>
-      </Stack>
+    <Box sx={{ height: 'calc(100vh - 180px)', width: '100%', display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+      <PageHeader
+        title={t('title')}
+        subtitle={t('description')}
+        actions={
+          <Button
+            variant="outlined"
+            startIcon={<RefreshIcon />}
+            onClick={loadData}
+            sx={{ textTransform: 'none', fontWeight: 600 }}
+          >
+            {t('refresh') || 'Refresh'}
+          </Button>
+        }
+      />
 
-      <Paper 
-        sx={{ 
-          flexGrow: 1, 
-          borderRadius: 4, 
-          overflow: 'hidden', 
+      <Paper
+        sx={{
+          flexGrow: 1,
+          borderRadius: 1.5,
+          overflow: 'hidden',
           border: '1px solid #e2e8f0',
-          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)',
           position: 'relative'
         }}
       >

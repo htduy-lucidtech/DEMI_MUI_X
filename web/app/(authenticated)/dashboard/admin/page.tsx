@@ -22,6 +22,8 @@ import {
   NotificationsActive as NotiIcon,
 } from "@mui/icons-material";
 import { useTranslations } from "next-intl";
+import PageHeader from "@/components/common/PageHeader";
+import FormGrid from "@/components/common/FormGrid";
 
 export default function AdminSettingsPage() {
   const t = useTranslations("Admin");
@@ -37,24 +39,25 @@ export default function AdminSettingsPage() {
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-      {/* Actions Row */}
-      <Box sx={{ display: "flex", justifyContent: "flex-end", alignItems: "center" }}>
-        <Button 
-          variant="contained" 
-          size="small"
-          startIcon={<SaveIcon />} 
-          onClick={handleSave}
-          disabled={loading}
-          sx={{ borderRadius: 2, px: 3 }}
-        >
-          {t("save")}
-        </Button>
-      </Box>
+      <PageHeader
+        title={t("sections.general") || "Cấu hình hệ thống"}
+        actions={
+          <Button
+            variant="contained"
+            size="small"
+            startIcon={<SaveIcon />}
+            onClick={handleSave}
+            disabled={loading}
+          >
+            {t("save")}
+          </Button>
+        }
+      />
 
       <Grid container spacing={3}>
         {/* General Settings */}
         <Grid size={{ xs: 12, md: 6 }}>
-          <Card sx={{ borderRadius: 4, height: "100%" }}>
+          <Card>
             <CardContent>
               <Stack direction="row" spacing={1.5} sx={{ mb: 3, alignItems: 'center' }}>
                 <CompanyIcon color="primary" />
@@ -63,6 +66,7 @@ export default function AdminSettingsPage() {
               <Stack spacing={3}>
                 <TextField 
                   fullWidth 
+                  size="small"
                   label={t("fields.companyName")} 
                   defaultValue="HRM Pro Global" 
                 />
@@ -73,47 +77,46 @@ export default function AdminSettingsPage() {
 
         {/* Working Time Settings */}
         <Grid size={{ xs: 12, md: 6 }}>
-          <Card sx={{ borderRadius: 4, height: "100%" }}>
+          <Card>
             <CardContent>
               <Stack direction="row" spacing={1.5} sx={{ mb: 3, alignItems: 'center' }}>
                 <TimeIcon color="secondary" />
                 <Typography variant="h6" sx={{ fontWeight: 700 }}>{t("sections.workingTime")}</Typography>
               </Stack>
-              <Grid container spacing={2}>
-                <Grid size={6}>
+              <FormGrid gap={2}>
+                <TextField 
+                  fullWidth 
+                  size="small"
+                  type="time" 
+                  label={t("fields.startTime")} 
+                  defaultValue="08:00" 
+                  slotProps={{ inputLabel: { shrink: true } }}
+                />
+                <TextField 
+                  fullWidth 
+                  size="small"
+                  type="time" 
+                  label={t("fields.endTime")} 
+                  defaultValue="17:00" 
+                  slotProps={{ inputLabel: { shrink: true } }}
+                />
+                <Box sx={{ gridColumn: "span 2" }}>
                   <TextField 
                     fullWidth 
-                    type="time" 
-                    label={t("fields.startTime")} 
-                    defaultValue="08:00" 
-                    slotProps={{ inputLabel: { shrink: true } }}
-                  />
-                </Grid>
-                <Grid size={6}>
-                  <TextField 
-                    fullWidth 
-                    type="time" 
-                    label={t("fields.endTime")} 
-                    defaultValue="17:00" 
-                    slotProps={{ inputLabel: { shrink: true } }}
-                  />
-                </Grid>
-                <Grid size={12}>
-                  <TextField 
-                    fullWidth 
+                    size="small"
                     type="number" 
                     label={t("fields.lateThreshold")} 
                     defaultValue={15} 
                   />
-                </Grid>
-              </Grid>
+                </Box>
+              </FormGrid>
             </CardContent>
           </Card>
         </Grid>
 
         {/* Notifications Settings */}
         <Grid size={12}>
-          <Card sx={{ borderRadius: 4 }}>
+          <Card>
             <CardContent>
               <Stack direction="row" spacing={1.5} sx={{ mb: 3, alignItems: 'center' }}>
                 <NotiIcon color="error" />

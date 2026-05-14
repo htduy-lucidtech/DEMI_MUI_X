@@ -33,6 +33,9 @@ import {
 } from "@/services/recruitment.service";
 import CustomNoRowsOverlay from "@/components/CustomNoRowsOverlay";
 import { useTranslations } from "next-intl";
+import PageHeader from "@/components/common/PageHeader";
+import FormGrid from "@/components/common/FormGrid";
+import StatusChip from "@/components/common/StatusChip";
 
 export default function RecruitmentPage() {
   const t = useTranslations("Recruitment");
@@ -98,11 +101,9 @@ export default function RecruitmentPage() {
       headerName: t("columns.status"),
       width: 120,
       renderCell: (params: GridRenderCellParams) => (
-        <Chip
+        <StatusChip
+          status={params.value === "Open" ? "success" : "default"}
           label={t(`data.status.${params.value}`)}
-          color={params.value === "Open" ? "success" : "default"}
-          size="small"
-          variant="outlined"
         />
       ),
     },
@@ -128,9 +129,8 @@ export default function RecruitmentPage() {
       headerName: t("columns.status"),
       width: 150,
       renderCell: (params: GridRenderCellParams) => (
-        <Chip
-          label={t(`data.status.${params.value}`)}
-          color={
+        <StatusChip
+          status={
             params.value === "Hired"
               ? "success"
               : params.value === "Interviewing"
@@ -139,7 +139,7 @@ export default function RecruitmentPage() {
                   ? "error"
                   : "primary"
           }
-          size="small"
+          label={t(`data.status.${params.value}`)}
         />
       ),
     },
@@ -168,10 +168,10 @@ export default function RecruitmentPage() {
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-      <Paper sx={{ borderRadius: 1.5, border: "1px solid #e2e8f0" }}>
-        <Box sx={{ p: 2, borderBottom: "1px solid #e2e8f0", display: "flex", flexDirection: "column", gap: 2 }}>
-          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 2 }}>
-            <Typography variant="subtitle1" sx={{ fontWeight: 700, mr: 1 }}>{t("title") || "Tuyển dụng"}</Typography>
+      <Paper sx={{ borderRadius: 1.5, border: "1px solid #e2e8f0", overflow: "hidden" }}>
+        <PageHeader
+          title={t("title") || "Tuyển dụng"}
+          actions={
             <Button
               variant="contained"
               size="small"
@@ -180,8 +180,10 @@ export default function RecruitmentPage() {
             >
               {t("postNew")}
             </Button>
-          </Box>
-          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+          }
+        />
+        <Box sx={{ p: 0 }}>
+          <Box sx={{ borderBottom: 1, borderColor: 'divider', px: 2 }}>
             <Tabs
               value={tab}
               onChange={(_, v) => setTab(v)}
@@ -215,9 +217,9 @@ export default function RecruitmentPage() {
         fullWidth
       >
         <DialogTitle>{t("dialog.title")}</DialogTitle>
-        <DialogContent>
-          <Grid container spacing={2} sx={{ mt: 1 }}>
-            <Grid size={12}>
+        <DialogContent dividers>
+          <FormGrid gap={2}>
+            <Box sx={{ gridColumn: "span 2" }}>
               <TextField
                 fullWidth
                 label={t("dialog.jobTitle")}
@@ -226,50 +228,42 @@ export default function RecruitmentPage() {
                   setNewJob({ ...newJob, title: e.target.value })
                 }
               />
-            </Grid>
-            <Grid size={6}>
-              <TextField
-                fullWidth
-                label={t("dialog.department")}
-                value={newJob.department}
-                onChange={(e) =>
-                  setNewJob({ ...newJob, department: e.target.value })
-                }
-              />
-            </Grid>
-            <Grid size={6}>
-              <TextField
-                fullWidth
-                label={t("dialog.location")}
-                value={newJob.location}
-                onChange={(e) =>
-                  setNewJob({ ...newJob, location: e.target.value })
-                }
-              />
-            </Grid>
-            <Grid size={6}>
-              <TextField
-                fullWidth
-                label={t("dialog.minSalary")}
-                type="number"
-                value={newJob.minSalary}
-                onChange={(e) =>
-                  setNewJob({ ...newJob, minSalary: Number(e.target.value) })
-                }
-              />
-            </Grid>
-            <Grid size={6}>
-              <TextField
-                fullWidth
-                label={t("dialog.maxSalary")}
-                type="number"
-                value={newJob.maxSalary}
-                onChange={(e) =>
-                  setNewJob({ ...newJob, maxSalary: Number(e.target.value) })
-                }
-              />
-            </Grid>
-            <Grid size={12}>
+            </Box>
+            <TextField
+              fullWidth
+              label={t("dialog.department")}
+              value={newJob.department}
+              onChange={(e) =>
+                setNewJob({ ...newJob, department: e.target.value })
+              }
+            />
+            <TextField
+              fullWidth
+              label={t("dialog.location")}
+              value={newJob.location}
+              onChange={(e) =>
+                setNewJob({ ...newJob, location: e.target.value })
+              }
+            />
+            <TextField
+              fullWidth
+              label={t("dialog.minSalary")}
+              type="number"
+              value={newJob.minSalary}
+              onChange={(e) =>
+                setNewJob({ ...newJob, minSalary: Number(e.target.value) })
+              }
+            />
+            <TextField
+              fullWidth
+              label={t("dialog.maxSalary")}
+              type="number"
+              value={newJob.maxSalary}
+              onChange={(e) =>
+                setNewJob({ ...newJob, maxSalary: Number(e.target.value) })
+              }
+            />
+            <Box sx={{ gridColumn: "span 2" }}>
               <TextField
                 fullWidth
                 label={t("dialog.expiryDate")}
@@ -280,8 +274,8 @@ export default function RecruitmentPage() {
                   setNewJob({ ...newJob, expiryDate: e.target.value })
                 }
               />
-            </Grid>
-            <Grid size={12}>
+            </Box>
+            <Box sx={{ gridColumn: "span 2" }}>
               <TextField
                 fullWidth
                 label={t("dialog.description")}
@@ -292,8 +286,8 @@ export default function RecruitmentPage() {
                   setNewJob({ ...newJob, description: e.target.value })
                 }
               />
-            </Grid>
-          </Grid>
+            </Box>
+          </FormGrid>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenJobDialog(false)}>

@@ -42,6 +42,8 @@ import { userService, User as UserData } from "@/services/user.service";
 import { employeeService, Employee } from "@/services/employee.service";
 import { roleService } from "@/services/role.service";
 import CustomNoRowsOverlay from "@/components/CustomNoRowsOverlay";
+import PageHeader from "@/components/common/PageHeader";
+import FormGrid from "@/components/common/FormGrid";
 import { DataGrid, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 
 export default function UsersPage() {
@@ -235,44 +237,27 @@ export default function UsersPage() {
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
       {/* Users Table */}
-      <Paper sx={{ borderRadius: 1.5, border: "1px solid #e2e8f0" }}>
-        <Box sx={{ p: 2, borderBottom: "1px solid #e2e8f0", display: "flex", flexDirection: "column", gap: 2 }}>
-          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 2 }}>
-            <Stack direction="row" spacing={2} sx={{ alignItems: "center", flexGrow: 1, flexWrap: "wrap" }}>
-              <Typography variant="subtitle1" sx={{ fontWeight: 700, mr: 1 }}>{t("title") || "Quản lý tài khoản"}</Typography>
-
-              <TextField
-                placeholder={t("search_placeholder")}
-                size="small"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                slotProps={{
-                  input: {
-                    startAdornment: <SearchIcon sx={{ color: "text.disabled", mr: 1, fontSize: 18 }} />
-                  }
-                }}
-                sx={{ width: { xs: "100%", md: 400 } }}
-              />
-
-              <Stack direction="row" spacing={1}>
-                <Button variant="contained" size="small" startIcon={<AddIcon />} onClick={() => handleOpen()}>
-                  {t("add_temp")}
+      <Paper sx={{ borderRadius: 1.5, border: "1px solid #e2e8f0", overflow: "hidden" }}>
+        <PageHeader
+          title={t("title") || "Quản lý tài khoản"}
+          onSearchChange={setSearchQuery}
+          searchValue={searchQuery}
+          searchPlaceholder={t("search_placeholder")}
+          actions={
+            <>
+              {canManage && selectionModel.length > 0 && (
+                <Button variant="contained" color="error" size="small" onClick={() => setBulkDeleteConfirmOpen(true)}>
+                  {t("bulk_delete")} ({selectionModel.length})
                 </Button>
-                <IconButton onClick={fetchUsers} disabled={loading} size="small">
-                  <AddIcon sx={{ transform: 'rotate(45deg)', display: 'none' }} /> {/* Just for spacing or placeholder if needed */}
-                  <Typography variant="caption" sx={{ display: 'none' }}>Refresh</Typography>
-                </IconButton>
-              </Stack>
-            </Stack>
-
-            {canManage && selectionModel.length > 0 && (
-              <Button variant="contained" color="error" size="small" onClick={() => setBulkDeleteConfirmOpen(true)}>
-                {t("bulk_delete")} ({selectionModel.length})
+              )}
+              <Button variant="contained" size="small" startIcon={<AddIcon />} onClick={() => handleOpen()}>
+                {t("add_temp")}
               </Button>
-            )}
-          </Box>
-
-          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+            </>
+          }
+        />
+        <Box sx={{ p: 0 }}>
+          <Box sx={{ borderBottom: 1, borderColor: 'divider', px: 2 }}>
             <Tabs value={activeTab} onChange={(_, v) => setActiveTab(v)} sx={{ minHeight: 40 }}>
               <Tab label={t("tabs.all")} value="All" />
               <Tab label={t("tabs.admin")} value="Admin" />
@@ -311,7 +296,7 @@ export default function UsersPage() {
       <Dialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth="xs">
         <DialogTitle sx={{ fontWeight: 700 }}>{isEdit ? t("edit_user") : t("add_temp")}</DialogTitle>
         <DialogContent dividers>
-          <Box sx={{ display: "grid", gridTemplateColumns: "1fr", gap: 2 }}>
+          <FormGrid columns={1} gap={2}>
             <TextField label={t("username")} fullWidth size="small" disabled={isEdit} value={formData.username} onChange={(e) => setFormData({ ...formData, username: e.target.value })} />
             <TextField label={t("email")} fullWidth size="small" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} />
             {!isEdit && <TextField label={t("password")} type={showPassword ? "text" : "password"} fullWidth size="small" value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} slotProps={{ input: { endAdornment: <InputAdornment position="end"><IconButton onClick={() => setShowPassword(!showPassword)} edge="end" size="small">{showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}</IconButton></InputAdornment> } }} />}
@@ -347,7 +332,7 @@ export default function UsersPage() {
             <TextField select label="Loại tài khoản chính" fullWidth size="small" value={formData.role} onChange={(e) => setFormData({ ...formData, role: e.target.value })}>
               {["Admin", "Manager", "Employee"].map((r) => <MenuItem key={r} value={r}>{tr(r as any)}</MenuItem>)}
             </TextField>
-          </Box>
+          </FormGrid>
         </DialogContent>
         <DialogActions sx={{ p: 2 }}><Button onClick={() => setOpen(false)}>{tc("cancel")}</Button><Button onClick={handleSubmit} variant="contained" sx={{ px: 4 }}>{tc("save")}</Button></DialogActions>
       </Dialog>

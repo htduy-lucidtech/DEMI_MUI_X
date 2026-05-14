@@ -33,6 +33,7 @@ import {
 } from "@mui/icons-material";
 import { roleService, Role, Permission } from "@/services/role.service";
 import { useTranslations } from "next-intl";
+import PageHeader from "@/components/common/PageHeader";
 
 export default function RolesPage() {
   const t = useTranslations("Admin.roles");
@@ -203,21 +204,20 @@ export default function RolesPage() {
 
   return (
     <Box sx={{ p: 0 }}>
-      <Paper sx={{ borderRadius: 1.5, border: "1px solid #e2e8f0" }}>
-        <Box sx={{ p: 2, borderBottom: "1px solid #e2e8f0", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 2 }}>
-          <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
-            <SecurityIcon color="primary" />
-            <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>{t("title") || "Phân quyền hệ thống"}</Typography>
-          </Stack>
-          <Button
-            variant="contained"
-            size="small"
-            startIcon={<AddIcon />}
-            onClick={() => handleOpen()}
-          >
-            {t("add") || "Thêm nhóm quyền"}
-          </Button>
-        </Box>
+      <Paper sx={{ borderRadius: 1.5, border: "1px solid #e2e8f0", overflow: "hidden" }}>
+        <PageHeader
+          title={t("title") || "Phân quyền hệ thống"}
+          actions={
+            <Button
+              variant="contained"
+              size="small"
+              startIcon={<AddIcon />}
+              onClick={() => handleOpen()}
+            >
+              {t("add") || "Thêm nhóm quyền"}
+            </Button>
+          }
+        />
         <Box sx={{ height: 600 }}>
           <DataGrid
             rows={roles}
