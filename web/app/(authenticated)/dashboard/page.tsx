@@ -178,10 +178,10 @@ export default function DashboardPage() {
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
       {/* Stats Cards */}
-      <FormGrid columns={{ xs: 1, sm: 2, md: isPersonal ? 3 : 4 }} gap={1.5}>
+      <FormGrid columns={{ xs: 1, sm: 2, md: 2, lg: isPersonal ? 3 : 4 }} gap={1.5}>
         {stats.map((stat) => (
           <Card key={stat.name} sx={{ transition: "all 0.2s ease", "&:hover": { transform: "translateY(-1px)", boxShadow: "0 4px 12px rgba(0,0,0,0.05)" } }}>
-            <CardContent sx={{ p: 1.5, "&:last-child": { pb: 1.5 }, cursor: "pointer" }} onClick={() => router.push(stat.link)}>
+            <CardContent sx={{ p: 2, "&:last-child": { pb: 2 }, cursor: "pointer" }} onClick={() => router.push(stat.link)}>
               <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
                 <Avatar sx={{ bgcolor: `${stat.color}15`, color: stat.color, width: 32, height: 32, borderRadius: 1 }}>
                   <stat.icon sx={{ fontSize: 20 }} />

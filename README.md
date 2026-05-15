@@ -10,6 +10,7 @@ Vui lòng tham khảo bộ tài liệu được chuẩn hóa dưới đây:
 2. **[02. Hướng dẫn Phát triển](docs/02-Development.md)**: Tiêu chuẩn lập trình, quy tắc đa ngôn ngữ và quy trình thêm module mới.
 3. **[03. Tính năng & Nghiệp vụ](docs/03-Features.md)**: Chi tiết về Chấm công, Nghỉ phép, Tuyển dụng và SignalR Realtime.
 4. **[04. Kế hoạch & Roadmap](docs/04-Roadmap.md)**: Trạng thái dự án và các đầu việc sắp tới.
+5. **[09. Hướng dẫn Triển khai Render](docs/09-Render-Deployment.md)**: Cách deloy hệ thống lên Render bằng Docker.
 
 ## 🛠 Công nghệ cốt lõi
 
