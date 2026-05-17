@@ -32,7 +32,15 @@ Vui lòng tham khảo bộ tài liệu được chuẩn hóa dưới đây:
 
 ### Frontend
 1. Mở thư mục `web/`.
-2. Chạy `npm install` và `npm run dev`.
+2. Tạo file `.env.local` từ mẫu `.env.example`: `cp .env.example .env.local` (và điều chỉnh URL API nếu cần).
+3. Chạy `npm install` và `npm run dev`.
+
+## ⚙️ Cấu hình Môi trường (Environment Variables)
+Khi chạy nội bộ hoặc triển khai, hệ thống yêu cầu các biến môi trường sau:
+
+- **Root (`/.env`)**: Dùng cho Docker Compose. Xem `/.env.example`.
+- **Frontend (`web/.env.local`)**: Dùng cho Next.js. Chứa biến `NEXT_PUBLIC_API_URL`. Xem `web/.env.example`.
+- **Backend (Render/Server)**: Cần thiết lập `ConnectionStrings__DefaultConnection`, `Jwt__Key`, `CORS__AllowedOrigins`. Xem chi tiết tại [Tài liệu Triển khai](docs/09-Render-Deployment.md#5-cấu-hình-khi-triển-khai-nơi-khác-hoặc-đổi-domain).
 
 ## 🧪 Unit Testing
 

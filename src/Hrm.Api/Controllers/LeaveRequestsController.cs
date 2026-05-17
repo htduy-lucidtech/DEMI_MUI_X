@@ -90,7 +90,7 @@ namespace Hrm.Api.Controllers
                     .FirstOrDefaultAsync(u => u.Id == claimUserId);
 
                 if (user == null) return Unauthorized();
-                var isAdmin = user.UserRoles.Any(ur => ur.Role.Name == "Admin");
+                var isAdmin = user.UserRoles.Any(ur => ur.Role!.Name == "Admin");
 
                 // 1. Map DTO to Entity
                 var request = new LeaveRequest

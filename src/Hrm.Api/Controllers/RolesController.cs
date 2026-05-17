@@ -51,7 +51,7 @@ namespace Hrm.Api.Controllers
                 role.Id,
                 role.Name,
                 role.Description,
-                Permissions = role.RolePermissions.Select(rp => rp.Permission.Code)
+                Permissions = role.RolePermissions.Select(rp => rp.Permission!.Code)
             });
         }
 

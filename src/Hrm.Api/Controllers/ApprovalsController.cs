@@ -32,13 +32,13 @@ namespace Hrm.Api.Controllers
 
             if (user == null) return Unauthorized();
 
-            var userRoleNames = user.UserRoles.Select(ur => ur.Role.Name).ToList();
+            var userRoleNames = user.UserRoles.Select(ur => ur.Role!.Name).ToList();
             var isAdmin = userRoleNames.Contains("Admin");
             var isGeneralManager = userRoleNames.Contains("General Manager");
             var isDeptManager = userRoleNames.Contains("Department Manager");
 
             var query = _context.ApprovalRequests
-                .Include(r => r.Requester).ThenInclude(u => u.Employee)
+                .Include(r => r.Requester).ThenInclude(u => u!.Employee)
                 .AsQueryable();
 
             if (isAdmin || isGeneralManager)
@@ -67,7 +67,7 @@ namespace Hrm.Api.Controllers
                     r.Description,
                     r.Status,
                     r.CreatedAt,
-                    RequesterName = r.Requester != null && r.Requester.Employee != null ? r.Requester.Employee.FullName : r.Requester.Username,
+                    RequesterName = r.Requester?.Employee?.FullName ?? r.Requester?.Username ?? "N/A",
                     r.DataJson
                 })
                 .ToListAsync();
@@ -103,7 +103,7 @@ namespace Hrm.Api.Controllers
                 .FirstOrDefaultAsync(u => u.Id == userId);
 
             if (user == null) return Unauthorized();
-            var userRoleNames = user.UserRoles.Select(ur => ur.Role.Name).ToList();
+            var userRoleNames = user.UserRoles.Select(ur => ur.Role!.Name).ToList();
             
             bool canApprove = userRoleNames.Contains("Admin") || userRoleNames.Contains("General Manager");
             if (!canApprove && userRoleNames.Contains("Department Manager"))

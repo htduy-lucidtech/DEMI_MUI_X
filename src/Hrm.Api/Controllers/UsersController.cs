@@ -41,7 +41,7 @@ namespace Hrm.Api.Controllers
                     u.IsActive,
                     u.EmployeeId,
                     Employee = u.Employee != null ? new { u.Employee.FullName, u.Employee.Position } : null,
-                    Roles = u.UserRoles.Select(ur => new { ur.Role.Id, ur.Role.Name })
+                    Roles = u.UserRoles.Select(ur => new { ur.Role!.Id, ur.Role!.Name })
                 })
                 .ToListAsync();
         }
