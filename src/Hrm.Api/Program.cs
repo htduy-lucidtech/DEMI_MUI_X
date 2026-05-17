@@ -39,7 +39,7 @@ builder.Services.AddCors(options => {
     options.AddPolicy("HrmPolicy", policy => {
         var allowedOrigins = builder.Configuration.GetSection("CORS:AllowedOrigins").Get<string[]>()
             ?? builder.Configuration.GetValue<string>("CORS__AllowedOrigins")?.Split(',')
-            ?? ["https://hrm-web-a0u2.onrender.com", "http://localhost:3000"];
+            ?? ["https://hrm-web-miv7.onrender.com", "http://localhost:3000"];
 
         policy.WithOrigins(allowedOrigins)
             .AllowAnyHeader()
