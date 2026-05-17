@@ -140,7 +140,7 @@ if (app.Environment.IsDevelopment() || true) // Enable in prod for demo if neede
 
 // app.UseHttpsRedirection();
 app.UseWebSockets();
-app.UseCors("AllowRenderFrontend");
+app.UseCors("HrmPolicy");
 app.UseAuthentication(); // Must be before UseAuthorization
 app.UseAuthorization();
 
