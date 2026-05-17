@@ -67,7 +67,9 @@ namespace Hrm.Api.Controllers
                     r.Description,
                     r.Status,
                     r.CreatedAt,
-                    RequesterName = r.Requester?.Employee?.FullName ?? r.Requester?.Username ?? "N/A",
+                    RequesterName = r.Requester != null 
+                        ? (r.Requester.Employee != null ? r.Requester.Employee.FullName : r.Requester.Username) 
+                        : "N/A",
                     r.DataJson
                 })
                 .ToListAsync();
