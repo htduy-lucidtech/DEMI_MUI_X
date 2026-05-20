@@ -213,16 +213,23 @@ export default function Sidebar({ isSidebarCollapsed, onClose }: SidebarProps) {
             if (item.section !== section.key) return false;
             if (!activeRole) return false;
             
-            // Role access
-            const hasRoleAccess = item.roles.includes(activeRole);
-            if (!hasRoleAccess) return false;
-
-            // Permission access (if specified)
+            // If item has a permission, check only that permission
             if (item.permission) {
               return hasPermission(item.permission);
             }
+            
+            // If activeRole is Admin, allow everything
+            if (activeRole === "Admin") return true;
 
-            return true;
+            // Common items are visible to all roles
+            if (item.section === "sectionCommon") return true;
+
+            // Role access with flexible Manager matching
+            const hasRoleAccess = item.roles.some(r => {
+              if (r === "Manager" && (activeRole === "General Manager" || activeRole === "Department Manager" || activeRole === "Manager")) return true;
+              return r === activeRole;
+            });
+            return hasRoleAccess;
           });
           if (items.length === 0) return null;
 

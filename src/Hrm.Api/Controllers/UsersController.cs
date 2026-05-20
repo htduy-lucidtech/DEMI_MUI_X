@@ -72,12 +72,23 @@ namespace Hrm.Api.Controllers
         [HttpPost]
         public async Task<ActionResult<User>> CreateUser(UserDto userDto)
         {
+            var roleName = "Employee";
+            if (userDto.RoleIds != null && userDto.RoleIds.Any())
+            {
+                var firstRoleId = userDto.RoleIds.First();
+                var dbRole = await _context.Roles.FindAsync(firstRoleId);
+                if (dbRole != null)
+                {
+                    roleName = dbRole.Name;
+                }
+            }
+
             var user = new User
             {
                 Username = userDto.Username,
                 Email = userDto.Email,
                 Password = userDto.Password ?? "Password@123",
-                Role = userDto.Role,
+                Role = roleName,
                 IsActive = userDto.IsActive,
                 EmployeeId = userDto.EmployeeId
             };
@@ -107,10 +118,22 @@ namespace Hrm.Api.Controllers
                     
                 if (existingUser == null) return NotFound();
 
+                // Resolve and update role name based on first assigned RoleId
+                var roleName = "Employee";
+                if (userDto.RoleIds != null && userDto.RoleIds.Any())
+                {
+                    var firstRoleId = userDto.RoleIds.First();
+                    var dbRole = await _context.Roles.FindAsync(firstRoleId);
+                    if (dbRole != null)
+                    {
+                        roleName = dbRole.Name;
+                    }
+                }
+
                 // Update basic fields
                 existingUser.Email = userDto.Email ?? existingUser.Email;
                 existingUser.IsActive = userDto.IsActive;
-                existingUser.Role = userDto.Role ?? existingUser.Role;
+                existingUser.Role = roleName;
                 existingUser.EmployeeId = userDto.EmployeeId != 0 ? userDto.EmployeeId : existingUser.EmployeeId;
                 
                 // Update roles

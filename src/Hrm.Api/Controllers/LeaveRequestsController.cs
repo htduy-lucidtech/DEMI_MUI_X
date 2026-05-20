@@ -40,7 +40,7 @@ namespace Hrm.Api.Controllers
                 return Unauthorized();
             }
 
-            var isAdminOrHR = User.IsInRole("Admin") || User.IsInRole("Manager") || User.IsInRole("Personnel");
+            var isAdminOrHR = User.IsInRole("Admin") || User.HasClaim(c => c.Type == "Permission" && (c.Value == "LEAVE_APPROVE" || c.Value == "APPROVE_ALL" || c.Value == "APPROVE_DEPT"));
 
             var query = _context.LeaveRequests
                 .Include(l => l.User)
@@ -90,7 +90,7 @@ namespace Hrm.Api.Controllers
                     .FirstOrDefaultAsync(u => u.Id == claimUserId);
 
                 if (user == null) return Unauthorized();
-                var isAdmin = user.UserRoles.Any(ur => ur.Role!.Name == "Admin");
+                var isAdmin = user.UserRoles.Any(ur => ur.Role!.Name == "Admin") || User.HasClaim(c => c.Type == "Permission" && c.Value == "APPROVE_ALL");
 
                 // 1. Map DTO to Entity
                 var request = new LeaveRequest
@@ -110,37 +110,21 @@ namespace Hrm.Api.Controllers
 
                 var senderName = user.Employee?.FullName ?? user.Username;
 
-                // 3. If not admin, create an Approval Request
-                if (!isAdmin)
+                // 3. Create an Approval Request
+                var approval = new ApprovalRequest
                 {
-                    // Update the status in the JSON data so it gets applied as Approved
-                    var approvedData = new LeaveRequest
-                    {
-                        Id = request.Id,
-                        UserId = request.UserId,
-                        LeaveType = request.LeaveType,
-                        StartDate = request.StartDate,
-                        EndDate = request.EndDate,
-                        Reason = request.Reason,
-                        Status = "Approved",
-                        CreatedAt = request.CreatedAt
-                    };
+                    RequesterId = claimUserId,
+                    RequestType = "LEAVE_REQUEST",
+                    EntityName = "LeaveRequest",
+                    EntityId = request.Id.ToString(),
+                    DataJson = string.Empty,
+                    Description = $"Đơn nghỉ phép: {senderName} ({request.LeaveType})",
+                    DepartmentId = user.Employee?.DepartmentId,
+                    Status = ApprovalStatus.Pending
+                };
 
-                    var approval = new ApprovalRequest
-                    {
-                        RequesterId = claimUserId,
-                        RequestType = "LEAVE_REQUEST",
-                        EntityName = "LeaveRequest",
-                        EntityId = request.Id.ToString(),
-                        DataJson = System.Text.Json.JsonSerializer.Serialize(approvedData),
-                        Description = $"Đơn nghỉ phép: {senderName} ({request.LeaveType})",
-                        DepartmentId = user.Employee?.DepartmentId,
-                        Status = ApprovalStatus.Pending
-                    };
-
-                    _context.ApprovalRequests.Add(approval);
-                    await _context.SaveChangesAsync();
-                }
+                _context.ApprovalRequests.Add(approval);
+                await _context.SaveChangesAsync();
 
                 // 4. Fire notifications
                 try {
@@ -180,7 +164,7 @@ namespace Hrm.Api.Controllers
                     request.Status,
                     request.CreatedAt,
                     FullName = senderName,
-                    RequiresApproval = !isAdmin
+                    RequiresApproval = true
                 });
             }
             catch (Exception ex)

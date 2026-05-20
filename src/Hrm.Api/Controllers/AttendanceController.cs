@@ -212,7 +212,7 @@ namespace Hrm.Api.Controllers
         public async Task<IActionResult> GetAttendances()
         {
             var userId = GetUserId();
-            var isAdminOrHR = User.IsInRole("Admin") || User.IsInRole("Manager") || User.IsInRole("Personnel");
+            var isAdminOrHR = User.IsInRole("Admin") || User.HasClaim(c => c.Type == "Permission" && (c.Value == "ATT_VIEW_ALL" || c.Value == "ATT_MANAGE_ALL"));
 
             var query = _context.Attendances
                 .Include(a => a.User)

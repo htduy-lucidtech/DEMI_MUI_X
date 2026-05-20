@@ -29,7 +29,8 @@ namespace Hrm.Api.Controllers
             {
                 var today = DateTime.SpecifyKind(DateTime.UtcNow.Date, DateTimeKind.Utc);
                 var userIdFromToken = GetUserIdFromToken();
-                var isEmployee = User.IsInRole("Employee");
+                var isEmployee = User.IsInRole("Employee") || 
+                                 (!User.HasClaim(c => c.Type == "Permission" && (c.Value == "EMP_VIEW_ALL" || c.Value == "ATT_VIEW_ALL" || c.Value == "APPROVE_ALL" || c.Value == "USERS_MANAGE" || c.Value == "LEAVE_APPROVE")));
                 
                 // Nếu là Employee, bắt buộc trả về stats cá nhân
                 if (isEmployee)

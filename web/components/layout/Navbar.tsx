@@ -54,7 +54,7 @@ export default function Navbar({ isSidebarCollapsed, onToggleSidebar }: NavbarPr
   const tb = useTranslations("Layout.breadcrumbs");
   const tr = useTranslations("Layout.roles");
   const pathname = usePathname();
-  const { activeRole, setActiveRole, user, logout } = useAuth();
+  const { activeRole, setActiveRole, availableRoles, user, logout } = useAuth();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   const pathArray = pathname.split("/").filter((x) => x);
@@ -121,7 +121,7 @@ export default function Navbar({ isSidebarCollapsed, onToggleSidebar }: NavbarPr
     window.location.reload();
   };
 
-  const roles: Role[] = ["Admin", "Manager", "Employee"];
+  const roles = availableRoles.length > 0 ? availableRoles.map((r) => r.name) : ["Admin", "Manager", "Employee"];
   const currentLocale = (Cookies.get("NEXT_LOCALE") || "vi").toUpperCase();
 
   return (
@@ -237,7 +237,7 @@ export default function Navbar({ isSidebarCollapsed, onToggleSidebar }: NavbarPr
               >
                 {roles.map((r) => (
                   <MenuItem key={r} value={r} sx={{ fontSize: "0.875rem", fontWeight: 600 }}>
-                    {tr(r)}
+                    {r}
                   </MenuItem>
                 ))}
               </Select>
@@ -375,7 +375,7 @@ export default function Navbar({ isSidebarCollapsed, onToggleSidebar }: NavbarPr
                 {user?.fullName || "User"}
               </Typography>
               <Typography variant="caption" sx={{ color: "primary.main", fontWeight: 700 }}>
-                {activeRole ? tr(activeRole as string) : ""}
+                {activeRole || ""}
               </Typography>
             </Box>
           </Box>

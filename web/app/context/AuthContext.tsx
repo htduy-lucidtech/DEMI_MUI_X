@@ -2,8 +2,9 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 import Cookies from "js-cookie";
+import api from "@/lib/api";
 
-export type Role = "Admin" | "Manager" | "Employee" | "General Manager" | "Department Manager";
+export type Role = string;
 
 interface UserInfo {
   id: number;
@@ -17,12 +18,20 @@ interface UserInfo {
   employeeId?: number;
 }
 
+interface AvailableRole {
+  id: number;
+  name: string;
+  description: string;
+  permissions: string[];
+}
+
 interface AuthContextType {
   user: UserInfo | null;
   token: string | null;
   permissions: string[];
   activeRole: Role | null;
   setActiveRole: (role: Role) => void;
+  availableRoles: AvailableRole[];
   login: (token: string, user: UserInfo) => void;
   logout: () => void;
   isAuthenticated: boolean;
@@ -37,6 +46,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
   const [permissions, setPermissions] = useState<string[]>([]);
   const [activeRole, setActiveRoleState] = useState<Role | null>(null);
+  const [availableRoles, setAvailableRoles] = useState<AvailableRole[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // Load from storage on mount
@@ -69,6 +79,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Fetch available roles with permissions dynamically if the user is Admin
+  useEffect(() => {
+    if (user?.role === "Admin" && token) {
+      api.get<AvailableRole[]>("/Roles")
+        .then((res) => {
+          setAvailableRoles(res.data || []);
+        })
+        .catch((err) => {
+          console.error("Failed to fetch dynamic roles for preview:", err);
+        });
+    } else {
+      setAvailableRoles([]);
+    }
+  }, [user, token]);
+
   const login = (newToken: string, newUser: UserInfo) => {
     setToken(newToken);
     setUser(newUser);
@@ -86,6 +111,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
     setPermissions([]);
     setActiveRoleState(null);
+    setAvailableRoles([]);
 
     localStorage.removeItem("token");
     localStorage.removeItem("user");
@@ -103,6 +129,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const hasPermission = (permission: string) => {
     if (activeRole === "Admin") return true;
+
+    // If actual user is Admin and is previewing another role, check preview role's dynamic permissions
+    if (user?.role === "Admin" && activeRole && activeRole !== "Admin") {
+      const selectedRole = availableRoles.find((r) => r.name === activeRole);
+      if (selectedRole) {
+        return selectedRole.permissions?.includes(permission) || false;
+      }
+    }
+
     return permissions.includes(permission);
   };
 
@@ -114,6 +149,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         permissions,
         activeRole,
         setActiveRole,
+        availableRoles,
         login,
         logout,
         isAuthenticated: !!token,

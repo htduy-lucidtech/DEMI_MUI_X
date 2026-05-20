@@ -37,8 +37,8 @@ import FormGrid from "@/components/common/FormGrid";
 
 export default function LeaveRequestsPage() {
   const t = useTranslations("Leave");
-  const { user, activeRole } = useAuth();
-  const isHR = activeRole === "Admin" || activeRole === "Manager" || activeRole === "General Manager" || activeRole === "Department Manager";
+  const { user, activeRole, hasPermission } = useAuth();
+  const isHR = hasPermission("LEAVE_APPROVE") || hasPermission("APPROVE_ALL") || hasPermission("APPROVE_DEPT");
   
   const [requests, setRequests] = useState<LeaveRequest[]>([]);
   const [loading, setLoading] = useState(false);
@@ -138,18 +138,6 @@ export default function LeaveRequestsPage() {
           label={t(`data.status.${params.value}`)}
         />
       ),
-    },
-    {
-      field: "actions",
-      headerName: t("columns.actions"),
-      width: 150,
-      renderCell: (params) =>
-        isHR && params.row.status === "Pending" ? (
-          <Stack direction="row" spacing={1}>
-            <IconButton color="success" size="small" onClick={() => handleUpdateStatus(params.row.id, "Approved")}><ApproveIcon fontSize="small" /></IconButton>
-            <IconButton color="error" size="small" onClick={() => handleUpdateStatus(params.row.id, "Rejected")}><RejectIcon fontSize="small" /></IconButton>
-          </Stack>
-        ) : null,
     },
   ];
 

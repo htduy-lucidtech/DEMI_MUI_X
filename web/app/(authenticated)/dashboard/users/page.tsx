@@ -50,8 +50,8 @@ export default function UsersPage() {
   const t = useTranslations("Users");
   const tr = useTranslations("Layout.roles");
   const tc = useTranslations("Layout.common");
-  const { user: currentUser } = useAuth();
-  const canManage = currentUser?.role === "Admin" || currentUser?.role === "Manager";
+  const { user: currentUser, hasPermission } = useAuth();
+  const canManage = hasPermission("USERS_MANAGE");
 
   const [users, setUsers] = useState<UserData[]>([]);
   const [unlinkedEmployees, setUnlinkedEmployees] = useState<Employee[]>([]);
@@ -329,9 +329,7 @@ export default function UsersPage() {
               ))}
             </TextField>
 
-            <TextField select label="Loại tài khoản chính" fullWidth size="small" value={formData.role} onChange={(e) => setFormData({ ...formData, role: e.target.value })}>
-              {["Admin", "Manager", "Employee"].map((r) => <MenuItem key={r} value={r}>{tr(r as any)}</MenuItem>)}
-            </TextField>
+
           </FormGrid>
         </DialogContent>
         <DialogActions sx={{ p: 2 }}><Button onClick={() => setOpen(false)}>{tc("cancel")}</Button><Button onClick={handleSubmit} variant="contained" sx={{ px: 4 }}>{tc("save")}</Button></DialogActions>

@@ -30,7 +30,8 @@ namespace Hrm.Api.Controllers
                     r.Id,
                     r.Name,
                     r.Description,
-                    PermissionCount = r.RolePermissions.Count
+                    PermissionCount = r.RolePermissions.Count,
+                    Permissions = r.RolePermissions.Select(rp => rp.Permission!.Code)
                 })
                 .ToListAsync();
             return Ok(roles);

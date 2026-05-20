@@ -51,8 +51,8 @@ export default function AttendancePage() {
   const t = useTranslations("Attendance");
   const tc = useTranslations("Attendance.dialog");
   const locale = useTranslations("Layout").raw("locale") || "vi";
-  const { user } = useAuth();
-  const isHR = user?.role === "Admin" || user?.role === "Manager";
+  const { user, hasPermission } = useAuth();
+  const isHR = hasPermission("ATT_MANAGE_ALL") || hasPermission("ATT_VIEW_ALL");
 
   const [history, setHistory] = useState<AttendanceRecord[]>([]);
   const [status, setStatus] = useState<TodayStatus | null>(null);

@@ -50,7 +50,7 @@ namespace Hrm.Api.Controllers
         [HttpPost]
         public async Task<ActionResult<Employee>> CreateEmployee(Employee employee)
         {
-            var isAdmin = User.IsInRole("Admin");
+            var isAdmin = User.IsInRole("Admin") || User.HasClaim(c => c.Type == "Permission" && c.Value == "EMP_MANAGE_ALL");
             var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
             int.TryParse(userIdStr, out var userId);
 
@@ -83,7 +83,7 @@ namespace Hrm.Api.Controllers
             if (id != employee.Id) return BadRequest();
 
             // Check if user is Admin
-            var isAdmin = User.IsInRole("Admin");
+            var isAdmin = User.IsInRole("Admin") || User.HasClaim(c => c.Type == "Permission" && c.Value == "EMP_MANAGE_ALL");
             var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
             int.TryParse(userIdStr, out var userId);
 
@@ -194,7 +194,7 @@ namespace Hrm.Api.Controllers
             var employee = await _context.Employees.FindAsync(id);
             if (employee == null) return NotFound();
 
-            var isAdmin = User.IsInRole("Admin");
+            var isAdmin = User.IsInRole("Admin") || User.HasClaim(c => c.Type == "Permission" && c.Value == "EMP_MANAGE_ALL");
             var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
             int.TryParse(userIdStr, out var userId);
 

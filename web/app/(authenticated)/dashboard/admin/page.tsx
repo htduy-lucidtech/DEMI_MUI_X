@@ -14,20 +14,29 @@ import {
   Card,
   CardContent,
   Divider,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
 } from "@mui/material";
 import {
   Save as SaveIcon,
   Business as CompanyIcon,
   AccessTime as TimeIcon,
   NotificationsActive as NotiIcon,
+  SettingsBackupRestore as ResetIcon,
 } from "@mui/icons-material";
 import { useTranslations } from "next-intl";
 import PageHeader from "@/components/common/PageHeader";
 import FormGrid from "@/components/common/FormGrid";
+import api from "@/lib/api";
 
 export default function AdminSettingsPage() {
   const t = useTranslations("Admin");
   const [loading, setLoading] = useState(false);
+  const [openConfirm, setOpenConfirm] = useState(false);
+  const [resetting, setResetting] = useState(false);
 
   const handleSave = () => {
     setLoading(true);
@@ -35,6 +44,20 @@ export default function AdminSettingsPage() {
       setLoading(false);
       alert(t("success"));
     }, 1000);
+  };
+
+  const handleResetDatabase = async () => {
+    setResetting(true);
+    try {
+      await api.post("/Settings/reset-database");
+      alert("Khôi phục dữ liệu mẫu thành công!");
+      window.location.reload();
+    } catch (error: any) {
+      alert("Lỗi khi khôi phục dữ liệu: " + error.message);
+    } finally {
+      setResetting(false);
+      setOpenConfirm(false);
+    }
   };
 
   return (
@@ -115,8 +138,8 @@ export default function AdminSettingsPage() {
         </Grid>
 
         {/* Notifications Settings */}
-        <Grid size={12}>
-          <Card>
+        <Grid size={{ xs: 12, md: 6 }}>
+          <Card sx={{ height: '100%' }}>
             <CardContent>
               <Stack direction="row" spacing={1.5} sx={{ mb: 3, alignItems: 'center' }}>
                 <NotiIcon color="error" />
@@ -136,7 +159,72 @@ export default function AdminSettingsPage() {
             </CardContent>
           </Card>
         </Grid>
+
+        {/* Maintenance / Data Reset */}
+        <Grid size={{ xs: 12, md: 6 }}>
+          <Card sx={{ height: '100%', border: '1px dashed #ed6c02', bgcolor: 'rgba(237, 108, 2, 0.02)' }}>
+            <CardContent sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+              <Stack direction="row" spacing={1.5} sx={{ mb: 3, alignItems: 'center' }}>
+                <ResetIcon color="warning" />
+                <Typography variant="h6" sx={{ fontWeight: 700, color: 'warning.main' }}>
+                  Bảo trì & Khôi phục dữ liệu
+                </Typography>
+              </Stack>
+              
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 'auto' }}>
+                Khôi phục cơ sở dữ liệu về trạng thái mẫu ban đầu. Toàn bộ dữ liệu tự tạo mới sẽ bị xóa sạch và thay thế bằng bộ dữ liệu demo chuẩn hóa mới nhất.
+              </Typography>
+
+              <Box sx={{ mt: 3 }}>
+                <Button 
+                  variant="outlined" 
+                  color="warning" 
+                  fullWidth
+                  startIcon={<ResetIcon />}
+                  onClick={() => setOpenConfirm(true)}
+                >
+                  Khôi phục dữ liệu mẫu
+                </Button>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
       </Grid>
+
+      {/* Confirm Reset Dialog */}
+      <Dialog
+        open={openConfirm}
+        onClose={() => !resetting && setOpenConfirm(false)}
+      >
+        <DialogTitle sx={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: 1 }}>
+          <ResetIcon color="warning" />
+          Xác nhận khôi phục dữ liệu
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Hành động này sẽ <strong>xóa toàn bộ dữ liệu hiện tại</strong> trong hệ thống (bao gồm các đơn nghỉ phép mới tạo, bản ghi chấm công, tài khoản, phòng ban...) và nạp lại dữ liệu mẫu chuẩn hóa ban đầu. Bạn có chắc chắn muốn tiếp tục?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 3 }}>
+          <Button 
+            onClick={() => setOpenConfirm(false)} 
+            disabled={resetting}
+            variant="outlined" 
+            color="inherit"
+          >
+            Hủy bỏ
+          </Button>
+          <Button 
+            onClick={handleResetDatabase} 
+            disabled={resetting}
+            variant="contained" 
+            color="warning"
+            startIcon={resetting ? undefined : <ResetIcon />}
+          >
+            {resetting ? "Đang khôi phục..." : "Đồng ý khôi phục"}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

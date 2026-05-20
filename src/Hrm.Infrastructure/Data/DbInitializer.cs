@@ -64,6 +64,32 @@ namespace Hrm.Infrastructure.Data
             context.LeaveRequests.AddRange(leaveRequests);
             await context.SaveChangesAsync();
 
+            // Seed a matching ApprovalRequest for the pending LeaveRequest to keep sample data in sync
+            var pendingLeave = leaveRequests.FirstOrDefault(l => l.Status == "Pending");
+            if (pendingLeave != null)
+            {
+                var requesterUser = users.FirstOrDefault(u => u.Id == pendingLeave.UserId);
+                var requesterEmp = requesterUser != null ? context.Employees.FirstOrDefault(e => e.Id == requesterUser.EmployeeId) : null;
+                var senderName = requesterEmp?.FullName ?? requesterUser?.Username ?? "N/A";
+
+                var approval = new ApprovalRequest
+                {
+                    RequesterId = pendingLeave.UserId,
+                    RequestType = "LEAVE_REQUEST",
+                    EntityName = "LeaveRequest",
+                    EntityId = pendingLeave.Id.ToString(),
+                    DataJson = string.Empty,
+                    Description = $"Đơn nghỉ phép: {senderName} ({pendingLeave.LeaveType})",
+                    DepartmentId = requesterEmp?.DepartmentId,
+                    Status = ApprovalStatus.Pending,
+                    CreatedAt = pendingLeave.CreatedAt,
+                    UpdatedAt = pendingLeave.CreatedAt
+                };
+
+                context.ApprovalRequests.Add(approval);
+                await context.SaveChangesAsync();
+            }
+
             // 9. Seed System Settings
             var settings = GetPreconfiguredSettings();
             context.SystemSettings.AddRange(settings);

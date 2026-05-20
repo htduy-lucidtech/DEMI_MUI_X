@@ -43,8 +43,9 @@ import StatusChip from "@/components/common/StatusChip";
 
 export default function ApprovalsPage() {
   const t = useTranslations("Approvals");
-  const { user } = useAuth();
-  const canManage = user?.role === "Admin" || user?.role === "Manager";
+  const tLeave = useTranslations("Leave");
+  const { user, hasPermission } = useAuth();
+  const canManage = hasPermission("APPROVE_ALL") || hasPermission("APPROVE_DEPT");
   
   const [requests, setRequests] = useState<ApprovalRequest[]>([]);
   const [loading, setLoading] = useState(true);
@@ -128,26 +129,50 @@ export default function ApprovalsPage() {
     }
   };
 
-  const renderDataDiff = (dataJson: string) => {
+  const renderDataDiff = (dataJson: string, requestType?: string) => {
     try {
       const data = JSON.parse(dataJson);
+      const isLeave = requestType === "LEAVE_REQUEST";
       return (
         <Grid container spacing={2}>
           {Object.entries(data).map(([key, value]) => {
             if (value === null || typeof value === 'object' || key.toLowerCase().includes('id')) return null;
 
+            let displayKey = key.replace(/([A-Z])/g, ' $1').trim();
             let displayValue = String(value);
-            if (typeof value === 'boolean') {
-              displayValue = value ? 'Yes' : 'No';
-            } else if (typeof value === 'string' && (value.includes('T') && value.endsWith('Z'))) {
-              displayValue = new Date(value).toLocaleString();
+
+            if (isLeave) {
+              if (key === 'leaveType') {
+                displayKey = tLeave("columns.type");
+                displayValue = tLeave(`data.type.${value}`, { fallback: String(value) });
+              } else if (key === 'startDate') {
+                displayKey = tLeave("columns.startDate");
+                displayValue = new Date(value as string).toLocaleDateString();
+              } else if (key === 'endDate') {
+                displayKey = tLeave("columns.endDate");
+                displayValue = new Date(value as string).toLocaleDateString();
+              } else if (key === 'reason') {
+                displayKey = tLeave("columns.reason");
+              } else if (key === 'status') {
+                displayKey = tLeave("columns.status");
+                displayValue = tLeave(`data.status.${value}`, { fallback: String(value) });
+              } else if (key === 'createdAt') {
+                displayKey = t("columns.createdAt") || "Ngày tạo";
+                displayValue = new Date(value as string).toLocaleString();
+              }
+            } else {
+              if (typeof value === 'boolean') {
+                displayValue = value ? 'Yes' : 'No';
+              } else if (typeof value === 'string' && (value.includes('T') && value.endsWith('Z'))) {
+                displayValue = new Date(value).toLocaleString();
+              }
             }
 
             return (
               <Grid size={{ xs: 12, sm: 6 }} key={key}>
                 <Box sx={{ p: 1, borderRadius: 1, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}>
                   <Typography variant="caption" color="text.secondary" sx={{ display: 'block', textTransform: 'uppercase', fontWeight: 700, fontSize: '0.65rem', mb: 0.5 }}>
-                    {key.replace(/([A-Z])/g, ' $1').trim()}
+                    {displayKey}
                   </Typography>
                   <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.primary', wordBreak: 'break-all' }}>
                     {displayValue}
@@ -331,7 +356,7 @@ export default function ApprovalsPage() {
 
               <Box>
                 <Typography variant="caption" color="text.secondary" sx={{ textTransform: "uppercase", fontWeight: 700, fontSize: '0.7rem', mb: 1, display: "block" }}>{t("dialog.data")}</Typography>
-                {renderDataDiff(selectedRequest.dataJson)}
+                {renderDataDiff(selectedRequest.dataJson, selectedRequest.requestType)}
               </Box>
 
               {selectedRequest.status === ApprovalStatus.Pending && (
